@@ -1,4 +1,4 @@
-"""Deterministic Phase 0 repository-baseline tests."""
+"""Deterministic repository-baseline tests for Phase 0/1 control surfaces."""
 
 from hashlib import sha256
 from pathlib import Path
@@ -42,6 +42,50 @@ BLANK_CONFIGURATION_FIELDS = (
     "ALPHA_VANTAGE_API_KEY",
     "FINNHUB_API_KEY",
 )
+PHASE1_RUNTIME_DEPENDENCIES = {
+    "fastapi>=0.115,<1",
+    "pydantic>=2.10,<3",
+    "pydantic-settings>=2.7,<3",
+    "uvicorn[standard]>=0.34,<1",
+}
+FORBIDDEN_DEPENDENCY_FRAGMENTS = (
+    "langgraph",
+    "langchain",
+    "openai",
+    "openrouter",
+    "streamlit",
+    "psycopg",
+    "pgvector",
+    "redis",
+    "mcp",
+    "yfinance",
+    "finnhub",
+    "alpha-vantage",
+)
+FORBIDDEN_PHASE2_MODULE_NAMES = {
+    "company_resolver.py",
+    "nse.py",
+    "bse.py",
+    "sebi.py",
+    "edgar.py",
+    "yahoo.py",
+    "market_provider.py",
+    "filing_provider.py",
+    "news_provider.py",
+    "openrouter.py",
+    "model_router.py",
+    "langgraph_workflow.py",
+    "rag.py",
+    "embeddings.py",
+    "research_memory.py",
+    "verification_engine.py",
+    "critic.py",
+    "synthesis.py",
+    "docx_report.py",
+    "streamlit_app.py",
+    "mcp_server.py",
+    "trading.py",
+}
 
 
 def _environment_example() -> dict[str, str]:
@@ -57,10 +101,10 @@ def _environment_example() -> dict[str, str]:
 
 
 class RepositoryBaselineTests(TestCase):
-    """Protect the approved Phase 0 repository boundary."""
+    """Protect approved repository control and phase boundaries."""
 
     def test_required_control_files_exist_and_are_not_empty(self) -> None:
-        """Every mandatory Phase 0 control file should be present and meaningful."""
+        """Every mandatory control file should be present and meaningful."""
 
         for relative_path in REQUIRED_CONTROL_FILES:
             file_path = REPOSITORY_ROOT / relative_path
@@ -74,9 +118,14 @@ class RepositoryBaselineTests(TestCase):
         with (REPOSITORY_ROOT / "pyproject.toml").open("rb") as pyproject_file:
             project_metadata = load(pyproject_file)
 
+        dependencies = set(project_metadata["project"]["dependencies"])
         self.assertEqual(project_metadata["project"]["name"], "agentic-financial-intelligence")
         self.assertEqual(project_metadata["project"]["version"], __version__)
-        self.assertEqual(project_metadata["project"]["dependencies"], [])
+        self.assertEqual(dependencies, PHASE1_RUNTIME_DEPENDENCIES)
+        joined = " ".join(dependencies).lower()
+        for fragment in FORBIDDEN_DEPENDENCY_FRAGMENTS:
+            with self.subTest(fragment=fragment):
+                self.assertNotIn(fragment, joined)
 
     def test_example_configuration_is_free_first_and_secret_free(self) -> None:
         """Secret/model placeholders stay blank and paid models stay disabled."""
@@ -101,14 +150,13 @@ class RepositoryBaselineTests(TestCase):
 
         self.assertEqual(actual_hash, EXPECTED_ARCHITECTURE_SHA256)
 
-    def test_phase_zero_has_no_runtime_feature_modules(self) -> None:
-        """Only package metadata may exist before Phase 1 is authorized."""
+    def test_phase_two_runtime_modules_are_absent(self) -> None:
+        """Phase 2+ research/provider modules must not exist yet."""
 
         package_root = REPOSITORY_ROOT / "src" / "financial_intelligence"
-        runtime_modules = [
-            path.relative_to(package_root)
+        present = {
+            path.name
             for path in package_root.rglob("*.py")
-            if path.name != "__init__.py"
-        ]
-
-        self.assertEqual(runtime_modules, [])
+            if path.name in FORBIDDEN_PHASE2_MODULE_NAMES
+        }
+        self.assertEqual(present, set())

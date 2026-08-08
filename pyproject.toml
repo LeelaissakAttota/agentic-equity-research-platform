@@ -16,10 +16,16 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
 ]
-dependencies = []
+dependencies = [
+  "fastapi>=0.115,<1",
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
 
 [project.optional-dependencies]
 dev = [
+  "httpx>=0.28,<1",
   "mypy>=1.15,<2",
   "pytest>=8.3,<9",
   "pytest-asyncio>=0.25,<2",
@@ -33,6 +39,12 @@ where = ["src"]
 addopts = "-ra --strict-config --strict-markers"
 testpaths = ["tests"]
 pythonpath = ["src"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+  # ADR-023: Starlette 1.4+ prefers httpx2 for TestClient; httpx remains functional.
+  "ignore:Using `httpx` with `starlette.testclient` is deprecated:starlette.exceptions.StarletteDeprecationWarning",
+]
 
 [tool.ruff]
 target-version = "py312"
@@ -45,3 +57,8 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 python_version = "3.12"
 strict = true
 packages = ["financial_intelligence"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["uvicorn", "uvicorn.*"]
+ignore_missing_imports = true

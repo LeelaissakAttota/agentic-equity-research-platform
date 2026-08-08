@@ -32,7 +32,7 @@ Phase 1 remains locked until all items are true:
 - [x] The owner-configured GitHub remote exists and `main` was pushed successfully.
 - [x] Master Architecture, Project Rules, Phase 1 scope and Phase 1 acceptance criteria are frozen.
 - [x] Repository secret, paid-model, test, lint, type and architecture gates pass.
-- [ ] The owner explicitly authorizes Phase 1.
+- [x] The owner explicitly authorizes Phase 1.
 
 ### In scope
 
@@ -58,21 +58,21 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 ### Acceptance criteria
 
-- [ ] Application starts successfully in the documented development setup.
-- [ ] FastAPI application creation is deterministic and import-safe.
-- [ ] Health endpoint works; readiness accurately represents only implemented dependencies.
-- [ ] Configuration validates success/failure cases and paid-model policy remains fail-closed.
-- [ ] Secrets are never logged or returned in errors.
-- [ ] Structured logging and request/correlation ID behavior work if included.
-- [ ] Standard API error and application version contracts work.
-- [ ] Application lifecycle and dependency composition are testable.
-- [ ] Domain imports contain no framework, provider or infrastructure dependencies.
-- [ ] Docker image builds and container health passes when Docker is available and included.
-- [ ] Unit and applicable integration/contract tests pass.
-- [ ] Ruff formatting/linting and strict mypy pass.
-- [ ] Security, dependency and documentation baselines pass.
-- [ ] No Phase 2 or later capability exists.
-- [ ] Git checkpoint is ready for owner-authorized creation.
+- [x] Application starts successfully in the documented development setup.
+- [x] FastAPI application creation is deterministic and import-safe.
+- [x] Health endpoint works; readiness accurately represents only implemented dependencies.
+- [x] Configuration validates success/failure cases and paid-model policy remains fail-closed.
+- [x] Secrets are never logged or returned in errors.
+- [x] Structured logging and request/correlation ID behavior work if included.
+- [x] Standard API error and application version contracts work.
+- [x] Application lifecycle and dependency composition are testable.
+- [x] Domain imports contain no framework, provider or infrastructure dependencies.
+- [x] Docker image builds and container health passes when Docker is available and included.
+- [x] Unit and applicable integration/contract tests pass.
+- [x] Ruff formatting/linting and strict mypy pass.
+- [x] Security, dependency and documentation baselines pass.
+- [x] No Phase 2 or later capability exists.
+- [x] Git checkpoint created and pushed under Phase 1 Prompt 4 authorization.
 
 ### Explicitly out of scope
 

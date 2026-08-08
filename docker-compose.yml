@@ -1,0 +1,29 @@
+# Phase 1 local foundation compose.
+# PostgreSQL and Redis are intentionally absent: those integrations are not
+# implemented yet. Do not interpret this file as claiming database readiness.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: agentic-financial-intelligence:phase1
+    ports:
+      # Host port is configurable because local port 8000 may already be occupied.
+      - "${API_HOST_PORT:-8000}:8000"
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: INFO
+      ALLOW_PAID_MODELS: "false"
+      PRIMARY_FREE_MODEL: ""
+      FALLBACK_FREE_MODEL_1: ""
+      FALLBACK_FREE_MODEL_2: ""
+      OPENROUTER_API_KEY: ""
+      DATABASE_URL: ""
+      REDIS_URL: ""
+    # No .env file is copied into the image. Mount secrets only when needed.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true

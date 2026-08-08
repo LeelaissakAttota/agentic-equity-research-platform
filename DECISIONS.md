@@ -172,4 +172,20 @@ Phase 0 decisions are summarized here in lightweight ADR form. Status is **Accep
 
 ## Deferred decisions
 
-Database schema/ORM/migrations, background execution, auth, graph implementation, storage provider, embeddings/chunking, exact free model IDs, dependency locking, CI platform, and production host are deliberately deferred to investigation in their owning phases. UUIDv4 is frozen for `research_run_id`; its domain type/generator placement is implemented only in Phase 1.
+Database schema/ORM/migrations, background execution, auth, graph implementation, storage provider, embeddings/chunking, exact free model IDs, full dependency locking, and production host remain deferred to investigation in their owning phases. Phase 1 selected GitHub Actions for baseline CI and Uvicorn as the ASGI server for local/container execution. Migration from TestClient `httpx` to `httpx2` is deferred (see ADR-023).
+
+## ADR-022 — Phase 1 FastAPI foundation stack
+
+**Decision:** Implement Phase 1 with FastAPI, Pydantic v2, pydantic-settings, and Uvicorn; keep domain code free of framework imports; wire concrete components only in the composition root.
+
+**Rationale:** Matches ADR-002 and the frozen Phase 1 scope while preserving clean architecture and the smallest dependency surface needed for a runnable foundation.
+
+**Consequences:** Health/readiness/version endpoints, configuration, correlation, logging, Docker/CI, and Research Run ID primitives may land in Phase 1; research providers and orchestration remain forbidden until later phases.
+
+## ADR-023 — Defer Starlette TestClient httpx2 migration
+
+**Decision:** Keep the Phase 1 TestClient development dependency on `httpx`, retain a narrowly scoped pytest filter for Starlette's `httpx`→`httpx2` deprecation warning, and defer installing/migrating to `httpx2` until an explicit dependency-upgrade decision.
+
+**Rationale:** Starlette 1.4+ prefers `httpx2` for `TestClient` and deprecates plain `httpx`, but the current suite remains functionally correct with `httpx`. Prompt 3 forbids installing `httpx2` merely to silence the warning, and the warning does not indicate a failing compatibility break today.
+
+**Consequences:** CI/local pytest remain quiet via a message-scoped filter only; runtime application dependencies are unchanged; a future ADR may adopt `httpx2` as the supported TestClient client.

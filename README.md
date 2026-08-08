@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 0 — Complete. The repository contains planning, policy, frozen architecture, and a minimal package-health baseline only. Phase 1 is not started and awaits explicit owner authorization. The repository does **not** yet contain research agents, provider clients, APIs, retrieval, reports, or a user application.
+> **Current status:** Phase 1 — COMPLETE. Phase 0 is complete. The repository includes a runnable FastAPI application foundation (configuration, health/readiness, correlation, logging, Research Run ID primitive, Docker/CI baselines). Phase 2 is **not started** and awaits owner authorization. The repository does **not** yet contain research agents, provider clients, retrieval, reports, or a research UI.
 
 ## Vision
 
@@ -61,11 +61,11 @@ The platform supplies structured intelligence only. Broker/MT5 orders, trading c
 
 ## Implemented versus planned
 
-| Implemented in Phase 0 | Planned in later phases |
+| Implemented in Phase 0–1 foundation | Planned in later phases |
 |---|---|
-| Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | APIs, providers, company resolution and financial research capabilities |
-| Safe configuration example, package metadata, repository structure and validation tests | LangGraph orchestration, OpenRouter calls, PostgreSQL/pgvector, Redis and research memory |
-| Python 3.12 test/lint/type baseline | Streamlit, multilingual synthesis, charts and `.docx` report generation |
+| Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Company resolution, providers, and financial research capabilities |
+| Typed settings, FastAPI factory, health/readiness/version, correlation, structured logging, API errors | LangGraph orchestration, OpenRouter calls, PostgreSQL/pgvector, Redis and research memory |
+| Research Run ID primitive, composition root, Docker/CI baselines, package-health and foundation tests | Streamlit, multilingual synthesis, charts and `.docx` report generation |
 
 No planned runtime capability is represented as working today. See `PROJECT_STATUS.md` for the authoritative gate.
 
@@ -96,14 +96,22 @@ Work proceeds only through the approved phases in [ROADMAP.md](ROADMAP.md) and [
 - UTF-8 source and documentation
 - `src` package layout
 - pytest test layout
-- no runtime integration dependencies in Phase 0
+- Phase 1 runtime dependencies are limited to FastAPI, Pydantic, pydantic-settings, and Uvicorn
 
 Create a local environment file from `.env.example`; never commit `.env` or real credentials.
 
 ```powershell
 Copy-Item .env.example .env
+python -m pip install -e ".[dev]"
 python -m pytest
+python -m uvicorn financial_intelligence.main:app --reload
 ```
+
+Health checks:
+
+- `GET /health` — process liveness
+- `GET /ready` — foundation readiness
+- `GET /version` — service metadata
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

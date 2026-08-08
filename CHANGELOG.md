@@ -47,8 +47,39 @@ All notable changes will be documented here. The project intends to adopt Semant
 - Established the first approved Git checkpoint on `main` and configured the owner-approved GitHub SSH remote.
 - Phase 0 is complete; Phase 1 remains not started and awaits explicit owner authorization.
 
-No production application, provider, agent, model, database, retrieval, report, UI, MCP or trading functionality was added.
+### Phase 1 foundation
+
+- Added typed pydantic-settings configuration with fail-closed `ALLOW_PAID_MODELS=false`.
+- Added FastAPI application factory, lifespan foundation, `/health`, `/ready`, and `/version`.
+- Added correlation IDs, structured secret-safe logging, security headers, and stable API error contracts.
+- Added composition-root wiring, infrastructure-neutral ports, and the UUIDv4 `ResearchRunId` domain primitive.
+- Added Dockerfile, app-only Compose foundation, and baseline GitHub Actions CI.
+- Added Phase 1 foundation tests; no research intelligence or provider integrations were introduced.
+
+### Phase 1 Prompt 2 validation
+
+- Hardened readiness registry: probe exceptions/name mismatches become controlled `not_ready` checks with stable ordering.
+- Hardened nested log redaction and correlation/error fallback sanitization.
+- Made Compose host port configurable via `API_HOST_PORT` to avoid local port-8000 conflicts.
+- Expanded deep tests for configuration, API/OpenAPI surface, concurrency, logging, architecture, and import side effects.
+- Documented Starlette `httpx`/`httpx2` TestClient deprecation as an upstream warning; did not add `httpx2` solely to silence it.
+
+### Phase 1 Prompt 3 stabilization
+
+- Fixed process logging configuration so repeated `create_app()` calls do not clear unrelated/root handlers.
+- Expanded sensitive-log fragments (`passwd`, `refresh_token`) and architecture-boundary coverage.
+- Recorded ADR-023 deferring Starlette TestClient migration from `httpx` to `httpx2`.
+- Revalidated Docker/Compose/clean-install/security/architecture gates for release-candidate readiness ahead of Prompt 4.
+
+### Phase 1 completion checkpoint
+
+- Owner approved Phase 1 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
+- Reconfirmed pytest (60 passed), Ruff, mypy, `git diff --check`, clean install, API/OpenAPI smoke, Docker/Compose, secret, paid-model, architecture, and Phase 2 absence gates.
+- Established the Phase 1 Git checkpoint on `main` with message `feat(phase-01): establish core application foundation` and synchronized with the owner-approved remote.
+- Phase 1 is complete; Phase 2 remains not started and awaits explicit owner authorization.
+
+No production research, provider, agent, model, database, retrieval, report, UI, MCP or trading functionality was added.
 
 ### Not implemented
 
-- All Phase 1–10 runtime capabilities remain future work.
+- All Phase 2–10 runtime research capabilities remain future work.
