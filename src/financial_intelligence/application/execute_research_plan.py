@@ -153,8 +153,16 @@ class ExecuteResearchPlan:
         budget: ResearchExecutionBudget | None = None,
         control: ExecutionControl | None = None,
         started_at: datetime | None = None,
+        initial_total_attempts: int = 0,
+        initial_external_calls: int = 0,
+        initial_results: tuple[TaskExecutionResult, ...] = (),
+        initial_warnings: tuple[str, ...] = (),
     ) -> ResearchExecutionResult:
-        """Execute an already-built plan (tests / advanced callers). Plans are not stored."""
+        """Execute an already-built plan (tests / advanced callers). Plans are not stored.
+
+        Optional ``initial_*`` counters/results seed resume from a workflow checkpoint
+        so budgets and evidence are not silently reset.
+        """
 
         from financial_intelligence.application.company_resolution import CompanyQuery
         from financial_intelligence.application.company_resolution import (
@@ -210,17 +218,28 @@ class ExecuteResearchPlan:
                 control=control,
             )
 
+        if initial_total_attempts < 0 or initial_external_calls < 0:
+            msg = "initial attempt counters must be non-negative"
+            raise ValueError(msg)
+
         state = OrchestrationState(
             research_run_id=plan.research_run_id,
             plan=plan.with_status(PlanStatus.EXECUTING),
             started_at=started_at,
             updated_at=started_at,
             status=OrchestrationStatus.RUNNING,
+            total_attempts=initial_total_attempts,
+            external_calls=initial_external_calls,
+            results=initial_results,
+            warnings=initial_warnings,
         )
-        executed_success_ids: set[str] = set()
+        # Preserve already-succeeded tasks across resume (do not re-execute).
+        executed_success_ids: set[str] = {
+            t.task_id.as_text() for t in plan.tasks if t.status is TaskStatus.SUCCEEDED
+        }
         max_rounds = len(plan.tasks) * budget.max_attempts_per_task + len(plan.tasks) + 2
         rounds = 0
-        warnings: list[str] = []
+        warnings: list[str] = list(initial_warnings)
 
         while rounds < max_rounds:
             rounds += 1
@@ -228,7 +247,10 @@ class ExecuteResearchPlan:
 
             if control.is_cancelled:
                 state = self._apply_cancellation(
-                    state, now=now, reason=control.reason or "cancelled"
+                    state,
+                    now=now,
+                    reason=control.reason or "cancelled",
+                    preserve_pending=control.is_pause,
                 )
                 break
 
@@ -447,20 +469,30 @@ class ExecuteResearchPlan:
         return state.with_updated_plan(state.plan.with_tasks(tasks), updated_at=now)
 
     def _apply_cancellation(
-        self, state: OrchestrationState, *, now: datetime, reason: str
+        self,
+        state: OrchestrationState,
+        *,
+        now: datetime,
+        reason: str,
+        preserve_pending: bool = False,
     ) -> OrchestrationState:
         updated: list[ResearchTask] = []
         for task in state.plan.tasks:
             if task.status in {TaskStatus.PENDING, TaskStatus.READY}:
-                current = task
-                if current.status is TaskStatus.PENDING:
-                    current = current.with_status(TaskStatus.READY)
-                # READY → SKIPPED
-                current = current.with_status(TaskStatus.SKIPPED, at=now)
-                updated.append(current)
+                if preserve_pending:
+                    # Soft pause: leave unfinished work runnable for resume.
+                    updated.append(task)
+                else:
+                    current = task
+                    if current.status is TaskStatus.PENDING:
+                        current = current.with_status(TaskStatus.READY)
+                    # READY → SKIPPED
+                    current = current.with_status(TaskStatus.SKIPPED, at=now)
+                    updated.append(current)
             else:
                 updated.append(task)
-        plan = state.plan.with_tasks(tuple(updated), status=PlanStatus.CANCELLED)
+        plan_status = PlanStatus.READY if preserve_pending else PlanStatus.CANCELLED
+        plan = state.plan.with_tasks(tuple(updated), status=plan_status)
         return replace(
             state,
             plan=plan,

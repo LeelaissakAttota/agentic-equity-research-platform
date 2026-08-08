@@ -3,42 +3,44 @@
 ## Current gate
 
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
-- **Active phase:** Phase 6 — COMPLETE (Autonomous Research Planning & Dynamic Orchestration)
-- **Active prompt:** Phase 6 Prompt 4 — COMPLETE (release checkpoint)
-- **State:** Phase 0–6 complete; Phase 7 not started
-- **Next permitted work:** Phase 7 after explicit owner authorization
-- **Production readiness:** Not production-ready
-- **Phase 0–5:** COMPLETE
-- **Phase 6:** COMPLETE
-- **Phase 6 Prompt 1–4:** COMPLETE
-- **Phase 7:** NOT STARTED / AWAITING OWNER AUTHORIZATION
+- **Active phase:** Phase 7 — COMPLETE
+- **Active prompt:** Phase 7 Prompt 4 — COMPLETE
+- **State:** Phase 0–7 complete; Phase 7 Prompts 1–4 implemented and release-validated
+- **Next permitted work:** Phase 8 after owner authorization
+- **Production readiness:** Not production-ready (Phase 7 is process-local foundation)
+- **Phase 0–6:** COMPLETE
+- **Phase 7:** COMPLETE (Prompts 1–4)
+- **Phase 8:** NOT STARTED / AWAITING OWNER AUTHORIZATION
 
-## Phase 6 release summary
+## Phase 7 summary (Prompts 1–4)
 
-Framework-independent autonomous research planning and controlled orchestration:
+Autonomous Research Workflows foundation vertical slice on top of Phase 6:
 
-- Deterministic planner (`phase6-deterministic-v1`) — no LLM planner
-- Task DAG, lifecycle, budgets, bounded retries, cancellation foundation
-- Synchronous one-ready-task-at-a-time execution through Phase 2–5 capabilities
-- `POST /research/plans` and `POST /research/execute` (create-and-execute; plans not persisted)
-- Evidence aggregation with no authority/origin upgrades
-- OpenRouter / LLM / paid calls = **0**
-- LangGraph **not** installed (ADR-039–041)
+- **Workflow foundation (Prompt 1):** `WorkflowId`, lifecycle transitions, checkpoints, human approval contracts, deterministic approval policy, `CreateResearchWorkflow` / `ManageResearchWorkflow` coordinating Phase 6 plan + execute, in-memory `ResearchWorkflowStorePort`, extended `ExecutionControl.request_pause` for soft pause preserving PENDING tasks, workflow API (`POST/GET /research/workflows`, execute/pause/resume/approval)
+- **Hardening + expansion (Prompt 2):** Adversarial lifecycle/approval/checkpoint/store tests; resume preserves attempt/external-call/evidence counters; structured Research Memory (not RAG); watchlists + explicit monitoring checks; in-memory notification contracts; deferred report-request contract; dashboard list API with bounded limit/offset; cancel/memory/report routes; watchlist APIs
+- **Acceptance audit (Prompt 3):** Final technical acceptance audit — workflow identity, lifecycle, checkpoint integrity, pause/resume, cancellation, human approval, research memory, watchlists, monitoring, notifications, report contract, dashboard API, Phase 6 integration, retry/budget continuity, evidence/provenance, company identity, store/concurrency, persistence/LangGraph/RAG/LLM decisions
+- **Release checkpoint (Prompt 4):** Final validation, documentation closure, single release commit, push, synchronization verification
+
+**Decisions frozen (Prompt 3 acceptance):**
+- Durable PostgreSQL/Redis persistence: **NOT required** (ADR-044)
+- LangGraph: **NOT required** (ADR-046)
+- RAG/vector memory: **NOT required** (ADR-045)
+- LLM planner: **NOT required** (ADR-041)
+- OpenRouter / LLM / paid calls: **0**
 
 ## Documented limitations
 
-- No persisted plan store / resume / distributed idempotency
-- Sequential execution only (no parallel workers)
-- `max_external_calls` counts capability executor invocations, not packet-level network I/O
-- No investment synthesis / final research report
-- Some fixture coverage remains limited; GOOG/GOOGL market data may be unavailable while identity remains correct
-- Not production-scale distributed orchestration
+- In-memory workflow/memory/watchlist/notification stores (not durable); process restart loses state
+- Soft pause/resume process-local; no distributed workers or distributed idempotency
+- Monitoring is explicit invocation only (no background polling/scheduler)
+- Report rendering deferred (contract foundation only); notification channels deferred
+- RAG/vector memory deferred within Phase 7
+- Limited/demo-scale underlying datasets where applicable
 
 ## Phase checkpoints
 
-- Phase 4: `0115862`
-- Phase 5: `28924e98d5c6f335190be7bc2792befe11030a1d`
-- Phase 6: release checkpoint created by Prompt 4 (see git log)
+- Phase 6: `1df132b10cc4ed36f28c32ecdbaa89987c2d4de0`
+- Phase 7: `<Phase 7 commit hash to be filled after commit>`
 - Remote: `origin` → `git@github.com:LeelaissakAttota/agentic-equity-research-platform.git`
 
 ## Change protocol

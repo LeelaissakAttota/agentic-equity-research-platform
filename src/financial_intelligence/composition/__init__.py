@@ -7,16 +7,20 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from financial_intelligence import __version__
+from financial_intelligence.application.approval_policy import DeterministicApprovalPolicy
 from financial_intelligence.application.capability_registry import CapabilityRegistry
 from financial_intelligence.application.contracts import (
     ApplicationMetadata,
     ReadinessCheckResult,
 )
 from financial_intelligence.application.create_research_plan import CreateResearchPlan
+from financial_intelligence.application.create_research_workflow import CreateResearchWorkflow
 from financial_intelligence.application.deterministic_planner import DeterministicPlanner
 from financial_intelligence.application.execute_research_plan import ExecuteResearchPlan
 from financial_intelligence.application.financial_snapshot import GetFinancialSnapshot
 from financial_intelligence.application.industry_snapshot import GetIndustryContextSnapshot
+from financial_intelligence.application.manage_research_workflow import ManageResearchWorkflow
+from financial_intelligence.application.manage_watchlist import ManageWatchlist
 from financial_intelligence.application.market_freshness import MarketFreshnessPolicy
 from financial_intelligence.application.market_snapshot import GetMarketSnapshot
 from financial_intelligence.application.news_event_snapshot import GetNewsEventSnapshot
@@ -26,10 +30,15 @@ from financial_intelligence.application.ports import (
     IndustryContextPort,
     MarketDataPort,
     NewsEventPort,
+    NotificationPort,
     RegulatoryEventPort,
+    ResearchMemoryPort,
+    ResearchWorkflowStorePort,
+    WatchlistStorePort,
 )
 from financial_intelligence.application.readiness import ReadinessRegistry
 from financial_intelligence.application.regulatory_snapshot import GetRegulatorySnapshot
+from financial_intelligence.application.request_research_report import RequestResearchReport
 from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.domain.orchestration import ResearchExecutionBudget
@@ -51,15 +60,19 @@ from financial_intelligence.infrastructure.market import (
     InMemoryMarketDataAdapter,
     YahooChartMarketDataAdapter,
 )
+from financial_intelligence.infrastructure.memory import InMemoryResearchMemoryStore
 from financial_intelligence.infrastructure.news import (
     CachingNewsEventAdapter,
     InMemoryNewsEventAdapter,
 )
+from financial_intelligence.infrastructure.notification import InMemoryNotificationAdapter
 from financial_intelligence.infrastructure.orchestration import Phase6CapabilityExecutor
 from financial_intelligence.infrastructure.regulatory import (
     CachingRegulatoryAdapter,
     InMemoryRegulatoryAdapter,
 )
+from financial_intelligence.infrastructure.watchlist import InMemoryWatchlistStore
+from financial_intelligence.infrastructure.workflow import InMemoryResearchWorkflowStore
 
 
 @dataclass(slots=True)
@@ -85,6 +98,14 @@ class AppContainer:
     create_research_plan: CreateResearchPlan
     capability_executor: Phase6CapabilityExecutor
     execute_research_plan: ExecuteResearchPlan
+    workflow_store: ResearchWorkflowStorePort
+    create_research_workflow: CreateResearchWorkflow
+    manage_research_workflow: ManageResearchWorkflow
+    research_memory: ResearchMemoryPort
+    watchlist_store: WatchlistStorePort
+    manage_watchlist: ManageWatchlist
+    notifications: NotificationPort
+    request_research_report: RequestResearchReport
 
 
 def _sec_user_agent() -> str:
@@ -105,16 +126,17 @@ def build_container(
     industry: IndustryContextPort | None = None,
     regulatory: RegulatoryEventPort | None = None,
 ) -> AppContainer:
-    """Wire settings, readiness, Phase 2-5 intelligence, and Phase 6 orchestration.
+    """Wire settings, readiness, Phase 2-6 intelligence, and Phase 7 workflow foundation.
 
     Optional ``clock`` freezes evaluation time for deterministic tests.
     Optional adapters inject fully wired ports (tests).
 
     Live Yahoo chart and SEC companyfacts acquisition are opt-in via settings.
     Phase 5 qualitative intelligence remains fixture-first.
-    Phase 6 Prompt 2 executes deterministic plans synchronously through existing
-    Phase 2-5 use cases (no LLM planner, no workflow-engine dependency, no
-    unbounded loops).
+    Phase 6 executes deterministic plans synchronously through existing
+    Phase 2-5 use cases (no LLM planner, no external workflow-engine dependency).
+    Phase 7 Prompt 1 adds in-memory workflow persistence / approval / pause-resume
+    coordination on top of Phase 6 (not durable DB; not RAG or vector memory).
     """
 
     resolved = settings if settings is not None else Settings()
@@ -259,6 +281,36 @@ def build_container(
         budget=budget,
         clock=clock,
     )
+    workflow_store: ResearchWorkflowStorePort = InMemoryResearchWorkflowStore()
+    research_memory: ResearchMemoryPort = InMemoryResearchMemoryStore()
+    watchlist_store: WatchlistStorePort = InMemoryWatchlistStore()
+    notifications: NotificationPort = InMemoryNotificationAdapter()
+    create_research_workflow = CreateResearchWorkflow(
+        create_research_plan=create_research_plan,
+        workflow_store=workflow_store,
+        approval_policy=DeterministicApprovalPolicy(),
+        notifications=notifications,
+        clock=clock,
+    )
+    manage_research_workflow = ManageResearchWorkflow(
+        workflow_store=workflow_store,
+        execute_research_plan=execute_research_plan,
+        resolve_company=resolve_company,
+        research_memory=research_memory,
+        notifications=notifications,
+        clock=clock,
+    )
+    manage_watchlist = ManageWatchlist(
+        watchlist_store=watchlist_store,
+        resolve_company=resolve_company,
+        create_research_workflow=create_research_workflow,
+        notifications=notifications,
+        clock=clock,
+    )
+    request_research_report = RequestResearchReport(
+        workflow_store=workflow_store,
+        clock=clock,
+    )
     return AppContainer(
         settings=resolved,
         readiness=readiness,
@@ -279,4 +331,12 @@ def build_container(
         create_research_plan=create_research_plan,
         capability_executor=capability_executor,
         execute_research_plan=execute_research_plan,
+        workflow_store=workflow_store,
+        create_research_workflow=create_research_workflow,
+        manage_research_workflow=manage_research_workflow,
+        research_memory=research_memory,
+        watchlist_store=watchlist_store,
+        manage_watchlist=manage_watchlist,
+        notifications=notifications,
+        request_research_report=request_research_report,
     )

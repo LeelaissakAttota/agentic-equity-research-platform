@@ -1,6 +1,6 @@
 # Development Notes
 
-## Local Phase 1–2 foundation
+## Local Phase 1–7 foundation
 
 ```powershell
 Copy-Item .env.example .env
@@ -24,7 +24,11 @@ Foundation routes:
 - `GET /regulatory/events/snapshot?q=Reliance&exchange=NSE` — regulatory snapshot (fixture-first; secondary coverage stays ALLEGED).
 - `POST /research/plans` JSON body `{ "q": "Apple", "exchange": "NASDAQ", "objective": "comprehensive_equity_research" }` — creates a deterministic plan (`200` for ok/resolution_blocked; `400` invalid). Does not execute tasks.
 - `POST /research/execute` — same body shape (optional budget fields) create-and-executes a fresh plan synchronously within budget. Plans are not persisted; there is no plan-id lookup. Returns `ResearchExecutionResult` (task outcomes, evidence refs, warnings). No investment conclusion.
-- Phase 6 COMPLETE (Prompt 4 checkpoint): `FAILED → READY` requires `authorized_retry=True`; PARTIAL capability results keep run status `partial`; external-call budget counts executor invocations (not network packets). LangGraph/LLM planner/persistence/parallelism deferred (ADR-041–042). Phase 7 not started.
+- `POST /research/workflows` — Phase 7: create a workflow (Phase 6 plan + lifecycle/approval) in the **in-memory** store.
+- `GET /research/workflows` — bounded listing for dashboard foundation.
+- `POST /watchlists` / `POST /watchlists/{id}/checks` — watchlist + explicit monitoring check (no schedulers).
+- Structured Research Memory is deterministic task/result memory — **not** embeddings/RAG.
+- Phase 7 COMPLETE (Prompts 1–4); Phase 8 NOT STARTED / AWAITING OWNER AUTHORIZATION.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 

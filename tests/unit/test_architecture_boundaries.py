@@ -179,3 +179,12 @@ class ArchitectureBoundaryTests(TestCase):
         self.assertFalse(any("infrastructure" in name for name in imports))
         self.assertNotIn("Phase6CapabilityExecutor", source)
         self.assertNotIn("GetMarketSnapshot", source)
+
+    def test_workflow_use_cases_depend_on_store_port_not_adapter(self) -> None:
+        for filename in ("create_research_workflow.py", "manage_research_workflow.py"):
+            path = APPLICATION_ROOT / filename
+            source = path.read_text(encoding="utf-8")
+            imports = _imported_modules(path)
+            self.assertIn("ResearchWorkflowStorePort", source)
+            self.assertFalse(any("infrastructure" in name for name in imports))
+            self.assertNotIn("InMemoryResearchWorkflowStore", source)

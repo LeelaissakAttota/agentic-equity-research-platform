@@ -19,9 +19,18 @@ from financial_intelligence.domain.identity import (
 )
 from financial_intelligence.domain.industry import CompanyIndustryPackage
 from financial_intelligence.domain.market import MarketObservationSeries
+from financial_intelligence.domain.memory import MemoryRecordId, ResearchMemoryRecord
 from financial_intelligence.domain.news import CompanyEventPackage
+from financial_intelligence.domain.notification import NotificationEvent
 from financial_intelligence.domain.orchestration import ResearchTask, TaskExecutionResult
 from financial_intelligence.domain.regulatory import CompanyRegulatoryPackage
+from financial_intelligence.domain.watchlist import Watchlist, WatchlistId
+from financial_intelligence.domain.workflow import (
+    ResearchWorkflow,
+    WorkflowCheckpoint,
+    WorkflowId,
+    WorkflowStatus,
+)
 
 
 @runtime_checkable
@@ -30,6 +39,82 @@ class PersistencePort(Protocol):
 
     def ping(self) -> bool:
         """Return True when the persistence dependency can accept work."""
+
+
+@runtime_checkable
+class ResearchWorkflowStorePort(Protocol):
+    """Application-owned workflow persistence boundary.
+
+    Prompt 1 uses an in-memory adapter. Durable DB persistence is deferred.
+    """
+
+    def save_workflow(self, workflow: ResearchWorkflow) -> None:
+        """Create or replace a workflow aggregate."""
+
+    def get_workflow(self, workflow_id: WorkflowId) -> ResearchWorkflow | None:
+        """Return workflow or None when unknown."""
+
+    def save_checkpoint(self, checkpoint: WorkflowCheckpoint) -> None:
+        """Persist a checkpoint for a workflow."""
+
+    def get_latest_checkpoint(self, workflow_id: WorkflowId) -> WorkflowCheckpoint | None:
+        """Return latest checkpoint or None."""
+
+    def list_workflows(
+        self,
+        *,
+        status: WorkflowStatus | None = None,
+        company_id_text: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[ResearchWorkflow, ...]:
+        """Return a bounded, deterministically ordered workflow list."""
+
+
+@runtime_checkable
+class ResearchMemoryPort(Protocol):
+    """Structured research-memory boundary (not vector/RAG)."""
+
+    def append(self, record: ResearchMemoryRecord) -> None:
+        """Append an immutable memory record."""
+
+    def get_record(self, record_id: MemoryRecordId) -> ResearchMemoryRecord | None:
+        """Return one record or None."""
+
+    def list_for_workflow(
+        self, workflow_id: WorkflowId, *, limit: int = 100
+    ) -> tuple[ResearchMemoryRecord, ...]:
+        """List records for a workflow (deterministic order)."""
+
+    def list_for_company(
+        self, company_id: CompanyId, *, limit: int = 100
+    ) -> tuple[ResearchMemoryRecord, ...]:
+        """List records for a company (deterministic order)."""
+
+
+@runtime_checkable
+class WatchlistStorePort(Protocol):
+    """Watchlist persistence boundary."""
+
+    def save(self, watchlist: Watchlist) -> None:
+        """Create or replace a watchlist."""
+
+    def get(self, watchlist_id: WatchlistId) -> Watchlist | None:
+        """Return watchlist or None."""
+
+    def list_all(self, *, limit: int = 50, offset: int = 0) -> tuple[Watchlist, ...]:
+        """Bounded watchlist listing."""
+
+
+@runtime_checkable
+class NotificationPort(Protocol):
+    """Outbound notification boundary (in-memory / test adapters in Prompt 2)."""
+
+    def publish(self, event: NotificationEvent) -> None:
+        """Publish a notification event. May raise on adapter failure."""
+
+    def list_events(self, *, limit: int = 100) -> tuple[NotificationEvent, ...]:
+        """List published events for tests/dashboard foundation."""
 
 
 @runtime_checkable

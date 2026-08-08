@@ -348,6 +348,38 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 
 **Consequences:** Phase 6 is COMPLETE within documented limitations; further orchestration enhancements require new authorization; Phase 7 awaits owner authorization.
 
+## ADR-043 — Phase 7 Prompt 1: workflow foundation before RAG
+
+**Decision:** Owner-authorized Phase 7 Prompt 1 implements an Autonomous Research Workflows foundation vertical slice (WorkflowId, lifecycle, checkpoint, human approval, in-memory `ResearchWorkflowStorePort`, Create/Manage use cases, workflow API) that extends Phase 6 without replacing it. Frozen `PHASES.md` / `ROADMAP.md` title Phase 7 as Evidence Graph, RAG & Research Memory; RAG/embeddings/vector memory/`pgvector` are **deferred** to later Phase 7 prompts. Workflow checkpoints are control/audit state only—not semantic Research Memory. LangGraph is not added; soft pause uses `ExecutionControl.request_pause` to preserve PENDING tasks. No durable PostgreSQL/Redis workflow store in Prompt 1. Phase 8 is not started.
+
+**Rationale:** Prompt 1 requires persistent, resumable, human-governed workflows on proven Phase 6 contracts before introducing retrieval/embedding complexity. Framework-independent architecture remains sufficient.
+
+**Consequences:** Phase 7 is IN PROGRESS after Prompt 1; PHASES.md RAG acceptance criteria remain for later prompts; in-memory store is explicitly non-durable; Git checkpoint deferred to Phase 7 Prompt 4.
+
+## ADR-044 — Keep in-memory workflow persistence through Phase 7 Prompt 2
+
+**Decision:** Durable PostgreSQL/Redis workflow persistence is **not required** to truthfully progress Phase 7 Prompt 2. The `ResearchWorkflowStorePort` / memory / watchlist / notification ports remain the frozen abstractions. Prompt 2 keeps in-memory adapters and documents durability as an explicit limitation.
+
+**Rationale:** Frozen Phase 7 acceptance emphasizes governed memory/retrieval later; Prompt 2 focuses on hardening and structured contracts. Adding a database service now would expand operational complexity without closing a Prompt 2 acceptance gap.
+
+**Consequences:** Process restart loses local workflow/memory/watchlist state; durable adapters may be evaluated in later prompts if owner-authorized.
+
+## ADR-045 — Research Memory is structured deterministic memory, not RAG
+
+**Decision:** Phase 7 Prompt 2 Research Memory means immutable structured records of workflow task outcomes (workflow/run/company/capability/task/status/evidence refs/data_origin). It does **not** mean vector DB, embeddings, semantic retrieval, chunking, LLM memory, or knowledge graphs.
+
+**Rationale:** Owner Prompt 2 explicitly forbids RAG pull-forward; structured memory satisfies cross-workflow continuity without authority upgrades.
+
+**Consequences:** Memory adapters stay in-memory for Prompt 2; RAG remains deferred within Phase 7.
+
+## ADR-046 — LangGraph still not required after Phase 7 Prompt 2
+
+**Decision:** Re-evaluation confirms framework-independent workflow state, soft pause/resume, approval, monitoring checks, and structured memory are sufficient. LangGraph is **not** installed.
+
+**Rationale:** No Prompt 2 acceptance criterion requires a workflow-engine dependency; deterministic contracts already support the authorized slice.
+
+**Consequences:** Continue framework-independent architecture; revisit only with explicit owner authorization.
+
 ## ADR-028 — Optional Yahoo chart live adapter with explicit data origin
 
 **Decision:** Phase 3 Prompt 3 adds an optional, key-free Yahoo Finance chart HTTP adapter behind `MarketDataPort`, enabled only when `MARKET_DATA_LIVE_ENABLED=true`. Default remains offline fixture mode. Observations carry explicit `DataOrigin` (`live` / `cached_live` / `fixture` / `unavailable`). Composition is cache → (optional live primary) → fixture secondary. Provider symbol mapping (e.g. `RELIANCE.NS` / `.BO`) stays in infrastructure and never becomes canonical identity. Valuation multiples requiring fundamentals remain deferred to Phase 4. Exchange holiday calendars and full corporate-action engines remain documented limitations. Optional live providers do not affect `/ready`.

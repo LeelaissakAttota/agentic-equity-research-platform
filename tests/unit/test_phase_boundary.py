@@ -39,7 +39,11 @@ class PhaseBoundaryTests(TestCase):
         self.assertEqual(violations, [])
 
     def test_phase7_rag_and_later_not_started(self) -> None:
-        """Phase 7+ RAG/report/trading markers must remain absent."""
+        """RAG/report/trading/verification markers must remain absent.
+
+        Phase 7 Prompt 1 may introduce workflow foundation modules, but must not
+        introduce embeddings, vector stores, report generators, or Phase 8 engines.
+        """
         phase7_markers = (
             "verification_engine",
             "synthesis agent",
@@ -53,6 +57,21 @@ class PhaseBoundaryTests(TestCase):
         for path in PACKAGE.rglob("*.py"):
             text = path.read_text(encoding="utf-8").lower()
             for marker in phase7_markers:
+                if marker in text:
+                    violations.append(f"{path.relative_to(ROOT)}:{marker}")
+        self.assertEqual(violations, [])
+
+    def test_phase8_verification_not_started(self) -> None:
+        phase8_markers = (
+            "verification_engine",
+            "critic_workflow",
+            "confidence_rubric",
+            "reflection_loop",
+        )
+        violations: list[str] = []
+        for path in PACKAGE.rglob("*.py"):
+            text = path.read_text(encoding="utf-8").lower()
+            for marker in phase8_markers:
                 if marker in text:
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])

@@ -176,7 +176,15 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Acceptance criteria:** Plans select only needed capabilities; executions remain bounded and traceable; no paid model can be routed; failures produce transparent partial status; deterministic work bypasses models.
 
-**Authorized Phase 6 Prompt 1–4 completion status:** COMPLETE for Autonomous Research Planning & Dynamic Orchestration foundation (deterministic planner, task DAG, controlled synchronous execution through Phase 2–5 capabilities, budgets/retries/cancellation, evidence aggregation, `POST /research/plans` + `POST /research/execute`). Documented limitations remain: no LangGraph; no LLM planner; no plan persistence/resume; sequential execution only; external-call accounting is executor-invocation based; no investment synthesis; demo-scale fixtures. Phase 7 remains not started and awaits explicit owner authorization.
+**Authorized Phase 6 Prompt 1–4 completion status:** COMPLETE for Autonomous Research Planning & Dynamic Orchestration foundation (deterministic planner, task DAG, controlled synchronous execution through Phase 2–5 capabilities, budgets/retries/cancellation, evidence aggregation, `POST /research/plans` + `POST /research/execute`). Documented limitations remain: no LangGraph; no LLM planner; no plan persistence/resume; sequential execution only; external-call accounting is executor-invocation based; no investment synthesis; demo-scale fixtures.
+
+**Authorized Phase 7 Prompt 1 status:** OWNER APPROVED.
+
+**Authorized Phase 7 Prompt 2 status:** COMPLETE / OWNER APPROVED — hardening + structured Research Memory + watchlists/monitoring foundation + notification contracts + report-request contract + dashboard list API. RAG/vector memory remain deferred. Phase 8 remains not started.
+
+**Authorized Phase 7 Prompt 3 status:** OWNER APPROVED — final acceptance audit complete; no blocking gaps; ready for release checkpoint.
+
+**Authorized Phase 7 Prompt 4 status:** COMPLETE — release validation, documentation closure, Git checkpoint, push verified.
 
 **Out of scope:** Full evidence graph/vector memory, final critic loop, multilingual reports, MCP exposure.
 
@@ -186,9 +194,11 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Objective:** Persist governed claim/source relationships, enable hybrid retrieval, and support prior-research context.
 
-**Scope:** Evidence graph representation; source/chunk integrity; pgvector embeddings and hybrid retrieval; research/company/session memory; retention and freshness; “what changed?” comparison foundation.
+**Scope:** Evidence graph representation; source/chunk integrity; pgvector embeddings and hybrid retrieval; research/company/session memory; retention and freshness; "what changed?" comparison foundation.
 
-**Deliverables:** Versioned persistence schema, migration, retrieval pipeline, embedding adapter, filters/authorization boundaries, memory policies, comparison primitives, data lineage tooling.
+**Owner-authorized Prompt 1 amendment:** Before RAG/embeddings work, Prompt 1 establishes the autonomous workflow persistence/governance foundation (WorkflowId, lifecycle, checkpoint, approval, in-memory store, Phase 6 execution coordination). Workflow checkpoint state is **not** semantic Research Memory. RAG/vector memory remain later Phase 7 prompts.
+
+**Deliverables:** Versioned persistence schema, migration, retrieval pipeline, embedding adapter, filters/authorization boundaries, memory policies, comparison primitives, data lineage tooling. (Prompt 1 delivers workflow foundation only.)
 
 **Tests:** Migration/constraints, claim-evidence relationships, refutation/conflict edges, chunk traceability, hybrid retrieval relevance, isolation, freshness/retention, repeat-run and change-detection fixtures.
 
@@ -197,6 +207,10 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 **Out of scope:** Final verification scoring/critic loop, polished conversation, DOCX generation, MCP.
 
 **Dependencies:** Accepted Phase 6 workflow and stable evidence contracts.
+
+**Phase 7 completion status:** COMPLETE (Prompts 1–4).
+
+**Authorized Phase 8 Prompt 1 status:** NOT STARTED / AWAITING OWNER AUTHORIZATION.
 
 ## Phase 8 — Verification, Confidence & Reflection
 

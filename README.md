@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 6 — COMPLETE (Autonomous Research Planning & Dynamic Orchestration). Phase 0–5 are complete. Deterministic planning + controlled create-and-execute orchestration ship without LangGraph or an LLM planner (`POST /research/plans`, `POST /research/execute`). Phase 7+ (RAG, reports, Streamlit, MCP, trading) are **not started** and await owner authorization.
+> **Current status:** Phase 7 — COMPLETE (Prompts 1–4). Phase 0–7 complete. Phase 7 delivers autonomous research workflows foundation (workflow identity, lifecycle, checkpoints, human approval, structured memory, watchlists, notifications, dashboard API). RAG/vector DB, report rendering, Streamlit, MCP, trading remain deferred. Phase 8 is **NOT STARTED / AWAITING OWNER AUTHORIZATION**.
 
 ## Vision
 
@@ -120,8 +120,15 @@ Health checks:
 - `GET /news/events/snapshot?q=...` — news/event snapshot with evidence refs and conflicts (Phase 5; fixture-first)
 - `GET /industry/context/snapshot?q=...` — industry classification + competitor relationships (Phase 5; fixture-first)
 - `GET /regulatory/events/snapshot?q=...` — regulatory events with authority/allegation labels (Phase 5; fixture-first)
-- `POST /research/plans` — create deterministic research plan (Phase 6 Prompt 1; does not execute)
-- `POST /research/execute` — create-and-execute a bounded plan synchronously (Phase 6 Prompt 2; plans not persisted)
+- `POST /research/plans` — create deterministic research plan (Phase 6; does not execute)
+- `POST /research/execute` — create-and-execute a bounded plan synchronously (Phase 6; plans not persisted)
+- `POST /research/workflows` — create a persistent research workflow (Phase 7; in-memory store)
+- `GET /research/workflows` — bounded dashboard listing (`limit`/`offset`/`status_filter`/`company_id`)
+- `GET /research/workflows/{workflow_id}` — load workflow status/result
+- `POST /research/workflows/{workflow_id}/execute|pause|resume|cancel|approval` — govern execution
+- `GET /research/workflows/{workflow_id}/memory` — structured research-memory records
+- `POST /research/workflows/{workflow_id}/report` — report-request contract (rendering deferred)
+- `POST /watchlists`, `GET /watchlists/{id}`, `POST /watchlists/{id}/checks` — watchlist + explicit monitoring check
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

@@ -4,6 +4,42 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 7 Prompt 4 (release checkpoint)
+
+- Final validation: pytest 429 passed, Ruff, mypy, architecture boundaries, phase boundaries, OpenAPI 23 paths, Docker/Compose config.
+- Documentation closure: updated PROJECT_STATUS.md, CHANGELOG.md, PHASES.md, ROADMAP.md, DECISIONS.md, docs/development/README.md.
+- Single Phase 7 release commit with message `feat(phase-07): implement autonomous research workflows`.
+- Push to origin/main verified; local HEAD = origin/main; working tree clean.
+- Phase 7 marked COMPLETE; Phase 8 NOT STARTED / AWAITING OWNER AUTHORIZATION.
+- Deferred decisions frozen: durable persistence NO, LangGraph NO, RAG/vector NO, LLM planner NO.
+- OpenRouter/LLM/paid calls remain 0.
+
+### Phase 7 Prompt 3 (owner approved)
+
+- Final acceptance audit of Phase 7 across all gates (A–P): workflow identity, lifecycle, checkpoints, pause/resume, cancellation, human approval, research memory, watchlists, monitoring, notifications, report contract, dashboard API, Phase 6 integration, retry/budget, evidence/provenance, company identity, prompt injection, architecture, cost/model policy.
+- Phase 1–6 regression validated (health, ready, version, companies/resolve, market/financials/news/industry/regulatory snapshots, research plans/execute, workflow APIs).
+- All release gates pass: BLOCKING PHASE 7 GAPS = NO; READY FOR PHASE 7 RELEASE CHECKPOINT = YES.
+- No new implementation; adversarial verification and contract freeze only.
+
+### Phase 7 Prompt 2 (owner approved)
+
+- Hardened Prompt 1 workflows: adversarial lifecycle/approval/checkpoint/store tests; resume preserves attempt/external-call/evidence counters.
+- Added structured Research Memory (not RAG), watchlists + explicit monitoring checks, in-memory notification contracts, deferred report-request contract.
+- Dashboard-facing `GET /research/workflows` with bounds; cancel/memory/report routes; watchlist APIs.
+- ADR-044–046: keep in-memory persistence; structured memory ≠ vector RAG; LangGraph still not required.
+- OpenRouter/LLM/paid remain 0; Phase 8 not started; Phase 7 not marked complete; no Git commit.
+
+### Phase 7 Prompt 1 (owner approved)
+
+- Autonomous research workflow foundation vertical slice on top of Phase 6 (no RAG/embeddings).
+- Added `WorkflowId`, lifecycle transitions, checkpoints, human approval contracts, deterministic approval policy.
+- Added `CreateResearchWorkflow` / `ManageResearchWorkflow` coordinating Phase 6 plan + execute.
+- Added in-memory `ResearchWorkflowStorePort` adapter (explicitly not durable production persistence).
+- Extended `ExecutionControl.request_pause` so soft pause preserves PENDING tasks for safe resume.
+- Added workflow API: `POST/GET /research/workflows`, execute/pause/resume/approval.
+- ADR-043 records owner-authorized workflow-first Prompt 1 vs frozen PHASES.md RAG title.
+- OpenRouter/LLM/paid remain 0; Phase 8 not started; Phase 7 not marked complete; no Git commit (Prompt 4).
+
 ### Phase 6 completion checkpoint
 
 - Owner approved Phase 6 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
