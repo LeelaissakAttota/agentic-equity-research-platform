@@ -12,8 +12,10 @@ from financial_intelligence.domain.identity import (
     CompanyIdentity,
     CountryCode,
     ExchangeCode,
+    ListingIdentity,
     TickerSymbol,
 )
+from financial_intelligence.domain.market import MarketObservationSeries
 
 
 @runtime_checkable
@@ -75,3 +77,20 @@ class CompanyCatalogPort(Protocol):
         limit: int = 5,
     ) -> tuple[CompanyIdentity, ...]:
         """Return bounded deterministic fuzzy name candidates (never authoritative alone)."""
+
+
+@runtime_checkable
+class MarketDataPort(Protocol):
+    """Application-owned market observation boundary.
+
+    Concrete adapters (fixture / optional live HTTP) are selected in composition.
+    Implementations must never invent successful OHLCV when upstream data is missing.
+    """
+
+    def get_ohlcv_series(
+        self,
+        listing: ListingIdentity,
+        *,
+        company_id: CompanyId,
+    ) -> MarketObservationSeries | None:
+        """Return normalized OHLCV for a listing, or None when unavailable."""

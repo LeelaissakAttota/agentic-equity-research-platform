@@ -60,6 +60,51 @@ class Settings(BaseSettings):
     http_timeout_seconds: int = Field(default=30, alias="HTTP_TIMEOUT_SECONDS", ge=1, le=300)
     max_http_retries: int = Field(default=2, alias="MAX_HTTP_RETRIES", ge=0, le=10)
 
+    market_stale_after_hours: int = Field(
+        default=72,
+        alias="MARKET_STALE_AFTER_HOURS",
+        ge=1,
+        le=8760,
+    )
+    market_cache_ttl_seconds: int = Field(
+        default=300,
+        alias="MARKET_CACHE_TTL_SECONDS",
+        ge=1,
+        le=86400,
+    )
+    market_data_live_enabled: bool = Field(
+        default=False,
+        alias="MARKET_DATA_LIVE_ENABLED",
+    )
+    market_data_primary_provider: Literal["yahoo_finance_chart", "none"] = Field(
+        default="yahoo_finance_chart",
+        alias="MARKET_DATA_PRIMARY_PROVIDER",
+    )
+    market_data_timeout_seconds: int = Field(
+        default=15,
+        alias="MARKET_DATA_TIMEOUT_SECONDS",
+        ge=1,
+        le=120,
+    )
+    market_data_max_response_bytes: int = Field(
+        default=1_048_576,
+        alias="MARKET_DATA_MAX_RESPONSE_BYTES",
+        ge=1024,
+        le=10_485_760,
+    )
+    market_data_max_retries: int = Field(
+        default=2,
+        alias="MARKET_DATA_MAX_RETRIES",
+        ge=0,
+        le=5,
+    )
+    market_data_history_days: int = Field(
+        default=30,
+        alias="MARKET_DATA_HISTORY_DAYS",
+        ge=1,
+        le=365,
+    )
+
     @field_validator("allow_paid_models")
     @classmethod
     def paid_models_must_remain_disabled(cls, value: bool) -> bool:
@@ -112,6 +157,14 @@ class Settings(BaseSettings):
             "fallback_free_model_2": self.fallback_free_model_2 or None,
             "http_timeout_seconds": self.http_timeout_seconds,
             "max_http_retries": self.max_http_retries,
+            "market_stale_after_hours": self.market_stale_after_hours,
+            "market_cache_ttl_seconds": self.market_cache_ttl_seconds,
+            "market_data_live_enabled": self.market_data_live_enabled,
+            "market_data_primary_provider": self.market_data_primary_provider,
+            "market_data_timeout_seconds": self.market_data_timeout_seconds,
+            "market_data_max_response_bytes": self.market_data_max_response_bytes,
+            "market_data_max_retries": self.market_data_max_retries,
+            "market_data_history_days": self.market_data_history_days,
             "database_configured": bool(self.database_url.get_secret_value()),
             "redis_configured": bool(self.redis_url.get_secret_value()),
             "openrouter_key_configured": bool(self.openrouter_api_key.get_secret_value()),

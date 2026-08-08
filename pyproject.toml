@@ -21,6 +21,7 @@ dependencies = [
   "pydantic>=2.10,<3",
   "pydantic-settings>=2.7,<3",
   "uvicorn[standard]>=0.34,<1",
+  "tzdata>=2025.1; platform_system == 'Windows'",
 ]
 
 [project.optional-dependencies]

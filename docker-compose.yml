@@ -1,6 +1,7 @@
-# Phase 1 local foundation compose.
+# Local foundation compose (Phase 1–3 Prompt 1).
 # PostgreSQL and Redis are intentionally absent: those integrations are not
 # implemented yet. Do not interpret this file as claiming database readiness.
+# Market data is fixture-backed in-process; no live quote services are started.
 
 services:
   api:

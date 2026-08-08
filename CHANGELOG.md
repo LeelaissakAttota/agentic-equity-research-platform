@@ -4,6 +4,43 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 3 completion checkpoint
+
+- Owner approved Phase 3 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
+- Reconfirmed pytest (180 passed), Ruff, mypy, clean install, Docker/Compose, secret, paid-model, architecture, and Phase 4 absence gates.
+- Established the Phase 3 Git checkpoint on `main` with message `feat(phase-03): implement market intelligence`.
+- Phase 3 Market Intelligence scope is complete; documented limitations remain explicit.
+- Phase 4 remains not started and awaits explicit owner authorization.
+
+### Phase 3 Prompt 3 (owner approved)
+
+- Acceptance audit: fixture-only insufficient for truthful real-listing Market Intelligence.
+- Added optional Yahoo Finance chart HTTP adapter (`MARKET_DATA_LIVE_ENABLED`, default false) behind `MarketDataPort` (ADR-028).
+- Added bounded stdlib HTTP client (timeouts, retries, size limits, failure normalization).
+- Added explicit `DataOrigin` (`live`/`cached_live`/`fixture`/`unavailable`) on series and API.
+- NSE/BSE/US symbol mapping remains infrastructure-only; fixture never labeled as live.
+- Valuation multiples deferred pending fundamentals; holiday calendars remain documented limitations.
+- Offline fake-transport tests; CI/Docker remain secret-free and start without live mode.
+
+### Phase 3 Prompt 2 (owner approved)
+
+- Hardened OHLCV invariants (finite Decimals, integer share volume, AVAILABLE requires bars, currency consistency).
+- Hardened listing identity match checks; Reliance BSE no longer risk of NSE reuse; future `as_of` is DEGRADED/UNKNOWN.
+- Hardened fallback (primary exceptions, provenance) and cache (injectable clock, TTL boundary, lock, freshness≠cache age).
+- Clarified weekday helper as calendar-day only; simple return documented as ratio.
+- Expanded adversarial regression suite; no live providers/LLM introduced.
+
+### Phase 3 Prompt 1 (owner approved)
+
+- Added Market Intelligence domain: OHLCV observations, freshness/availability enums, exchange calendar helpers, and versioned deterministic calculations.
+- Added `MarketDataPort`, fixture-backed in-memory adapter, in-process TTL cache, and primary→secondary fallback (ADR-027).
+- Added `GetMarketSnapshot` requiring uniquely resolved company identity before attaching market data.
+- Added `GET /market/snapshot` with OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED/INVALID contracts and Tier-2 source metadata.
+- Added market freshness/cache settings (`MARKET_STALE_AFTER_HOURS`, `MARKET_CACHE_TTL_SECONDS`).
+- Added Windows-only `tzdata` runtime dependency so `zoneinfo` exchange calendars resolve IANA zones.
+- No live market providers, OpenRouter/LLM calls, Phase 4 filings, agents, Redis, or PostgreSQL were introduced.
+- Phase 3 remains IN PROGRESS; Prompt 1 is not a Git checkpoint.
+
 ### Added
 
 - Phase 0 project constitution, target architecture, roadmap, detailed phase gates, and initial ADRs.
@@ -114,5 +151,5 @@ No production research, provider, agent, model, database, retrieval, report, UI,
 
 ### Not implemented
 
-- All Phase 3–10 runtime research capabilities remain future work.
-- Live NSE/BSE/SEBI/SEC acquisition, market-data SDKs, OpenRouter research, agents, RAG, reports, Streamlit, MCP, and trading remain unimplemented.
+- Phase 4–10 runtime research capabilities remain future work.
+- Alpha Vantage/Finnhub wiring, Redis/PostgreSQL market stores, full holiday calendars, full corporate-action engines, valuation multiples needing fundamentals, filings, OpenRouter research, agents, RAG, reports, Streamlit, MCP, and trading remain unimplemented.

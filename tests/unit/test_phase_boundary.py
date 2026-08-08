@@ -20,7 +20,7 @@ FORBIDDEN_CONTENT_MARKERS = (
 
 
 class PhaseBoundaryTests(TestCase):
-    """Confirm Phase 3+ research intelligence capabilities were not introduced."""
+    """Confirm Phase 4+ research/agent capabilities were not introduced early."""
 
     def test_no_forbidden_runtime_dependencies(self) -> None:
         with (ROOT / "pyproject.toml").open("rb") as handle:
@@ -35,5 +35,15 @@ class PhaseBoundaryTests(TestCase):
             text = path.read_text(encoding="utf-8").lower()
             for marker in FORBIDDEN_CONTENT_MARKERS:
                 if marker.lower() in text:
+                    violations.append(f"{path.relative_to(ROOT)}:{marker}")
+        self.assertEqual(violations, [])
+
+    def test_phase4_filing_intelligence_not_started(self) -> None:
+        filing_markers = ("sec edgar", "10-k parser", "income_statement", "balance_sheet")
+        violations: list[str] = []
+        for path in PACKAGE.rglob("*.py"):
+            text = path.read_text(encoding="utf-8").lower()
+            for marker in filing_markers:
+                if marker in text:
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])

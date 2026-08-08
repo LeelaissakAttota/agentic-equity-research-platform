@@ -122,6 +122,8 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Acceptance criteria:** Calculations are reproducible and code-derived; every figure has as-of/source context; stale/conflicting values are visible; optional provider outage degrades safely.
 
+**Authorized Phase 3 Prompt 1–4 completion status:** COMPLETE for Market Intelligence foundation (fixture + optional Yahoo chart live path, deterministic calculations, freshness/cache/fallback, explicit data origin). Documented limitations remain: live mode optional/default off; Yahoo is Tier-2 not Tier-1; no full holiday calendar; no full corporate-action engine; valuation multiples deferred to Phase 4 fundamentals; multi-provider conflict comparison beyond fallback provenance is limited.
+
 **Out of scope:** Financial statements, filing parsing, broad qualitative research, autonomous orchestration, report generation.
 
 **Dependencies:** Accepted Phase 2 identities, provider abstractions, and source provenance.

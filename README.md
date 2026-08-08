@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 2 — COMPLETE (authorized identity/source-foundation scope). Phase 0–1 are complete. The repository includes application foundation plus deterministic company identity/resolution and source-metadata contracts over a small local reference catalog (not market coverage; not live providers). Phase 3 is **not started** and awaits owner authorization. The repository does **not** contain live market/filing providers, research agents, retrieval, reports, Streamlit research UI, MCP, or trading.
+> **Current status:** Phase 3 — COMPLETE. Phase 0–2 are complete. The repository includes application foundation, company identity/resolution, source-metadata contracts, and Market Intelligence (`GET /market/snapshot`, deterministic calculations, fixture adapters, optional opt-in Yahoo chart live mode default OFF with explicit data origin). Phase 4 Financial & Filing Intelligence is **not started** and awaits owner authorization. Filings, research agents, retrieval, reports, Streamlit, MCP, and trading are **not** implemented.
 
 ## Vision
 
@@ -61,13 +61,14 @@ The platform supplies structured intelligence only. Broker/MT5 orders, trading c
 
 ## Implemented versus planned
 
-| Implemented in Phase 0–1 foundation | Planned in later phases |
+| Implemented in Phase 0–3 Prompt 1 | Planned in later phases |
 |---|---|
-| Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Company resolution, providers, and financial research capabilities |
+| Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Live market/filing providers and broader research capabilities |
 | Typed settings, FastAPI factory, health/readiness/version, correlation, structured logging, API errors | LangGraph orchestration, OpenRouter calls, PostgreSQL/pgvector, Redis and research memory |
-| Research Run ID primitive, composition root, Docker/CI baselines, package-health and foundation tests | Streamlit, multilingual synthesis, charts and `.docx` report generation |
+| Company identity/resolution + source metadata foundation | Financial/filing intelligence, news/events, verification/critic, synthesis |
+| Fixture + optional opt-in Yahoo chart market observations, deterministic metrics, `GET /market/snapshot` with data origin | Streamlit, multilingual synthesis, charts and `.docx` report generation |
 
-No planned runtime capability is represented as working today. See `PROJECT_STATUS.md` for the authoritative gate.
+No unimplemented runtime capability is represented as working today. See `PROJECT_STATUS.md` for the authoritative gate.
 
 ## Architecture reference
 

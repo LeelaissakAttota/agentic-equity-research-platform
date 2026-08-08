@@ -213,3 +213,19 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 **Rationale:** Architecture distinguishes issuer, security/share class, and listing, and explicitly contemplates ADRs versus primary listings and dual listings. Enforcing exactly one primary listing per company would break multi-class issuers. Allowing multiple primaries on the same security would make “primary” meaningless for dual-listed equities (e.g. NSE+BSE).
 
 **Consequences:** Domain validation rejects multiple primaries on one security; fixture dual listings mark one primary; full exchange/home-market policy for live masters remains future work.
+
+## ADR-027 — Fixture-first Phase 3 market adapters with deterministic calculations
+
+**Decision:** Phase 3 Prompt 1 ships Market Intelligence through application-owned `MarketDataPort`, an in-memory/fixture OHLCV adapter with optional in-process TTL cache and primary→secondary fallback, and a versioned deterministic calculation library. Live Yahoo/Alpha Vantage/Finnhub clients, Redis, and PostgreSQL market stores are deferred until separately authorized. Market snapshots require uniquely `RESOLVED` company identity before attaching observations.
+
+**Rationale:** Frozen Phase 3 requires traceable market datasets and reproducible calculations, not premature live-provider cost or agent orchestration. Fixture adapters preserve offline tests, fail-closed paid-model policy, and false-positive company safety from Phase 2.
+
+**Consequences:** `GET /market/snapshot` returns structured OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED outcomes with Tier-2 `SourceMetadata`; stale/missing data is visible; calculations never run in an LLM; live quote acquisition remains future work.
+
+## ADR-028 — Optional Yahoo chart live adapter with explicit data origin
+
+**Decision:** Phase 3 Prompt 3 adds an optional, key-free Yahoo Finance chart HTTP adapter behind `MarketDataPort`, enabled only when `MARKET_DATA_LIVE_ENABLED=true`. Default remains offline fixture mode. Observations carry explicit `DataOrigin` (`live` / `cached_live` / `fixture` / `unavailable`). Composition is cache → (optional live primary) → fixture secondary. Provider symbol mapping (e.g. `RELIANCE.NS` / `.BO`) stays in infrastructure and never becomes canonical identity. Valuation multiples requiring fundamentals remain deferred to Phase 4. Exchange holiday calendars and full corporate-action engines remain documented limitations. Optional live providers do not affect `/ready`.
+
+**Rationale:** Frozen Phase 3 acceptance requires replaceable adapters and safe provider degradation. Fixture-only data cannot truthfully claim usable market intelligence for arbitrary real India/US listings. Yahoo chart HTTP is $0/no-key, allowlisted, and tested via fake transports so CI stays offline.
+
+**Consequences:** Live mode is opt-in; fixture data must never be labeled live; Alpha Vantage/Finnhub remain unused optional keys; multi-provider conflict comparison beyond fallback provenance remains limited; Yahoo TOS/reliability risk is accepted as optional Tier-2 structured data, not Tier-1 exchange authority.
