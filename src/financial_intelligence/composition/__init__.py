@@ -1,4 +1,4 @@
-"""Composition root: the only place that wires concrete Phase 1 components."""
+"""Composition root: wires concrete adapters to application ports."""
 
 from __future__ import annotations
 
@@ -9,21 +9,26 @@ from financial_intelligence.application.contracts import (
     ApplicationMetadata,
     ReadinessCheckResult,
 )
+from financial_intelligence.application.ports import CompanyCatalogPort
 from financial_intelligence.application.readiness import ReadinessRegistry
+from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.config.settings import Settings
+from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
 
 
 @dataclass(slots=True)
 class AppContainer:
-    """Minimal Phase 1 composition container."""
+    """Application composition container."""
 
     settings: Settings
     readiness: ReadinessRegistry
     metadata: ApplicationMetadata
+    company_catalog: CompanyCatalogPort
+    resolve_company: ResolveCompany
 
 
 def build_container(settings: Settings | None = None) -> AppContainer:
-    """Wire settings, metadata, and readiness without future providers."""
+    """Wire settings, readiness, and company-resolution foundation."""
 
     resolved = settings if settings is not None else Settings()
     metadata = ApplicationMetadata(
@@ -40,4 +45,12 @@ def build_container(settings: Settings | None = None) -> AppContainer:
             detail="application foundation loaded",
         ),
     )
-    return AppContainer(settings=resolved, readiness=readiness, metadata=metadata)
+    catalog: CompanyCatalogPort = InMemoryCompanyCatalog()
+    resolve_company = ResolveCompany(catalog)
+    return AppContainer(
+        settings=resolved,
+        readiness=readiness,
+        metadata=metadata,
+        company_catalog=catalog,
+        resolve_company=resolve_company,
+    )

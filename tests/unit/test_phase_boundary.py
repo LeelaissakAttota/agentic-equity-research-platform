@@ -20,7 +20,7 @@ FORBIDDEN_CONTENT_MARKERS = (
 
 
 class PhaseBoundaryTests(TestCase):
-    """Confirm Phase 2+ research capabilities were not introduced."""
+    """Confirm Phase 3+ research intelligence capabilities were not introduced."""
 
     def test_no_forbidden_runtime_dependencies(self) -> None:
         with (ROOT / "pyproject.toml").open("rb") as handle:

@@ -9,7 +9,7 @@ from fastapi import FastAPI
 
 from financial_intelligence.api.errors import register_exception_handlers
 from financial_intelligence.api.middleware import CorrelationIdMiddleware
-from financial_intelligence.api.routes import health
+from financial_intelligence.api.routes import companies, health
 from financial_intelligence.composition import AppContainer, build_container
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.observability.logging import configure_logging, get_logger
@@ -29,7 +29,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         # Extension points for PostgreSQL, Redis, providers, and research
-        # services belong here in later phases. Phase 1 must not connect.
+        # services belong here in later phases. Phase 2 uses in-memory catalog only.
         logger.info(
             "application_startup",
             extra=resolved_container.settings.safe_log_context(),
@@ -50,4 +50,5 @@ def create_app(
     application.add_middleware(CorrelationIdMiddleware)
     register_exception_handlers(application)
     application.include_router(health.router)
+    application.include_router(companies.router)
     return application

@@ -78,3 +78,25 @@ class ArchitectureBoundaryTests(TestCase):
                 ):
                     violations.append(f"{path.name}:{name}")
         self.assertEqual(violations, [])
+
+    def test_resolve_company_depends_on_port_not_concrete_catalog(self) -> None:
+        resolve_path = APPLICATION_ROOT / "resolve_company.py"
+        imports = _imported_modules(resolve_path)
+        self.assertTrue(
+            any(
+                name.endswith("ports") or name == "financial_intelligence.application.ports"
+                for name in imports
+            )
+            or "financial_intelligence.application.ports" in imports
+        )
+        self.assertFalse(
+            any("infrastructure" in name for name in imports),
+            msg="ResolveCompany must not import infrastructure adapters",
+        )
+        self.assertFalse(
+            any("InMemoryCompanyCatalog" in resolve_path.read_text(encoding="utf-8") for _ in [0]),
+        )
+        source = resolve_path.read_text(encoding="utf-8")
+        self.assertIn("CompanyCatalogPort", source)
+        self.assertNotIn("InMemoryCompanyCatalog", source)
+        self.assertNotIn("build_reference_companies", source)

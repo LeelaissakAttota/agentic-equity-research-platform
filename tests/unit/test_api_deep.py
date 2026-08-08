@@ -89,7 +89,10 @@ class ApiContractDeepTests(TestCase):
     def test_openapi_and_route_surface(self) -> None:
         app = create_app(settings=_settings())
         paths = set(app.openapi()["paths"])
-        self.assertEqual(paths, {"/health", "/ready", "/version"})
+        self.assertEqual(
+            paths,
+            {"/health", "/ready", "/version", "/companies/resolve"},
+        )
         self.assertEqual(
             app.openapi()["info"]["title"],
             "Agentic Financial Intelligence & Equity Research Platform",
@@ -97,7 +100,6 @@ class ApiContractDeepTests(TestCase):
         self.assertEqual(app.openapi()["info"]["version"], "0.1.0")
         forbidden = {
             "/research",
-            "/company",
             "/market",
             "/news",
             "/filings",

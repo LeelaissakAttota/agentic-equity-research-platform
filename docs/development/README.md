@@ -1,6 +1,6 @@
 # Development Notes
 
-## Local Phase 1 foundation
+## Local Phase 1–2 foundation
 
 ```powershell
 Copy-Item .env.example .env
@@ -17,8 +17,13 @@ Foundation routes:
 - `GET /health` — process liveness (`200`)
 - `GET /ready` — foundation readiness (`200` ready, `503` not ready)
 - `GET /version` — service metadata
+- `GET /companies/resolve?q=Apple` — deterministic company resolution against the local in-memory reference catalog (`200` for RESOLVED/AMBIGUOUS/NOT_FOUND; `400` invalid query; framework `422` for some parameter validation failures)
 
-Docker (application only; PostgreSQL/Redis are not implemented):
+Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
+
+The reference catalog is a small offline fixture only—not complete market coverage and not live data.
+
+Docker (application only; PostgreSQL/Redis and live providers are not implemented):
 
 ```powershell
 docker compose build

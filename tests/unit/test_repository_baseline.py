@@ -62,8 +62,7 @@ FORBIDDEN_DEPENDENCY_FRAGMENTS = (
     "finnhub",
     "alpha-vantage",
 )
-FORBIDDEN_PHASE2_MODULE_NAMES = {
-    "company_resolver.py",
+FORBIDDEN_PHASE3PLUS_MODULE_NAMES = {
     "nse.py",
     "bse.py",
     "sebi.py",
@@ -150,13 +149,13 @@ class RepositoryBaselineTests(TestCase):
 
         self.assertEqual(actual_hash, EXPECTED_ARCHITECTURE_SHA256)
 
-    def test_phase_two_runtime_modules_are_absent(self) -> None:
-        """Phase 2+ research/provider modules must not exist yet."""
+    def test_phase_three_plus_runtime_modules_are_absent(self) -> None:
+        """Live providers and Phase 3+ research modules must not exist yet."""
 
         package_root = REPOSITORY_ROOT / "src" / "financial_intelligence"
         present = {
             path.name
             for path in package_root.rglob("*.py")
-            if path.name in FORBIDDEN_PHASE2_MODULE_NAMES
+            if path.name in FORBIDDEN_PHASE3PLUS_MODULE_NAMES
         }
         self.assertEqual(present, set())

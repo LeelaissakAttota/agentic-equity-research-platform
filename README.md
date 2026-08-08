@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 1 — COMPLETE. Phase 0 is complete. The repository includes a runnable FastAPI application foundation (configuration, health/readiness, correlation, logging, Research Run ID primitive, Docker/CI baselines). Phase 2 is **not started** and awaits owner authorization. The repository does **not** yet contain research agents, provider clients, retrieval, reports, or a research UI.
+> **Current status:** Phase 2 — COMPLETE (authorized identity/source-foundation scope). Phase 0–1 are complete. The repository includes application foundation plus deterministic company identity/resolution and source-metadata contracts over a small local reference catalog (not market coverage; not live providers). Phase 3 is **not started** and awaits owner authorization. The repository does **not** contain live market/filing providers, research agents, retrieval, reports, Streamlit research UI, MCP, or trading.
 
 ## Vision
 
@@ -97,6 +97,7 @@ Work proceeds only through the approved phases in [ROADMAP.md](ROADMAP.md) and [
 - `src` package layout
 - pytest test layout
 - Phase 1 runtime dependencies are limited to FastAPI, Pydantic, pydantic-settings, and Uvicorn
+- Phase 2 Prompt 1 adds no new runtime dependencies (stdlib fuzzy matching only)
 
 Create a local environment file from `.env.example`; never commit `.env` or real credentials.
 
@@ -112,6 +113,7 @@ Health checks:
 - `GET /health` — process liveness
 - `GET /ready` — foundation readiness
 - `GET /version` — service metadata
+- `GET /companies/resolve?q=...` — local deterministic company resolution (Phase 2 Prompt 1)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

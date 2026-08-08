@@ -96,7 +96,15 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Tests:** Known and ambiguous company resolution, ticker collisions, exchange/country validation, provider timeouts/rate limits/malformed responses, content limits, provenance completeness, offline fixtures.
 
-**Acceptance criteria:** Representative NSE/BSE/NASDAQ/NYSE identities resolve or return actionable ambiguity; authoritative sources are prioritized; provider failures do not fabricate results; source metadata is traceable.
+**Acceptance criteria:**
+
+- [x] Representative NSE/BSE/NASDAQ/NYSE identities resolve or return actionable ambiguity (fixture-backed offline resolver).
+- [x] Source metadata is traceable (SourceMetadata + authority tiers + entity linkage).
+- [~] Authoritative sources are prioritized — **DEFERRED BY DESIGN** for live acquisition; tier contracts exist (ADR-019) without live fetch/prioritization runtime.
+- [~] Provider failures do not fabricate results — **DEFERRED BY DESIGN**; no live providers in authorized Phase 2 Prompt 1–4 scope.
+- [x] Git checkpoint created and pushed under Phase 2 Prompt 4 authorization for the identity/source-foundation scope.
+
+**Authorized Phase 2 Prompt 1–4 completion status:** COMPLETE for identity + source-foundation contracts. Live provider acquisition, HTTP rate-limit stacks, discovery prototypes, and complete market universes remain deferred future work and must not be treated as implemented.
 
 **Out of scope:** Full market analysis, statement extraction, autonomous plans, embeddings, synthesis, reports.
 

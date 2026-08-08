@@ -80,6 +80,39 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 No production research, provider, agent, model, database, retrieval, report, UI, MCP or trading functionality was added.
 
+### Phase 2 Prompt 1 (unreleased)
+
+- Added provider-neutral company/security/listing identity domain with stable UUIDv4 IDs.
+- Added deterministic company resolution (catalog port, in-memory reference dataset, ResolveCompany use case).
+- Added `GET /companies/resolve` over local fixtures with RESOLVED/AMBIGUOUS/NOT_FOUND/INVALID outcomes.
+- Added source metadata foundation (authority tiers, source types, URL validation, company linkage).
+- No live provider network adapters, OpenRouter calls, or Phase 3+ research capabilities were introduced.
+
+### Phase 2 Prompt 2 hardening (unreleased)
+
+- Fixed false-positive RESOLVED when an explicit exchange constraint conflicted with later alias/name matching (e.g. RELIANCE + NASDAQ).
+- Enforced explicit ticker-parameter misses without unconstrained name fallthrough.
+- Rejected duplicate catalog IDs and duplicate exchange+ticker listings at adapter init.
+- Hardened cross-type ID inequality, resolution-result invariants, control-character handling, and source linkage rules.
+- Added adversarial collision, fuzzy candidate-only, API ambiguity, and import side-effect tests.
+
+### Phase 2 Prompt 3 stabilization (unreleased)
+
+- Froze identity/resolution/source contracts for Prompt 4 checkpoint readiness.
+- Recorded ADR-026: at most one primary listing per security; companies may have multiple primaries across securities.
+- Added Alphabet/Reliance/false-positive/serialization/API contract-freeze regressions.
+- Documented HTTP semantics for `/companies/resolve` and reference-dataset non-coverage.
+- Revalidated Docker/Compose/CI alignment without live providers.
+
+### Phase 2 completion checkpoint
+
+- Owner approved Phase 2 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
+- Reconfirmed pytest (126 passed), Ruff, mypy, clean install, Docker/Compose, secret, paid-model, architecture, and Phase 3 absence gates.
+- Established the Phase 2 Git checkpoint on `main` with message `feat(phase-02): establish company identity and source foundation`.
+- Phase 2 identity/source-foundation scope is complete; live provider acquisition criteria remain deferred by design.
+- Phase 3 remains not started and awaits explicit owner authorization.
+
 ### Not implemented
 
-- All Phase 2–10 runtime research capabilities remain future work.
+- All Phase 3–10 runtime research capabilities remain future work.
+- Live NSE/BSE/SEBI/SEC acquisition, market-data SDKs, OpenRouter research, agents, RAG, reports, Streamlit, MCP, and trading remain unimplemented.

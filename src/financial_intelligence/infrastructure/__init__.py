@@ -1,5 +1,5 @@
-"""Infrastructure package reserved for adapters implementing application ports.
+"""Infrastructure package for adapters implementing application ports.
 
-Phase 1 does not ship concrete PostgreSQL/Redis adapters. Keep this package free
-of pretend provider behavior.
+Phase 2 ships an in-memory company catalog adapter only. Live provider and
+database adapters remain deferred.
 """

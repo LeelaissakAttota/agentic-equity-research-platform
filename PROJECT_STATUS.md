@@ -3,123 +3,74 @@
 ## Current gate
 
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
-- **Active phase:** Phase 1 — COMPLETE
-- **Active prompt:** Phase 1 Prompt 4 — COMPLETED
-- **State:** Phase 0 complete; Phase 1 Prompts 1–4 complete; Phase 1 foundation committed and synchronized
-- **Next permitted work:** Phase 2 only after explicit owner authorization
+- **Active phase:** Phase 2 — COMPLETE (authorized identity/source-foundation scope)
+- **Active prompt:** Phase 2 Prompt 4 — COMPLETED
+- **State:** Phase 0–2 complete for authorized scopes; Phase 2 Git checkpoint synchronized
+- **Next permitted work:** Phase 3 only after explicit owner authorization
 - **Production readiness:** Not production-ready
 - **Phase 1:** COMPLETE
-- **Phase 2:** NOT STARTED / AWAITING OWNER AUTHORIZATION
+- **Phase 2:** COMPLETE (identity + source-foundation foundation)
+- **Phase 3:** NOT STARTED / AWAITING OWNER AUTHORIZATION
 
 ## Implemented capability
 
-Phase 0 constitution remains in force. Phase 1 foundation provides:
+Phase 0–1 remain in force. Phase 2 provides:
 
-- typed pydantic-settings configuration with fail-closed paid-model policy;
-- FastAPI application factory, lifespan hooks, health/readiness/version endpoints;
-- correlation IDs, structured secret-safe logging (nested redaction; one-time process logging config), and baseline security headers;
-- stable API error contract with sanitized correlation fallback;
-- composition-root wiring and infrastructure-neutral persistence/cache ports;
-- readiness registry that fails closed on probe exceptions and uses stable check ordering;
-- domain `ResearchRunId` UUIDv4 primitive;
-- Dockerfile, Compose app-only foundation with configurable host port, and baseline GitHub Actions CI;
-- Phase 1 unit/deep tests for configuration, API, concurrency, logging, architecture, and phase boundaries.
+- canonical company/security/listing identity (UUIDv4 IDs; ADR-024);
+- typed aliases and provider-identifier metadata (non-canonical);
+- country/exchange/currency/ticker value objects and deterministic normalization;
+- `CompanyCatalogPort` + in-memory catalog with duplicate rejection;
+- small India/US reference fixture (not market coverage);
+- deterministic `ResolveCompany` with explicit constraints and ticker-first precedence (ADR-025);
+- at-most-one primary listing per security (ADR-026);
+- false-positive protection (AMBIGUOUS/NOT_FOUND preferred over wrong RESOLVED);
+- source metadata foundation (tiers/types/URL safety/listing→security→company linkage);
+- `GET /companies/resolve` (RESOLVED/AMBIGUOUS/NOT_FOUND → 200; INVALID → 400).
 
-## Explicitly not implemented
+## Explicitly not implemented / deferred by design
 
-No company resolver, NSE/BSE/SEBI/SEC clients, market/financial/filing/news providers, OpenRouter runtime calls, model router, LangGraph workflows, RAG/embeddings/pgvector research operations, research memory, verification/critic/synthesis, Word report generation, Streamlit UI, MCP server, JARVIS integration, or trading/MT5 execution exists.
+Live NSE/BSE/SEBI/SEC acquisition, Yahoo/Alpha Vantage/Finnhub runtimes, news/filing/financial ingestion, HTTP provider rate-limit acquisition stack, authoritative-source discovery prototypes, PostgreSQL company persistence/indexing, complete India/US company universe, OpenRouter/LLM research, research agents, LangGraph, RAG/embeddings, verification/critic/synthesis, Word reports, Streamlit UI, MCP, JARVIS, and trading/MT5 execution are **not** implemented.
 
-## Phase 0 prompt progress
+Broader PHASES.md live-provider criteria under Phase 2 remain **DEFERRED BY DESIGN** pending separate owner authorization for provider-acquisition work.
 
-- **Prompt 1:** Approved
-- **Prompt 2:** Approved
-- **Prompt 3:** Approved
-- **Prompt 4:** Completed
+## Phase progress
 
-Phase 0 is **COMPLETE**.
-
-## Phase 1 prompt progress
-
-- **Prompt 1:** Owner approved
-- **Prompt 2:** Owner approved
-- **Prompt 3:** Owner approved
-- **Prompt 4:** Completed (final validation, documentation closure, commit, push, sync)
-
-Phase 1 is **COMPLETE**.
-
-## Phase 1 Prompt 1 validation record
-
-Validated on 2026-08-08 in the project-local Python 3.12.10 environment:
-
-- pytest: 35 passed, 0 failed, 0 skipped;
-- Ruff lint and format: passed;
-- strict mypy (including pydantic plugin): passed;
-- paid-model fail-closed configuration and secret-safe logging: passed;
-- architecture boundary and Phase 2 absence scans: passed;
-- no commit or push performed (reserved for Phase 1 Prompt 4).
-
-## Phase 1 Prompt 2 validation record
-
-Validated on 2026-08-08 after defect hardening:
-
-- pytest: 57 passed, 0 failed, 0 skipped;
-- Ruff lint and format: passed;
-- strict mypy: passed;
-- Docker rebuild and smoke (`/health`, `/ready`, `/version`) on alternate host port: passed;
-- `docker compose config` and configurable `API_HOST_PORT`: passed;
-- isolated clean virtualenv install/import: passed;
-- secret scan clear; `.env` absent; paid-model fail-closed retained; no OpenRouter calls;
-- Phase 2 implementation absent;
-- no commit or push performed.
-
-## Phase 1 Prompt 3 stabilization record
-
-Validated on 2026-08-08 as a Phase 1 release-candidate audit:
-
-- pytest: 60 passed, 0 failed, 0 skipped;
-- Ruff lint/format and strict mypy: passed;
-- `git diff --check`: passed;
-- architecture layer audit: no domain/application reverse dependencies;
-- Docker rebuild + smoke on host port `18083`: passed; container logs secret-clean;
-- Compose config + `API_HOST_PORT` override: passed;
-- clean disposable venv install/import/`create_app`: passed;
-- secret/phase-boundary scans: clear;
-- ADR-023 recorded for deferred `httpx`→`httpx2` TestClient migration;
-- logging one-time configuration fixed so repeated `create_app()` does not wipe handlers;
-- no commit or push performed.
-
-Installed audit sample: Python 3.12.10; FastAPI 0.141.1; Starlette 1.4.1; Pydantic 2.13.4; pydantic-settings 2.15.0; Uvicorn 0.52.1; httpx 0.28.1.
-
-## Phase 1 Prompt 4 release checkpoint
-
-Validated on 2026-08-08 as the Phase 1 documentation-closure and Git release checkpoint:
-
-- full pytest suite: 60 passed, 0 failed, 0 skipped;
-- Ruff lint/format, strict mypy, `git diff --check`: passed;
-- API smoke (`/health`, `/ready`, `/version`) and OpenAPI surface limited to those routes: passed;
-- Docker rebuild + smoke on host port `18084`: passed; non-root runtime; secret-clean logs;
-- Compose config + `API_HOST_PORT`: passed; app-only (no PostgreSQL/Redis/provider services);
-- clean disposable venv install/import/`create_app`: passed;
-- secret, paid-model fail-closed, architecture, and Phase 2 absence scans: passed;
-- documentation closed to match foundation-only reality;
-- Phase 1 Git checkpoint created and pushed to the owner-approved remote.
+- Phase 0: COMPLETE
+- Phase 1: COMPLETE (`55d058d05794c54139c1d0a023b83cd4a63d0dd4`)
+- Phase 2 Prompt 1: Owner approved
+- Phase 2 Prompt 2: Owner approved
+- Phase 2 Prompt 3: Owner approved
+- Phase 2 Prompt 4: Completed (final validation, docs closure, commit, push, sync)
+- Phase 2: COMPLETE for authorized identity/source-foundation scope
+- Phase 3: NOT STARTED / AWAITING OWNER AUTHORIZATION
 
 ## Phase checkpoints
 
-- Phase 0 commit: `470082b338837e2e48e6584b70aef51aaf96b29e`
-  - Message: `chore(phase-00): bootstrap financial intelligence platform`
-- Phase 1 commit: recorded at Prompt 4 completion (message `feat(phase-01): establish core application foundation`)
+- Phase 0: `470082b338837e2e48e6584b70aef51aaf96b29e`
+- Phase 1: `55d058d05794c54139c1d0a023b83cd4a63d0dd4`
+- Phase 2: recorded at Prompt 4 completion (`feat(phase-02): establish company identity and source foundation`)
 - Remote: `origin` → `git@github.com:LeelaissakAttota/agentic-equity-research-platform.git`
 
-## Known warnings and deferred decisions
+## Phase 2 Prompt 4 release checkpoint
 
-- Starlette 1.4+ deprecates TestClient use of plain `httpx` in favor of `httpx2` (ADR-023). Filter retained; migration deferred.
-- Free model identifiers remain blank and deployment-configured.
-- Full lockfile strategy remains deferred; direct dependency ranges are constrained but not fully pinned.
-- PostgreSQL/Redis/OpenRouter adapters remain future work.
-- UUIDv4 Research Run identity exists; research workflow objects remain Phase 6+.
-- MIT bootstrap license may still be changed by the owner before external distribution.
+Validated on 2026-08-08:
+
+- pytest: 126 passed, 0 failed, 0 skipped;
+- Ruff lint/format, mypy, `git diff --check`: passed;
+- false-positive / identity / source / API / architecture gates: passed;
+- clean install + OpenAPI: passed;
+- Docker build/smoke (Apple/GOOGL/Reliance) + Compose: passed;
+- secret scan clear; paid-model fail-closed; OpenRouter/LLM calls = 0;
+- documentation closed with deferred live-provider scope explicit;
+- Phase 2 Git checkpoint created and pushed.
+
+## Known limitations
+
+- Reference catalog is a small offline fixture, not a security master.
+- Live source acquisition and PostgreSQL persistence remain future authorized work.
+- Fuzzy SequenceMatcher scores are similarity ratios, not probabilities.
+- ADR-023 httpx2 migration remains deferred.
 
 ## Change protocol
 
-Update this file whenever the active phase/prompt, implemented capabilities, gate evidence, blockers, or owner approvals change. Never mark a later phase active merely because planning text exists.
+Update this file whenever the active phase/prompt, implemented capabilities, gate evidence, blockers, or owner approvals change.

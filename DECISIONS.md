@@ -189,3 +189,27 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 **Rationale:** Starlette 1.4+ prefers `httpx2` for `TestClient` and deprecates plain `httpx`, but the current suite remains functionally correct with `httpx`. Prompt 3 forbids installing `httpx2` merely to silence the warning, and the warning does not indicate a failing compatibility break today.
 
 **Consequences:** CI/local pytest remain quiet via a message-scoped filter only; runtime application dependencies are unchanged; a future ADR may adopt `httpx2` as the supported TestClient client.
+
+## ADR-024 — Stable UUIDv4 company/security/listing identity
+
+**Decision:** Use opaque UUIDv4 values as canonical `CompanyId`, `SecurityId`, and `ListingId`. Legal names, tickers, aliases, and provider symbols are mutable attributes and never redefine the entity.
+
+**Rationale:** Matches the frozen Company Identity contract: ticker alone is not globally unique; renames and provider syntax must not break cross-run linkage; UUIDv4 is already the Research Run identity pattern (ADR-018).
+
+**Consequences:** Resolution returns structured ambiguity instead of guessing; provider identifiers remain scoped side data; Phase 2 Prompt 1 may ship an in-memory catalog without PostgreSQL persistence.
+
+## ADR-025 — Explicit resolution constraints and ticker-first precedence
+
+**Decision:** Explicit `country` / `exchange` / `ticker` query constraints must never be ignored. A token that looks like a ticker is matched as a ticker before alias/name matching. Fuzzy matches may only produce AMBIGUOUS candidates.
+
+**Rationale:** Prompt 2 adversarial validation found false-positive RESOLVED outcomes when alias/name fallthrough bypassed an explicit exchange miss. False-positive company identity is worse than NOT_FOUND/AMBIGUOUS.
+
+**Consequences:** Contradictory constraints return NOT_FOUND; ticker-vs-alias collisions resolve to the listing owner when the token is ticker-like; catalog adapters must not silently overwrite duplicate canonical IDs.
+
+## ADR-026 — At most one primary listing per security
+
+**Decision:** Within a single `SecurityIdentity`, at most one `ListingIdentity` may set `is_primary=True`. Zero primary listings are allowed. Companies may have multiple primary listings across different securities (for example Alphabet Class A and Class C).
+
+**Rationale:** Architecture distinguishes issuer, security/share class, and listing, and explicitly contemplates ADRs versus primary listings and dual listings. Enforcing exactly one primary listing per company would break multi-class issuers. Allowing multiple primaries on the same security would make “primary” meaningless for dual-listed equities (e.g. NSE+BSE).
+
+**Consequences:** Domain validation rejects multiple primaries on one security; fixture dual listings mark one primary; full exchange/home-market policy for live masters remains future work.

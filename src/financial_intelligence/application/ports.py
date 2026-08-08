@@ -1,12 +1,19 @@
 """Infrastructure-neutral ports owned by the application layer.
 
-Concrete adapters are wired only in the composition root. Phase 1 does not
-provide working database or cache adapters.
+Concrete adapters are wired only in the composition root.
 """
 
 from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
+
+from financial_intelligence.domain.identity import (
+    CompanyId,
+    CompanyIdentity,
+    CountryCode,
+    ExchangeCode,
+    TickerSymbol,
+)
 
 
 @runtime_checkable
@@ -23,3 +30,48 @@ class CachePort(Protocol):
 
     def ping(self) -> bool:
         """Return True when the cache dependency can accept work."""
+
+
+@runtime_checkable
+class CompanyCatalogPort(Protocol):
+    """Application-owned catalog abstraction for company identity records.
+
+    Implementations may be in-memory (Phase 2 foundation) or PostgreSQL later.
+    """
+
+    def get_by_id(self, company_id: CompanyId) -> CompanyIdentity | None:
+        """Return a company by stable canonical id."""
+
+    def find_by_ticker(
+        self,
+        ticker: TickerSymbol,
+        *,
+        exchange: ExchangeCode | None = None,
+        country: CountryCode | None = None,
+    ) -> tuple[CompanyIdentity, ...]:
+        """Find companies with a matching listing ticker (exchange/country optional)."""
+
+    def find_by_alias(
+        self,
+        normalized_alias: str,
+        *,
+        country: CountryCode | None = None,
+    ) -> tuple[CompanyIdentity, ...]:
+        """Find companies by normalized alias key."""
+
+    def find_by_name(
+        self,
+        normalized_name: str,
+        *,
+        country: CountryCode | None = None,
+    ) -> tuple[CompanyIdentity, ...]:
+        """Find companies by normalized legal/display name key."""
+
+    def search_name_candidates(
+        self,
+        normalized_name: str,
+        *,
+        country: CountryCode | None = None,
+        limit: int = 5,
+    ) -> tuple[CompanyIdentity, ...]:
+        """Return bounded deterministic fuzzy name candidates (never authoritative alone)."""
