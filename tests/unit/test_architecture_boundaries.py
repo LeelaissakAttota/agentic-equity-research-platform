@@ -129,3 +129,35 @@ class ArchitectureBoundaryTests(TestCase):
         )
         self.assertFalse(any("infrastructure" in name for name in imports))
         self.assertNotIn("InMemoryFinancialDataAdapter", source)
+
+    def test_news_event_snapshot_depends_on_port_not_concrete_adapter(self) -> None:
+        snapshot_path = APPLICATION_ROOT / "news_event_snapshot.py"
+        source = snapshot_path.read_text(encoding="utf-8")
+        imports = _imported_modules(snapshot_path)
+        self.assertIn("NewsEventPort", source)
+        self.assertTrue(
+            any(
+                name.endswith("ports") or name == "financial_intelligence.application.ports"
+                for name in imports
+            )
+        )
+        self.assertFalse(any("infrastructure" in name for name in imports))
+        self.assertNotIn("InMemoryNewsEventAdapter", source)
+
+    def test_industry_and_regulatory_snapshots_depend_on_ports(self) -> None:
+        for filename, port_name, forbidden_adapter in (
+            ("industry_snapshot.py", "IndustryContextPort", "InMemoryIndustryAdapter"),
+            ("regulatory_snapshot.py", "RegulatoryEventPort", "InMemoryRegulatoryAdapter"),
+        ):
+            snapshot_path = APPLICATION_ROOT / filename
+            source = snapshot_path.read_text(encoding="utf-8")
+            imports = _imported_modules(snapshot_path)
+            self.assertIn(port_name, source)
+            self.assertTrue(
+                any(
+                    name.endswith("ports") or name == "financial_intelligence.application.ports"
+                    for name in imports
+                )
+            )
+            self.assertFalse(any("infrastructure" in name for name in imports))
+            self.assertNotIn(forbidden_adapter, source)

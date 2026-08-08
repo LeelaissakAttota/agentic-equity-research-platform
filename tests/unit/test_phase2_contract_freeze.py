@@ -356,7 +356,7 @@ class ApiContractFreezeTests(TestCase):
         self.assertEqual(conflict.status_code, 200)
         self.assertEqual(conflict.json()["status"], "NOT_FOUND")
 
-    def test_openapi_paths_include_phase3_market_and_phase4_financial_snapshot(self) -> None:
+    def test_openapi_paths_include_phase3_to_phase5_snapshots(self) -> None:
         app = create_app(settings=_settings())
         self.assertEqual(
             set(app.openapi()["paths"]),
@@ -367,5 +367,8 @@ class ApiContractFreezeTests(TestCase):
                 "/companies/resolve",
                 "/market/snapshot",
                 "/financials/snapshot",
+                "/news/events/snapshot",
+                "/industry/context/snapshot",
+                "/regulatory/events/snapshot",
             },
         )

@@ -12,14 +12,20 @@ from financial_intelligence.application.contracts import (
     ReadinessCheckResult,
 )
 from financial_intelligence.application.financial_snapshot import GetFinancialSnapshot
+from financial_intelligence.application.industry_snapshot import GetIndustryContextSnapshot
 from financial_intelligence.application.market_freshness import MarketFreshnessPolicy
 from financial_intelligence.application.market_snapshot import GetMarketSnapshot
+from financial_intelligence.application.news_event_snapshot import GetNewsEventSnapshot
 from financial_intelligence.application.ports import (
     CompanyCatalogPort,
     FinancialDataPort,
+    IndustryContextPort,
     MarketDataPort,
+    NewsEventPort,
+    RegulatoryEventPort,
 )
 from financial_intelligence.application.readiness import ReadinessRegistry
+from financial_intelligence.application.regulatory_snapshot import GetRegulatorySnapshot
 from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
@@ -30,11 +36,23 @@ from financial_intelligence.infrastructure.financial import (
     SecCompanyFactsFinancialDataAdapter,
 )
 from financial_intelligence.infrastructure.http import BoundedHttpClient, UrlLibHttpTransport
+from financial_intelligence.infrastructure.industry import (
+    CachingIndustryAdapter,
+    InMemoryIndustryAdapter,
+)
 from financial_intelligence.infrastructure.market import (
     CachingMarketDataAdapter,
     FallbackMarketDataAdapter,
     InMemoryMarketDataAdapter,
     YahooChartMarketDataAdapter,
+)
+from financial_intelligence.infrastructure.news import (
+    CachingNewsEventAdapter,
+    InMemoryNewsEventAdapter,
+)
+from financial_intelligence.infrastructure.regulatory import (
+    CachingRegulatoryAdapter,
+    InMemoryRegulatoryAdapter,
 )
 
 
@@ -51,6 +69,12 @@ class AppContainer:
     get_market_snapshot: GetMarketSnapshot
     financial_data: FinancialDataPort
     get_financial_snapshot: GetFinancialSnapshot
+    news_events: NewsEventPort
+    get_news_event_snapshot: GetNewsEventSnapshot
+    industry: IndustryContextPort
+    get_industry_snapshot: GetIndustryContextSnapshot
+    regulatory: RegulatoryEventPort
+    get_regulatory_snapshot: GetRegulatorySnapshot
 
 
 def _sec_user_agent() -> str:
@@ -67,15 +91,18 @@ def build_container(
     clock: Callable[[], datetime] | None = None,
     market_data: MarketDataPort | None = None,
     financial_data: FinancialDataPort | None = None,
+    news_events: NewsEventPort | None = None,
+    industry: IndustryContextPort | None = None,
+    regulatory: RegulatoryEventPort | None = None,
 ) -> AppContainer:
-    """Wire settings, readiness, company resolution, market and financial intelligence.
+    """Wire settings, readiness, company, market, financial, and Phase 5 ports.
 
     Optional ``clock`` freezes evaluation time for deterministic tests.
-    Optional ``market_data`` / ``financial_data`` inject fully wired adapters (tests).
+    Optional adapters inject fully wired ports (tests).
 
     Live Yahoo chart and SEC companyfacts acquisition are opt-in via settings.
-    Absence of live mode does not affect readiness (optional providers).
-    Fixture data is never labeled as live.
+    Phase 5 qualitative intelligence remains fixture-first (no live news/industry/
+    regulatory HTTP providers in Prompt 2). Fixture data is never labeled as live.
     """
 
     resolved = settings if settings is not None else Settings()
@@ -147,6 +174,27 @@ def build_container(
             clock=clock,
         )
 
+    if news_events is None:
+        news_events = CachingNewsEventAdapter(
+            InMemoryNewsEventAdapter(),
+            ttl=timedelta(seconds=resolved.news_cache_ttl_seconds),
+            clock=clock,
+        )
+
+    if industry is None:
+        industry = CachingIndustryAdapter(
+            InMemoryIndustryAdapter(),
+            ttl=timedelta(seconds=resolved.industry_cache_ttl_seconds),
+            clock=clock,
+        )
+
+    if regulatory is None:
+        regulatory = CachingRegulatoryAdapter(
+            InMemoryRegulatoryAdapter(),
+            ttl=timedelta(seconds=resolved.regulatory_cache_ttl_seconds),
+            clock=clock,
+        )
+
     freshness = MarketFreshnessPolicy(
         stale_after=timedelta(hours=resolved.market_stale_after_hours),
     )
@@ -161,6 +209,21 @@ def build_container(
         financial_data=financial_data,
         clock=clock,
     )
+    get_news_event_snapshot = GetNewsEventSnapshot(
+        resolve_company=resolve_company,
+        news_events=news_events,
+        clock=clock,
+    )
+    get_industry_snapshot = GetIndustryContextSnapshot(
+        resolve_company=resolve_company,
+        industry=industry,
+        clock=clock,
+    )
+    get_regulatory_snapshot = GetRegulatorySnapshot(
+        resolve_company=resolve_company,
+        regulatory=regulatory,
+        clock=clock,
+    )
     return AppContainer(
         settings=resolved,
         readiness=readiness,
@@ -171,4 +234,10 @@ def build_container(
         get_market_snapshot=get_market_snapshot,
         financial_data=financial_data,
         get_financial_snapshot=get_financial_snapshot,
+        news_events=news_events,
+        get_news_event_snapshot=get_news_event_snapshot,
+        industry=industry,
+        get_industry_snapshot=get_industry_snapshot,
+        regulatory=regulatory,
+        get_regulatory_snapshot=get_regulatory_snapshot,
     )

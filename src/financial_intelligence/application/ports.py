@@ -16,7 +16,10 @@ from financial_intelligence.domain.identity import (
     ListingIdentity,
     TickerSymbol,
 )
+from financial_intelligence.domain.industry import CompanyIndustryPackage
 from financial_intelligence.domain.market import MarketObservationSeries
+from financial_intelligence.domain.news import CompanyEventPackage
+from financial_intelligence.domain.regulatory import CompanyRegulatoryPackage
 
 
 @runtime_checkable
@@ -113,3 +116,46 @@ class FinancialDataPort(Protocol):
         fiscal_year: int | None = None,
     ) -> CompanyFinancialPackage | None:
         """Return normalized financial package for a company, or None when unavailable."""
+
+
+@runtime_checkable
+class NewsEventPort(Protocol):
+    """Application-owned news/event research boundary (Phase 5).
+
+    Concrete adapters (fixture-first) are selected in composition.
+    Implementations must never invent events when upstream data is missing.
+    """
+
+    def get_event_package(
+        self,
+        company_id: CompanyId,
+        *,
+        event_type: str | None = None,
+        limit: int | None = None,
+    ) -> CompanyEventPackage | None:
+        """Return normalized company events, or None when unavailable."""
+
+
+@runtime_checkable
+class IndustryContextPort(Protocol):
+    """Application-owned industry/competitor boundary (Phase 5).
+
+    Concrete adapters are fixture-first. Never invent peer identities.
+    """
+
+    def get_industry_package(self, company_id: CompanyId) -> CompanyIndustryPackage | None:
+        """Return industry/competitor package, or None when unavailable."""
+
+
+@runtime_checkable
+class RegulatoryEventPort(Protocol):
+    """Application-owned regulatory intelligence boundary (Phase 5).
+
+    Concrete adapters are fixture-first. Secondary allegations stay labeled.
+    """
+
+    def get_regulatory_package(
+        self,
+        company_id: CompanyId,
+    ) -> CompanyRegulatoryPackage | None:
+        """Return regulatory package, or None when unavailable."""

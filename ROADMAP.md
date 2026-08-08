@@ -11,7 +11,7 @@ This Phase 0–10 sequence is frozen by the Master Architecture review. Adding, 
 | 2 | Company Resolution & Source Foundation | Provider-neutral identity resolution and authoritative-source acquisition contracts | Phase 1 accepted |
 | 3 | Market Intelligence | Traceable price/volume/history/statistics and deterministic market calculations | Phase 2 accepted — **COMPLETE** |
 | 4 | Financial & Filing Intelligence | Parsed filings, normalized statements, ratios, trends, and filing evidence | Phase 3 accepted — **COMPLETE** |
-| 5 | News, Events, Industry & Regulatory Intelligence | Evidence-backed qualitative research across replaceable sources | Phase 4 accepted |
+| 5 | News, Events, Industry & Regulatory Intelligence | Evidence-backed qualitative research across replaceable sources | Phase 4 accepted — **COMPLETE** |
 | 6 | Autonomous Research Planning & Dynamic Orchestration | Intent-driven plans, dependency-aware execution, monitoring, and bounded recovery | Phase 5 accepted |
 | 7 | Evidence Graph, RAG & Research Memory | Hybrid retrieval, claim/source relationships, governed memory, and change comparisons | Phase 6 accepted |
 | 8 | Verification, Confidence & Reflection | Deterministic verification, conflicts, quality scoring, critic loop, and targeted re-research | Phase 7 accepted |

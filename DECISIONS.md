@@ -246,6 +246,66 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 
 **Consequences:** Packages may expose a `conflicts` collection; unresolved conflicts omit the contested concept from statements; API consumers see explicit conflict payloads when present.
 
+## ADR-032 — Fixture-first Phase 5 news/event intelligence (deterministic Prompt 1)
+
+**Decision:** Phase 5 Prompt 1 ships News & Event Intelligence through application-owned `NewsEventPort`, in-memory/fixture event packages for Apple and Reliance Industries, deterministic deduplication by company/type/date/title with higher-authority preference (no last-write-wins), in-process TTL cache, and `GET /news/events/snapshot` gated on uniquely `RESOLVED` company identity. No live news HTTP provider and no OpenRouter/LLM usage in Prompt 1. Tier-4 general web cannot be labeled FACT; directional sentiment cannot be labeled FACT. Industry/competitor depth and live qualitative providers remain later Phase 5 prompts.
+
+**Rationale:** Frozen Phase 5 requires source-grounded qualitative events with provenance before semantic LLM analysis. Fixture-first preserves offline CI, fail-closed paid-model policy, and Phase 2 identity safety while establishing event taxonomy and evidence refs.
+
+**Consequences:** Default news/event snapshots are fixture/demo origin; incomplete coverage is disclosed; Prompt 1 does not claim full news/industry/regulatory corpus coverage; live providers and LLM-assisted sentiment remain deferred.
+
+## ADR-033 — Conflict-aware qualitative event deduplication
+
+**Decision:** Phase 5 Prompt 2 freezes deterministic event conflict semantics. Exact-key duplicates that agree on material fields collapse with higher authority / earlier retrieval (`AGREES`). Unique higher-authority agreeing tiers may `SUPERSEDE` lower tiers. Same-tier material disagreement remains `UNRESOLVED` with all candidates visible. Same company/type/title with disagreeing event dates is `CONFLICTING` and never silently merged. Retrieval order never last-write-wins.
+
+**Rationale:** Frozen Phase 5 acceptance requires conflicting coverage to remain visible; authority alone must not erase contradictions.
+
+**Consequences:** `CompanyEventPackage.conflicts` is first-class; API exposes conflict payloads; consumers must not assume a single winner for UNRESOLVED/CONFLICTING groups.
+
+## ADR-034 — Defer live qualitative HTTP providers in Phase 5 Prompt 2
+
+**Decision:** Prompt 2 does not add live news, industry, or regulatory HTTP adapters. Fixture/reference adapters remain the default offline path. Optional live acquisition may be reconsidered in later Phase 5 prompts only if a safe structured official source fits scope without scraping sprawl.
+
+**Rationale:** Prompt 2 priority is hardening and foundations; fragile scraping or broad web acquisition would expand risk without improving acceptance evidence.
+
+**Consequences:** CI stays network-independent; data_origin remains fixture for qualitative snapshots; production-like live coverage is explicitly not claimed.
+
+## ADR-035 — Industry/competitor identity policy
+
+**Decision:** Competitor peers must resolve to canonical `CompanyIdentity` when known (`PeerResolutionState.RESOLVED`). Unresolved or ambiguous peers remain explicit without attaching a guessed `CompanyId`. A company cannot compete with itself. Relationships require evidence refs; keyword coincidence alone does not create competitors. Industry taxonomy is reference/provider labeled; `UNMAPPED` forbids invented canonical codes.
+
+**Rationale:** Phase 2 identity is canonical; silent peer guessing would corrupt India/US resolution protections.
+
+**Consequences:** Fixture peers use existing catalog companies (e.g. Microsoft, TCS); unknown peers stay unlabeled by ID.
+
+## ADR-036 — Regulatory authority and allegation policy
+
+**Decision:** Official regulatory FACT records require Tier-1-style authoritative evidence and non-ALLEGED status. Tier-3/4 secondary coverage may describe regulatory activity only as `ALLEGED` or `UNKNOWN` with non-FACT information class. Secondary sources are never silently upgraded to official regulatory evidence.
+
+**Rationale:** DATA_SOURCES.md / ADR-019 require regulator precedence and conflict visibility for qualitative claims.
+
+**Consequences:** Fixture packages include both Tier-1 illustrative notices and secondary allegations; consumers can distinguish confirmed vs alleged items.
+
+## ADR-037 — Defer LLM evidence-based sentiment in Phase 5 Prompt 2
+
+**Decision:** Prompt 2 keeps OpenRouter/LLM calls at zero. Fixture `sentiment_label` values remain OPINION/FINDING metadata only. Evidence-based model INTERPRETATION sentiment may be introduced later only if required for Phase 5 acceptance and only under fail-closed free-model routing with structured validated outputs.
+
+**Rationale:** Deterministic-first policy; opinion labeling already satisfies “opinion is labeled”; semantic sentiment is not required to freeze Prompt 2 foundations.
+
+**Consequences:** No model IDs hardcoded; paid fallback remains prohibited; Prompt 3+ may revisit minimal sentiment foundation.
+
+## ADR-038 — Phase 5 Prompt 3 acceptance freeze (live/LLM not required to close)
+
+**Decision:** Against frozen PHASES.md Phase 5 acceptance criteria—(1) material qualitative claims cite evidence, (2) opinion is labeled, (3) events are time-aware, (4) general web never silently overrides authoritative records, (5) incomplete coverage is disclosed—Prompt 3 determines:
+
+- Live qualitative HTTP providers are **NOT required** to truthfully close Phase 5. Provider-neutral ports + fixture/reference adapters with explicit `data_origin=fixture`, resolution gating, and disclosed incomplete coverage satisfy the authorized foundation release (consistent with Phase 2 fixture-first closure and ADR-034).
+- LLM/OpenRouter evidence-based sentiment is **NOT required** to truthfully close Phase 5. Fixture `sentiment_label` values remain OPINION/FINDING/MODEL_INTERPRETATION metadata; “opinion is labeled” is satisfied without model calls (ADR-037 affirmed).
+- Dedicated Risk Intelligence agent, large evaluation corpus beyond fixture adversarial sets, live SEC/SEBI feeds, and NLP entity extraction from raw articles remain **deferred by design**, not blocking gaps for this phase’s authorized foundation scope.
+
+**Rationale:** Acceptance criteria emphasize provenance, labeling, conflict visibility, and disclosure—not live network acquisition or agentic LLM loops. Adding live scraping or paid-risk model calls would expand scope without closing a frozen acceptance gap.
+
+**Consequences:** Phase 5 may release-checkpoint after Prompt 4 with documented limitations; OpenRouter/LLM/paid calls remain 0 for Phase 5; optional live qualitative adapters stay future work requiring separate authorization.
+
 ## ADR-028 — Optional Yahoo chart live adapter with explicit data origin
 
 **Decision:** Phase 3 Prompt 3 adds an optional, key-free Yahoo Finance chart HTTP adapter behind `MarketDataPort`, enabled only when `MARKET_DATA_LIVE_ENABLED=true`. Default remains offline fixture mode. Observations carry explicit `DataOrigin` (`live` / `cached_live` / `fixture` / `unavailable`). Composition is cache → (optional live primary) → fixture secondary. Provider symbol mapping (e.g. `RELIANCE.NS` / `.BO`) stays in infrastructure and never becomes canonical identity. Valuation multiples requiring fundamentals remain deferred to Phase 4. Exchange holiday calendars and full corporate-action engines remain documented limitations. Optional live providers do not affect `/ready`.

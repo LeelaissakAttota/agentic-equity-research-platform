@@ -20,7 +20,7 @@ FORBIDDEN_CONTENT_MARKERS = (
 
 
 class PhaseBoundaryTests(TestCase):
-    """Confirm Phase 4+ research/agent capabilities were not introduced early."""
+    """Confirm Phase 6+ research/agent capabilities were not introduced early."""
 
     def test_no_forbidden_runtime_dependencies(self) -> None:
         with (ROOT / "pyproject.toml").open("rb") as handle:
@@ -38,13 +38,19 @@ class PhaseBoundaryTests(TestCase):
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])
 
-    def test_phase5_news_intelligence_not_started(self) -> None:
-        """Phase 5+ agent/orchestration markers must remain absent."""
-        phase5_markers = ("langgraph_workflow", "verification_engine", "synthesis agent")
+    def test_phase6_orchestration_not_started(self) -> None:
+        """Phase 6+ agent/orchestration markers must remain absent."""
+        phase6_markers = (
+            "langgraph_workflow",
+            "verification_engine",
+            "synthesis agent",
+            "research planner",
+            "task orchestrator",
+        )
         violations: list[str] = []
         for path in PACKAGE.rglob("*.py"):
             text = path.read_text(encoding="utf-8").lower()
-            for marker in phase5_markers:
+            for marker in phase6_markers:
                 if marker in text:
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])

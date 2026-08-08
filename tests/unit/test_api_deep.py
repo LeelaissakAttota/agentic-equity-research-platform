@@ -98,6 +98,9 @@ class ApiContractDeepTests(TestCase):
                 "/companies/resolve",
                 "/market/snapshot",
                 "/financials/snapshot",
+                "/news/events/snapshot",
+                "/industry/context/snapshot",
+                "/regulatory/events/snapshot",
             },
         )
         self.assertEqual(
@@ -113,6 +116,8 @@ class ApiContractDeepTests(TestCase):
             "/chat",
             "/agents",
             "/mcp",
+            "/industry",
+            "/regulatory",
         }
         self.assertTrue(paths.isdisjoint(forbidden))
 

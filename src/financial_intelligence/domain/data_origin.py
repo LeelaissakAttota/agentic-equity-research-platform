@@ -1,6 +1,7 @@
-"""Shared data-origin vocabulary for market and financial observations.
+"""Shared data-origin vocabulary for acquired structured/qualitative packages.
 
 Consumers must distinguish fixture/demo data from live/authoritative acquisition.
+Data origin is independent of source authority tier.
 """
 
 from __future__ import annotations

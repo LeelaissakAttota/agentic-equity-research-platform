@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 4 — COMPLETE. Phase 0–3 are complete. The repository includes application foundation, company identity/resolution, source-metadata contracts, Market Intelligence (`GET /market/snapshot`), and Financial & Filing Intelligence (`GET /financials/snapshot`, deterministic fundamentals, fixture adapters, optional opt-in SEC companyfacts live mode default OFF, India fixture/authority foundation). Phase 5+ (news/events/industry/regulatory research and later capabilities) are **not started** and await owner authorization. Full SEC/India live filing coverage, valuation multiples, research agents, RAG, reports, Streamlit, MCP, and trading are **not** implemented.
+> **Current status:** Phase 5 — COMPLETE (News, Events, Industry & Regulatory Intelligence). Phase 0–4 are complete. Qualitative snapshots are fixture-first (`/news/events/snapshot`, `/industry/context/snapshot`, `/regulatory/events/snapshot`). Phase 6+ is **not started** and awaits owner authorization. Live qualitative providers, LLM sentiment, research agents, RAG, reports, Streamlit, MCP, and trading are **not** implemented.
 
 ## Vision
 
@@ -116,7 +116,10 @@ Health checks:
 - `GET /version` — service metadata
 - `GET /companies/resolve?q=...` — local deterministic company resolution (Phase 2 Prompt 1)
 - `GET /market/snapshot?q=...` — market observations and deterministic metrics (Phase 3)
-- `GET /financials/snapshot?q=...` — financial fundamentals and deterministic metrics (Phase 4 Prompt 1)
+- `GET /financials/snapshot?q=...` — financial fundamentals and deterministic metrics (Phase 4)
+- `GET /news/events/snapshot?q=...` — news/event snapshot with evidence refs and conflicts (Phase 5; fixture-first)
+- `GET /industry/context/snapshot?q=...` — industry classification + competitor relationships (Phase 5; fixture-first)
+- `GET /regulatory/events/snapshot?q=...` — regulatory events with authority/allegation labels (Phase 5; fixture-first)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

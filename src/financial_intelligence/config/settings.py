@@ -138,6 +138,25 @@ class Settings(BaseSettings):
         le=5,
     )
 
+    news_cache_ttl_seconds: int = Field(
+        default=900,
+        alias="NEWS_CACHE_TTL_SECONDS",
+        ge=1,
+        le=86400,
+    )
+    industry_cache_ttl_seconds: int = Field(
+        default=3600,
+        alias="INDUSTRY_CACHE_TTL_SECONDS",
+        ge=1,
+        le=86400,
+    )
+    regulatory_cache_ttl_seconds: int = Field(
+        default=3600,
+        alias="REGULATORY_CACHE_TTL_SECONDS",
+        ge=1,
+        le=86400,
+    )
+
     @field_validator("allow_paid_models")
     @classmethod
     def paid_models_must_remain_disabled(cls, value: bool) -> bool:
@@ -204,6 +223,9 @@ class Settings(BaseSettings):
             "financial_data_timeout_seconds": self.financial_data_timeout_seconds,
             "financial_data_max_response_bytes": self.financial_data_max_response_bytes,
             "financial_data_max_retries": self.financial_data_max_retries,
+            "news_cache_ttl_seconds": self.news_cache_ttl_seconds,
+            "industry_cache_ttl_seconds": self.industry_cache_ttl_seconds,
+            "regulatory_cache_ttl_seconds": self.regulatory_cache_ttl_seconds,
             "database_configured": bool(self.database_url.get_secret_value()),
             "redis_configured": bool(self.redis_url.get_secret_value()),
             "openrouter_key_configured": bool(self.openrouter_api_key.get_secret_value()),

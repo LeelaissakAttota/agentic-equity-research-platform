@@ -140,7 +140,7 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Acceptance criteria:** Supported filings retain document provenance; normalized numbers reconcile within documented tolerances; amendments/conflicts remain explicit; no model performs arithmetic.
 
-**Authorized Phase 4 Prompt 1–4 completion status:** COMPLETE for Financial & Filing Intelligence foundation (fixture fundamentals + optional SEC companyfacts live path, deterministic calculations with omissions, conflict handling, cache/fallback, explicit data origin, India fixture/authority foundation). Documented limitations remain: live SEC optional/default off and demo-scale; India live adapters deferred; valuation multiples deferred (ADR-030); TTM not implemented; fixture coverage is representative, not exhaustive. Phase 5 remains not started and awaits explicit owner authorization.
+**Authorized Phase 4 Prompt 1–4 completion status:** COMPLETE for Financial & Filing Intelligence foundation (fixture fundamentals + optional SEC companyfacts live path, deterministic calculations with omissions, conflict handling, cache/fallback, explicit data origin, India fixture/authority foundation). Documented limitations remain: live SEC optional/default off and demo-scale; India live adapters deferred; valuation multiples deferred (ADR-030); TTM not implemented; fixture coverage is representative, not exhaustive.
 
 **Out of scope:** Full news/industry/regulatory research, autonomous planner, vector memory, final Word reports.
 
@@ -157,6 +157,8 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 **Tests:** Event/date/entity extraction, duplication, source reliability, regulator precedence, conflicting coverage, prompt-injection resistance, sentiment grounding, unavailable/partial sources.
 
 **Acceptance criteria:** Each material qualitative claim cites evidence; opinion is labeled; events are time-aware; general web never overrides authoritative records silently; incomplete coverage is disclosed.
+
+**Authorized Phase 5 Prompt 1–4 completion status:** COMPLETE for News, Events, Industry & Regulatory Intelligence foundation (fixture-first news/events with conflict-aware dedupe, industry/competitor foundation, regulatory foundation, evidence/provenance, three snapshot APIs). Documented limitations remain: no live qualitative HTTP; no LLM sentiment; demo-scale fixtures; incomplete taxonomy; illustrative regulatory corpus; dedicated Risk agent and RAG/graph persistence deferred. Phase 6 remains not started and awaits explicit owner authorization.
 
 **Out of scope:** Fully autonomous dynamic planning, persistent vector memory, critic loop, report layout.
 

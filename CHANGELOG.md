@@ -4,6 +4,41 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 5 completion checkpoint
+
+- Owner approved Phase 5 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
+- Reconfirmed pytest (351 passed), Ruff, mypy, OpenAPI, Docker/Compose, secret/paid-model, architecture, and Phase 6 absence gates.
+- Established the Phase 5 Git checkpoint on `main` with message `feat(phase-05): implement qualitative intelligence`.
+- Phase 5 News, Events, Industry & Regulatory Intelligence scope is complete within authorized foundation; documented limitations remain explicit.
+- Phase 6 remains not started and awaits explicit owner authorization.
+
+### Phase 5 Prompt 3 (owner approved)
+
+- Acceptance audit and qualitative contract freeze for Phase 5 Prompts 1–2.
+- Frozen contracts: news/event dedupe/conflicts (ADR-033), industry/competitor identity (ADR-035), regulatory allegation policy (ADR-036), data_origin, API snapshots.
+- Acceptance decisions (ADR-038): live qualitative HTTP **not required** to close Phase 5; LLM sentiment **not required**; OpenRouter/LLM/paid remain 0.
+- Added `tests/unit/test_phase5_contract_freeze.py` (cross-capability identity, conflicts, caches, API, provenance, Phase 1–4 regression).
+- **BLOCKING PHASE 5 GAPS: NO** within authorized foundation scope; Prompt 4 may release-checkpoint after owner approval.
+- Phase 5 Prompt 3 is not a Git checkpoint; Phase 5 not marked complete.
+
+### Phase 5 Prompt 2 (owner approved)
+
+- Hardened news/event domain (control chars, URL schemes, time semantics, cross-company rejection, age metadata).
+- Conflict-aware event processing: AGREES / SUPERSEDED / CONFLICTING / UNRESOLVED (ADR-033); no last-write-wins.
+- Added Industry & Competitor foundation + `GET /industry/context/snapshot` (canonical peer IDs; unresolved peers explicit) — ADR-035.
+- Added Regulatory foundation + `GET /regulatory/events/snapshot` (SEC/SEBI/NSE fixtures; secondary = ALLEGED) — ADR-036.
+- Deferred live qualitative HTTP providers and LLM sentiment (ADR-034, ADR-037); OpenRouter/LLM/paid calls remain 0.
+- Prompt-injection fixture text remains inert research data; cache hardening tests added.
+- Phase 5 Prompt 2 is not a Git checkpoint.
+
+### Phase 5 Prompt 1 (owner approved)
+
+- Added News & Event Intelligence foundation: qualitative event domain, evidence refs, information classes, deterministic dedupe (ADR-032).
+- Added `NewsEventPort`, fixture adapter (Apple + Reliance), in-process TTL cache.
+- Added `GetNewsEventSnapshot` and `GET /news/events/snapshot` with resolution safety and data_origin.
+- No OpenRouter/LLM calls; live news providers deferred; industry/competitor depth deferred.
+- Phase 5 Prompt 1 is not a Git checkpoint.
+
 ### Phase 4 completion checkpoint
 
 - Owner approved Phase 4 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
