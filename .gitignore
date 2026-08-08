@@ -1,0 +1,64 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+pytest-cache-files-*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Build and package artifacts
+build/
+dist/
+*.egg-info/
+*.whl
+
+# IDE and OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs, local databases, caches, and temporary files
+*.log
+logs/
+*.sqlite
+*.sqlite3
+*.db
+.cache/
+tmp/
+temp/
+
+# Acquired source data and generated reports; preserve directory sentinels
+data/*
+!data/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# Generated documentation/report render artifacts
+docs/reports/generated/
+
+# Tool-specific local state
+.langgraph_api/
+.streamlit/secrets.toml
