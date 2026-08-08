@@ -22,6 +22,9 @@ Foundation routes:
 - `GET /news/events/snapshot?q=Apple&exchange=NASDAQ` — news/event snapshot (`200` for OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED; `400` invalid query). Fixture-first Phase 5; events carry evidence refs, conflicts, authority tiers, and `data_origin`. No live news provider and no LLM.
 - `GET /industry/context/snapshot?q=Apple&exchange=NASDAQ` — industry/competitor snapshot (fixture-first; resolved peers use canonical CompanyIdentity).
 - `GET /regulatory/events/snapshot?q=Reliance&exchange=NSE` — regulatory snapshot (fixture-first; secondary coverage stays ALLEGED).
+- `POST /research/plans` JSON body `{ "q": "Apple", "exchange": "NASDAQ", "objective": "comprehensive_equity_research" }` — creates a deterministic plan (`200` for ok/resolution_blocked; `400` invalid). Does not execute tasks.
+- `POST /research/execute` — same body shape (optional budget fields) create-and-executes a fresh plan synchronously within budget. Plans are not persisted; there is no plan-id lookup. Returns `ResearchExecutionResult` (task outcomes, evidence refs, warnings). No investment conclusion.
+- Phase 6 COMPLETE (Prompt 4 checkpoint): `FAILED → READY` requires `authorized_retry=True`; PARTIAL capability results keep run status `partial`; external-call budget counts executor invocations (not network packets). LangGraph/LLM planner/persistence/parallelism deferred (ADR-041–042). Phase 7 not started.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 

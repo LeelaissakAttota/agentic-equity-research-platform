@@ -176,6 +176,8 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Acceptance criteria:** Plans select only needed capabilities; executions remain bounded and traceable; no paid model can be routed; failures produce transparent partial status; deterministic work bypasses models.
 
+**Authorized Phase 6 Prompt 1–4 completion status:** COMPLETE for Autonomous Research Planning & Dynamic Orchestration foundation (deterministic planner, task DAG, controlled synchronous execution through Phase 2–5 capabilities, budgets/retries/cancellation, evidence aggregation, `POST /research/plans` + `POST /research/execute`). Documented limitations remain: no LangGraph; no LLM planner; no plan persistence/resume; sequential execution only; external-call accounting is executor-invocation based; no investment synthesis; demo-scale fixtures. Phase 7 remains not started and awaits explicit owner authorization.
+
 **Out of scope:** Full evidence graph/vector memory, final critic loop, multilingual reports, MCP exposure.
 
 **Dependencies:** Accepted specialist capabilities from Phases 2–5 and approved model/orchestration contracts.

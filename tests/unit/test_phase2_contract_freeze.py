@@ -370,5 +370,7 @@ class ApiContractFreezeTests(TestCase):
                 "/news/events/snapshot",
                 "/industry/context/snapshot",
                 "/regulatory/events/snapshot",
+                "/research/plans",
+                "/research/execute",
             },
         )

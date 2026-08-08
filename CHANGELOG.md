@@ -4,6 +4,42 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 6 completion checkpoint
+
+- Owner approved Phase 6 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
+- Reconfirmed pytest (≥400 passed), Ruff, mypy, OpenAPI, Docker/Compose, secret/paid-model, architecture, and Phase 7 absence gates.
+- Established the Phase 6 Git checkpoint on `main` with message `feat(phase-06): implement autonomous research orchestration`.
+- Phase 6 Autonomous Research Planning & Dynamic Orchestration scope is complete within authorized foundation; documented limitations remain explicit (no LangGraph, no LLM planner, no plan persistence, sequential execution, invocation-based external-call accounting).
+- Phase 7 remains not started and awaits explicit owner authorization.
+
+### Phase 6 Prompt 3 (owner approved)
+
+- Orchestration audit + contract freeze for Prompts 1–2 (DAG, lifecycle, retries, budgets, evidence, identity, API).
+- Hardened `FAILED → READY` to require `authorized_retry=True`; identity mismatch for company/security/listing evidence; transparent PARTIAL run status for mixed required outcomes.
+- Documented external-call accounting as capability invocations (not packet-accurate network I/O).
+- Added Apple/Reliance comprehensive golden tests and Phase 6 contract freeze suite.
+- ADR-041: LangGraph, LLM planner, plan persistence, and parallel execution are **not required** to close Phase 6.
+- OpenRouter/LLM/paid remain 0; Phase 7 not started; Phase 6 not marked complete until Prompt 4.
+
+### Phase 6 Prompt 2 (owner approved)
+
+- Added controlled synchronous execution engine: `ExecuteResearchPlan` + ready-task scheduling.
+- Added `Phase6CapabilityExecutor` bridging capability IDs to existing Phase 2–5 snapshot/resolve use cases.
+- Hardened task lifecycle, required/optional failure propagation, PARTIAL semantics, bounded retries, runtime budgets, cancellation, and no-progress guards.
+- Added evidence aggregation/dedupe and `ResearchExecutionResult` (no investment conclusion).
+- Added `POST /research/execute` create-and-execute API (plans are not persisted).
+- LangGraph and LLM planner remain deferred; OpenRouter/LLM/paid calls remain 0; Phase 7 not started.
+- Phase 6 Prompt 1 owner-approved; Prompt 2 is not a Git checkpoint.
+
+### Phase 6 Prompt 1 (owner approved)
+
+- Added orchestration foundation: ResearchRequest/Objective/Plan/Task, DAG, budget, OrchestrationState.
+- Added CapabilityRegistry + DeterministicPlanner (`phase6-deterministic-v1`); no LLM planning.
+- Added `CreateResearchPlan` and `POST /research/plans` (creates plan only; does not execute).
+- Deferred LangGraph to a later Phase 6 prompt after contracts stabilize (ADR-039).
+- OpenRouter/LLM/paid calls remain 0; Phase 7 not started.
+- Phase 6 Prompt 1 is not a Git checkpoint.
+
 ### Phase 5 completion checkpoint
 
 - Owner approved Phase 5 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.

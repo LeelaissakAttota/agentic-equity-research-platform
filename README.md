@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 5 — COMPLETE (News, Events, Industry & Regulatory Intelligence). Phase 0–4 are complete. Qualitative snapshots are fixture-first (`/news/events/snapshot`, `/industry/context/snapshot`, `/regulatory/events/snapshot`). Phase 6+ is **not started** and awaits owner authorization. Live qualitative providers, LLM sentiment, research agents, RAG, reports, Streamlit, MCP, and trading are **not** implemented.
+> **Current status:** Phase 6 — COMPLETE (Autonomous Research Planning & Dynamic Orchestration). Phase 0–5 are complete. Deterministic planning + controlled create-and-execute orchestration ship without LangGraph or an LLM planner (`POST /research/plans`, `POST /research/execute`). Phase 7+ (RAG, reports, Streamlit, MCP, trading) are **not started** and await owner authorization.
 
 ## Vision
 
@@ -120,6 +120,8 @@ Health checks:
 - `GET /news/events/snapshot?q=...` — news/event snapshot with evidence refs and conflicts (Phase 5; fixture-first)
 - `GET /industry/context/snapshot?q=...` — industry classification + competitor relationships (Phase 5; fixture-first)
 - `GET /regulatory/events/snapshot?q=...` — regulatory events with authority/allegation labels (Phase 5; fixture-first)
+- `POST /research/plans` — create deterministic research plan (Phase 6 Prompt 1; does not execute)
+- `POST /research/execute` — create-and-execute a bounded plan synchronously (Phase 6 Prompt 2; plans not persisted)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

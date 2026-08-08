@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
+from financial_intelligence.application.company_resolution import CompanyQuery
 from financial_intelligence.domain.financial import CompanyFinancialPackage
 from financial_intelligence.domain.identity import (
     CompanyId,
@@ -19,6 +20,7 @@ from financial_intelligence.domain.identity import (
 from financial_intelligence.domain.industry import CompanyIndustryPackage
 from financial_intelligence.domain.market import MarketObservationSeries
 from financial_intelligence.domain.news import CompanyEventPackage
+from financial_intelligence.domain.orchestration import ResearchTask, TaskExecutionResult
 from financial_intelligence.domain.regulatory import CompanyRegulatoryPackage
 
 
@@ -159,3 +161,21 @@ class RegulatoryEventPort(Protocol):
         company_id: CompanyId,
     ) -> CompanyRegulatoryPackage | None:
         """Return regulatory package, or None when unavailable."""
+
+
+@runtime_checkable
+class ResearchCapabilityExecutorPort(Protocol):
+    """Execute one research task against an existing Phase 2-5 capability.
+
+    Implementations are orchestration bridges only — they must never fabricate
+    successful research and must preserve the plan's canonical CompanyId.
+    """
+
+    def execute_task(
+        self,
+        task: ResearchTask,
+        *,
+        company: CompanyIdentity,
+        company_query: CompanyQuery,
+    ) -> TaskExecutionResult:
+        """Run a single task and return a typed evidence-aware result."""

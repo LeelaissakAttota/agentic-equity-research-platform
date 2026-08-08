@@ -3,52 +3,42 @@
 ## Current gate
 
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
-- **Active phase:** Phase 5 — COMPLETE (News, Events, Industry & Regulatory Intelligence)
-- **Active prompt:** Phase 5 Prompt 4 — COMPLETE
-- **State:** Phase 0–5 complete; Phase 6 not started / awaiting owner authorization
-- **Next permitted work:** Phase 6 after explicit owner authorization
+- **Active phase:** Phase 6 — COMPLETE (Autonomous Research Planning & Dynamic Orchestration)
+- **Active prompt:** Phase 6 Prompt 4 — COMPLETE (release checkpoint)
+- **State:** Phase 0–6 complete; Phase 7 not started
+- **Next permitted work:** Phase 7 after explicit owner authorization
 - **Production readiness:** Not production-ready
-- **Phase 0–4:** COMPLETE
-- **Phase 5:** COMPLETE
-- **Phase 5 Prompt 1–4:** COMPLETE
-- **Phase 6:** NOT STARTED / AWAITING OWNER AUTHORIZATION
+- **Phase 0–5:** COMPLETE
+- **Phase 6:** COMPLETE
+- **Phase 6 Prompt 1–4:** COMPLETE
+- **Phase 7:** NOT STARTED / AWAITING OWNER AUTHORIZATION
 
-## Phase 5 release summary
+## Phase 6 release summary
 
-- **Title:** News, Events, Industry & Regulatory Intelligence
-- **BLOCKING GAPS:** NO (within authorized foundation scope)
-- **Live qualitative HTTP:** NOT REQUIRED / deferred (ADR-038)
-- **LLM sentiment:** NOT REQUIRED / deferred (ADR-038)
-- OpenRouter / LLM / paid calls: **0** / **0** / **0**; mandatory cost **$0**
+Framework-independent autonomous research planning and controlled orchestration:
 
-### Delivered
+- Deterministic planner (`phase6-deterministic-v1`) — no LLM planner
+- Task DAG, lifecycle, budgets, bounded retries, cancellation foundation
+- Synchronous one-ready-task-at-a-time execution through Phase 2–5 capabilities
+- `POST /research/plans` and `POST /research/execute` (create-and-execute; plans not persisted)
+- Evidence aggregation with no authority/origin upgrades
+- OpenRouter / LLM / paid calls = **0**
+- LangGraph **not** installed (ADR-039–041)
 
-- News & Event Intelligence with conflict-aware dedupe (ADR-033)
-- Industry & Competitor foundation (canonical peer IDs; ADR-035)
-- Regulatory foundation (Tier-1 vs ALLEGED secondary; ADR-036)
-- APIs: `/news/events/snapshot`, `/industry/context/snapshot`, `/regulatory/events/snapshot`
-- Fixture-first Apple (US) + Reliance (India) coverage
-- Evidence/provenance, data_origin, resolution gating, prompt-injection inertness
+## Documented limitations
 
-### Documented limitations
-
-- Demo-scale fixtures (not full market coverage)
-- No live qualitative news/industry/regulatory HTTP provider
-- No LLM / OpenRouter sentiment analysis
-- Incomplete industry taxonomy (reference demo codes)
-- Illustrative regulatory corpus (not live SEC/SEBI feeds)
-- Limited NLP/evaluation corpus (fixture adversarial set)
-- Dedicated Risk Intelligence agent deferred
-- RAG / evidence-graph persistence deferred
+- No persisted plan store / resume / distributed idempotency
+- Sequential execution only (no parallel workers)
+- `max_external_calls` counts capability executor invocations, not packet-level network I/O
+- No investment synthesis / final research report
+- Some fixture coverage remains limited; GOOG/GOOGL market data may be unavailable while identity remains correct
+- Not production-scale distributed orchestration
 
 ## Phase checkpoints
 
-- Phase 0: `470082b338837e2e48e6584b70aef51aaf96b29e`
-- Phase 1: `55d058d05794c54139c1d0a023b83cd4a63d0dd4`
-- Phase 2: `d102288ae9626403cab8aef01462c2985a250bcf`
-- Phase 3: `284517e`
-- Phase 4: `0115862` (`feat(phase-04): implement financial and filing intelligence`)
-- Phase 5: recorded after Prompt 4 commit (`feat(phase-05): implement qualitative intelligence`)
+- Phase 4: `0115862`
+- Phase 5: `28924e98d5c6f335190be7bc2792befe11030a1d`
+- Phase 6: release checkpoint created by Prompt 4 (see git log)
 - Remote: `origin` → `git@github.com:LeelaissakAttota/agentic-equity-research-platform.git`
 
 ## Change protocol

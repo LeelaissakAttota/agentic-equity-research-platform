@@ -306,6 +306,48 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 
 **Consequences:** Phase 5 may release-checkpoint after Prompt 4 with documented limitations; OpenRouter/LLM/paid calls remain 0 for Phase 5; optional live qualitative adapters stay future work requiring separate authorization.
 
+## ADR-039 — Framework-independent Phase 6 planning first; workflow engine deferred
+
+**Decision:** Phase 6 Prompt 1 ships framework-independent orchestration domain/application contracts (ResearchRequest/Plan/Task DAG, DeterministicPlanner, CapabilityRegistry, CreateResearchPlan, `POST /research/plans`) without installing a workflow-engine dependency. PHASES.md lists workflow engine deliverables for Phase 6 overall; integration is deferred to a later Phase 6 prompt after contracts stabilize. Prompt 1 makes zero LLM/OpenRouter calls; planning is fully deterministic.
+
+**Rationale:** Architecture requires domain independence from orchestration frameworks. Stable typed plans/tasks/budgets must exist before binding an execution engine. Deterministic-first planning satisfies Prompt 1 without paid-model or uncontrolled agent risk.
+
+**Consequences:** Plan creation and plan execution remain separable; automatic multi-task execution and workflow-engine wiring are later Phase 6 prompts; no new runtime dependency is added in Prompt 1.
+
+## ADR-040 — Controlled synchronous execution before any workflow engine
+
+**Decision:** Phase 6 Prompt 2 implements `ExecuteResearchPlan` as a framework-independent, synchronous, one-ready-task-at-a-time execution engine with explicit budgets, bounded retries, cancellation tokens, failure/partial propagation, and a thin `Phase6CapabilityExecutor` adapter to existing Phase 2–5 use cases. `POST /research/execute` is create-and-execute only (plans are not persisted). LangGraph remains deferred (ADR-039 affirmed). No LLM planner/executor. No unbounded autonomous loops or uncontrolled concurrency.
+
+**Rationale:** Runtime safety contracts (lifecycle, budgets, retries, evidence) must be proven independently before binding an orchestration framework. Correctness and reproducibility outweigh premature parallelism.
+
+**Consequences:** Prompt 3 may reconsider LangGraph only after these contracts are owner-approved; distributed idempotency and plan persistence remain explicit non-goals for Prompt 2.
+
+## ADR-041 — Phase 6 acceptance freeze: LangGraph/LLM/persistence/parallelism not required
+
+**Decision:** Against PHASES.md Phase 6 acceptance criteria—(1) plans select only needed capabilities, (2) executions remain bounded and traceable, (3) no paid model can be routed, (4) failures produce transparent partial status, (5) deterministic work bypasses models—Prompt 3 determines:
+
+| Item | Closure requirement |
+| --- | --- |
+| LangGraph / workflow engine | **NOT required** — framework-independent engine satisfies DAG execution, state, retries, budgets, cancellation foundation |
+| LLM / intent planner | **NOT required** — `DeterministicPlanner` selects capabilities without model calls; OpenRouter/LLM/paid remain 0 |
+| Plan persistence / resume | **NOT required** — create-and-execute with truthful non-persistence docs meets foundation acceptance |
+| Parallel / concurrent workers | **NOT required** — sequential deterministic scheduling is an accepted correctness-first design |
+| PARTIAL semantics | **Frozen** — capability PARTIAL → task SUCCEEDED (deps may proceed); run status PARTIAL; completeness not claimed |
+| External-call budget | **Frozen** — counts capability `execute_task` invocations, not verified network I/O |
+| API idempotency | **Frozen** — within one `OrchestrationState` only; no distributed/API idempotency claim |
+
+**Rationale:** Acceptance emphasizes bounded, traceable, fail-closed deterministic orchestration—not a specific framework brand, model planner, or durable job store. Adding LangGraph/LLM/Postgres/Redis solely for Phase 6 would expand risk without closing a frozen acceptance gap.
+
+**Consequences:** Phase 6 may release-checkpoint after Prompt 4 with documented limitations; deferred items are future optimizations requiring separate authorization; Phase 7 remains not started.
+
+## ADR-042 — Phase 6 Prompt 4 release checkpoint (foundation complete)
+
+**Decision:** Phase 6 Prompt 4 closes the authorized foundation after green release gates. The single Git checkpoint message is `feat(phase-06): implement autonomous research orchestration`. ADR-041 closure decisions remain frozen: LangGraph, LLM planner, plan persistence, and parallel execution are not required for Phase 6 completeness. Phase 7 is not started.
+
+**Rationale:** Prompt 3 established no blocking acceptance gaps; Prompt 4 is validation + documentation + Git checkpoint only.
+
+**Consequences:** Phase 6 is COMPLETE within documented limitations; further orchestration enhancements require new authorization; Phase 7 awaits owner authorization.
+
 ## ADR-028 — Optional Yahoo chart live adapter with explicit data origin
 
 **Decision:** Phase 3 Prompt 3 adds an optional, key-free Yahoo Finance chart HTTP adapter behind `MarketDataPort`, enabled only when `MARKET_DATA_LIVE_ENABLED=true`. Default remains offline fixture mode. Observations carry explicit `DataOrigin` (`live` / `cached_live` / `fixture` / `unavailable`). Composition is cache → (optional live primary) → fixture secondary. Provider symbol mapping (e.g. `RELIANCE.NS` / `.BO`) stays in infrastructure and never becomes canonical identity. Valuation multiples requiring fundamentals remain deferred to Phase 4. Exchange holiday calendars and full corporate-action engines remain documented limitations. Optional live providers do not affect `/ready`.

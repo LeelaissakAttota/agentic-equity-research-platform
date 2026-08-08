@@ -7,10 +7,14 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from financial_intelligence import __version__
+from financial_intelligence.application.capability_registry import CapabilityRegistry
 from financial_intelligence.application.contracts import (
     ApplicationMetadata,
     ReadinessCheckResult,
 )
+from financial_intelligence.application.create_research_plan import CreateResearchPlan
+from financial_intelligence.application.deterministic_planner import DeterministicPlanner
+from financial_intelligence.application.execute_research_plan import ExecuteResearchPlan
 from financial_intelligence.application.financial_snapshot import GetFinancialSnapshot
 from financial_intelligence.application.industry_snapshot import GetIndustryContextSnapshot
 from financial_intelligence.application.market_freshness import MarketFreshnessPolicy
@@ -28,6 +32,7 @@ from financial_intelligence.application.readiness import ReadinessRegistry
 from financial_intelligence.application.regulatory_snapshot import GetRegulatorySnapshot
 from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.config.settings import Settings
+from financial_intelligence.domain.orchestration import ResearchExecutionBudget
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
 from financial_intelligence.infrastructure.financial import (
     CachingFinancialDataAdapter,
@@ -50,6 +55,7 @@ from financial_intelligence.infrastructure.news import (
     CachingNewsEventAdapter,
     InMemoryNewsEventAdapter,
 )
+from financial_intelligence.infrastructure.orchestration import Phase6CapabilityExecutor
 from financial_intelligence.infrastructure.regulatory import (
     CachingRegulatoryAdapter,
     InMemoryRegulatoryAdapter,
@@ -75,6 +81,10 @@ class AppContainer:
     get_industry_snapshot: GetIndustryContextSnapshot
     regulatory: RegulatoryEventPort
     get_regulatory_snapshot: GetRegulatorySnapshot
+    capability_registry: CapabilityRegistry
+    create_research_plan: CreateResearchPlan
+    capability_executor: Phase6CapabilityExecutor
+    execute_research_plan: ExecuteResearchPlan
 
 
 def _sec_user_agent() -> str:
@@ -95,14 +105,16 @@ def build_container(
     industry: IndustryContextPort | None = None,
     regulatory: RegulatoryEventPort | None = None,
 ) -> AppContainer:
-    """Wire settings, readiness, company, market, financial, and Phase 5 ports.
+    """Wire settings, readiness, Phase 2-5 intelligence, and Phase 6 orchestration.
 
     Optional ``clock`` freezes evaluation time for deterministic tests.
     Optional adapters inject fully wired ports (tests).
 
     Live Yahoo chart and SEC companyfacts acquisition are opt-in via settings.
-    Phase 5 qualitative intelligence remains fixture-first (no live news/industry/
-    regulatory HTTP providers in Prompt 2). Fixture data is never labeled as live.
+    Phase 5 qualitative intelligence remains fixture-first.
+    Phase 6 Prompt 2 executes deterministic plans synchronously through existing
+    Phase 2-5 use cases (no LLM planner, no workflow-engine dependency, no
+    unbounded loops).
     """
 
     resolved = settings if settings is not None else Settings()
@@ -224,6 +236,29 @@ def build_container(
         regulatory=regulatory,
         clock=clock,
     )
+    capability_registry = CapabilityRegistry()
+    budget = ResearchExecutionBudget()
+    planner = DeterministicPlanner(capability_registry, budget=budget)
+    create_research_plan = CreateResearchPlan(
+        resolve_company=resolve_company,
+        planner=planner,
+        budget=budget,
+        clock=clock,
+    )
+    capability_executor = Phase6CapabilityExecutor(
+        resolve_company=resolve_company,
+        get_market_snapshot=get_market_snapshot,
+        get_financial_snapshot=get_financial_snapshot,
+        get_news_event_snapshot=get_news_event_snapshot,
+        get_industry_snapshot=get_industry_snapshot,
+        get_regulatory_snapshot=get_regulatory_snapshot,
+    )
+    execute_research_plan = ExecuteResearchPlan(
+        create_research_plan=create_research_plan,
+        capability_executor=capability_executor,
+        budget=budget,
+        clock=clock,
+    )
     return AppContainer(
         settings=resolved,
         readiness=readiness,
@@ -240,4 +275,8 @@ def build_container(
         get_industry_snapshot=get_industry_snapshot,
         regulatory=regulatory,
         get_regulatory_snapshot=get_regulatory_snapshot,
+        capability_registry=capability_registry,
+        create_research_plan=create_research_plan,
+        capability_executor=capability_executor,
+        execute_research_plan=execute_research_plan,
     )

@@ -17,6 +17,7 @@ from financial_intelligence.api.routes import (
     market,
     news,
     regulatory,
+    research,
 )
 from financial_intelligence.composition import AppContainer, build_container
 from financial_intelligence.config.settings import Settings
@@ -64,4 +65,5 @@ def create_app(
     application.include_router(news.router)
     application.include_router(industry.router)
     application.include_router(regulatory.router)
+    application.include_router(research.router)
     return application

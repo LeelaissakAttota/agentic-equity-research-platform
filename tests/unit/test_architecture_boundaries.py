@@ -161,3 +161,21 @@ class ArchitectureBoundaryTests(TestCase):
             )
             self.assertFalse(any("infrastructure" in name for name in imports))
             self.assertNotIn(forbidden_adapter, source)
+
+    def test_create_research_plan_depends_on_resolve_and_planner(self) -> None:
+        path = APPLICATION_ROOT / "create_research_plan.py"
+        source = path.read_text(encoding="utf-8")
+        imports = _imported_modules(path)
+        self.assertIn("ResolveCompany", source)
+        self.assertIn("DeterministicPlanner", source)
+        self.assertFalse(any("infrastructure" in name for name in imports))
+        self.assertNotIn("InMemoryCompanyCatalog", source)
+
+    def test_execute_research_plan_depends_on_ports_not_adapters(self) -> None:
+        path = APPLICATION_ROOT / "execute_research_plan.py"
+        source = path.read_text(encoding="utf-8")
+        imports = _imported_modules(path)
+        self.assertIn("CreateResearchPlan", source)
+        self.assertFalse(any("infrastructure" in name for name in imports))
+        self.assertNotIn("Phase6CapabilityExecutor", source)
+        self.assertNotIn("GetMarketSnapshot", source)
