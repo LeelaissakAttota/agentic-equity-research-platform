@@ -11,13 +11,24 @@ from financial_intelligence.application.contracts import (
     ApplicationMetadata,
     ReadinessCheckResult,
 )
+from financial_intelligence.application.financial_snapshot import GetFinancialSnapshot
 from financial_intelligence.application.market_freshness import MarketFreshnessPolicy
 from financial_intelligence.application.market_snapshot import GetMarketSnapshot
-from financial_intelligence.application.ports import CompanyCatalogPort, MarketDataPort
+from financial_intelligence.application.ports import (
+    CompanyCatalogPort,
+    FinancialDataPort,
+    MarketDataPort,
+)
 from financial_intelligence.application.readiness import ReadinessRegistry
 from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
+from financial_intelligence.infrastructure.financial import (
+    CachingFinancialDataAdapter,
+    FallbackFinancialDataAdapter,
+    InMemoryFinancialDataAdapter,
+    SecCompanyFactsFinancialDataAdapter,
+)
 from financial_intelligence.infrastructure.http import BoundedHttpClient, UrlLibHttpTransport
 from financial_intelligence.infrastructure.market import (
     CachingMarketDataAdapter,
@@ -38,6 +49,16 @@ class AppContainer:
     resolve_company: ResolveCompany
     market_data: MarketDataPort
     get_market_snapshot: GetMarketSnapshot
+    financial_data: FinancialDataPort
+    get_financial_snapshot: GetFinancialSnapshot
+
+
+def _sec_user_agent() -> str:
+    return (
+        "agentic-financial-intelligence/0.1 "
+        "(research; contact=local-dev; +https://github.com/"
+        "LeelaissakAttota/agentic-equity-research-platform)"
+    )
 
 
 def build_container(
@@ -45,14 +66,15 @@ def build_container(
     *,
     clock: Callable[[], datetime] | None = None,
     market_data: MarketDataPort | None = None,
+    financial_data: FinancialDataPort | None = None,
 ) -> AppContainer:
-    """Wire settings, readiness, company resolution, and market intelligence.
+    """Wire settings, readiness, company resolution, market and financial intelligence.
 
     Optional ``clock`` freezes evaluation time for deterministic tests.
-    Optional ``market_data`` injects a fully wired adapter (tests).
+    Optional ``market_data`` / ``financial_data`` inject fully wired adapters (tests).
 
-    Live Yahoo chart acquisition is opt-in via ``MARKET_DATA_LIVE_ENABLED``.
-    Absence of live mode does not affect readiness (optional provider).
+    Live Yahoo chart and SEC companyfacts acquisition are opt-in via settings.
+    Absence of live mode does not affect readiness (optional providers).
     Fixture data is never labeled as live.
     """
 
@@ -75,7 +97,7 @@ def build_container(
     resolve_company = ResolveCompany(catalog)
 
     if market_data is None:
-        fixture = InMemoryMarketDataAdapter()
+        fixture_market = InMemoryMarketDataAdapter()
         if (
             resolved.market_data_live_enabled
             and resolved.market_data_primary_provider == "yahoo_finance_chart"
@@ -84,24 +106,44 @@ def build_container(
                 UrlLibHttpTransport(max_response_bytes=resolved.market_data_max_response_bytes),
                 timeout_seconds=float(resolved.market_data_timeout_seconds),
                 max_retries=resolved.market_data_max_retries,
-                user_agent=(
-                    "agentic-financial-intelligence/0.1 "
-                    "(research; contact=local-dev; +https://github.com/"
-                    "LeelaissakAttota/agentic-equity-research-platform)"
-                ),
+                user_agent=_sec_user_agent(),
             )
             live = YahooChartMarketDataAdapter(
                 http,
                 history_days=resolved.market_data_history_days,
                 clock=clock,
             )
-            # Primary live, secondary fixture — provenance stays with the winner.
-            stacked: MarketDataPort = FallbackMarketDataAdapter(live, fixture)
+            stacked_market: MarketDataPort = FallbackMarketDataAdapter(live, fixture_market)
         else:
-            stacked = fixture
+            stacked_market = fixture_market
         market_data = CachingMarketDataAdapter(
-            stacked,
+            stacked_market,
             ttl=timedelta(seconds=resolved.market_cache_ttl_seconds),
+            clock=clock,
+        )
+
+    if financial_data is None:
+        fixture_financial = InMemoryFinancialDataAdapter()
+        if (
+            resolved.financial_data_live_enabled
+            and resolved.financial_data_primary_provider == "sec_company_facts"
+        ):
+            fin_http = BoundedHttpClient(
+                UrlLibHttpTransport(max_response_bytes=resolved.financial_data_max_response_bytes),
+                timeout_seconds=float(resolved.financial_data_timeout_seconds),
+                max_retries=resolved.financial_data_max_retries,
+                user_agent=_sec_user_agent(),
+            )
+            live_financial = SecCompanyFactsFinancialDataAdapter(fin_http, clock=clock)
+            stacked_financial: FinancialDataPort = FallbackFinancialDataAdapter(
+                live_financial,
+                fixture_financial,
+            )
+        else:
+            stacked_financial = fixture_financial
+        financial_data = CachingFinancialDataAdapter(
+            stacked_financial,
+            ttl=timedelta(seconds=resolved.financial_cache_ttl_seconds),
             clock=clock,
         )
 
@@ -114,6 +156,11 @@ def build_container(
         freshness_policy=freshness,
         clock=clock,
     )
+    get_financial_snapshot = GetFinancialSnapshot(
+        resolve_company=resolve_company,
+        financial_data=financial_data,
+        clock=clock,
+    )
     return AppContainer(
         settings=resolved,
         readiness=readiness,
@@ -122,4 +169,6 @@ def build_container(
         resolve_company=resolve_company,
         market_data=market_data,
         get_market_snapshot=get_market_snapshot,
+        financial_data=financial_data,
+        get_financial_snapshot=get_financial_snapshot,
     )

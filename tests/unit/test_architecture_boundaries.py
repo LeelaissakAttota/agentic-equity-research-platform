@@ -115,3 +115,17 @@ class ArchitectureBoundaryTests(TestCase):
         self.assertFalse(any("infrastructure" in name for name in imports))
         self.assertNotIn("InMemoryMarketDataAdapter", source)
         self.assertNotIn("build_reference_market_series", source)
+
+    def test_financial_snapshot_depends_on_port_not_concrete_adapter(self) -> None:
+        snapshot_path = APPLICATION_ROOT / "financial_snapshot.py"
+        source = snapshot_path.read_text(encoding="utf-8")
+        imports = _imported_modules(snapshot_path)
+        self.assertIn("FinancialDataPort", source)
+        self.assertTrue(
+            any(
+                name.endswith("ports") or name == "financial_intelligence.application.ports"
+                for name in imports
+            )
+        )
+        self.assertFalse(any("infrastructure" in name for name in imports))
+        self.assertNotIn("InMemoryFinancialDataAdapter", source)

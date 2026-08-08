@@ -140,6 +140,8 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Acceptance criteria:** Supported filings retain document provenance; normalized numbers reconcile within documented tolerances; amendments/conflicts remain explicit; no model performs arithmetic.
 
+**Authorized Phase 4 Prompt 1–4 completion status:** COMPLETE for Financial & Filing Intelligence foundation (fixture fundamentals + optional SEC companyfacts live path, deterministic calculations with omissions, conflict handling, cache/fallback, explicit data origin, India fixture/authority foundation). Documented limitations remain: live SEC optional/default off and demo-scale; India live adapters deferred; valuation multiples deferred (ADR-030); TTM not implemented; fixture coverage is representative, not exhaustive. Phase 5 remains not started and awaits explicit owner authorization.
+
 **Out of scope:** Full news/industry/regulatory research, autonomous planner, vector memory, final Word reports.
 
 **Dependencies:** Accepted Phase 3 plus safe source/document foundations.

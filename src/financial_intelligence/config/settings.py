@@ -105,6 +105,39 @@ class Settings(BaseSettings):
         le=365,
     )
 
+    financial_cache_ttl_seconds: int = Field(
+        default=3600,
+        alias="FINANCIAL_CACHE_TTL_SECONDS",
+        ge=1,
+        le=86400,
+    )
+    financial_data_live_enabled: bool = Field(
+        default=False,
+        alias="FINANCIAL_DATA_LIVE_ENABLED",
+    )
+    financial_data_primary_provider: Literal["sec_company_facts", "none"] = Field(
+        default="sec_company_facts",
+        alias="FINANCIAL_DATA_PRIMARY_PROVIDER",
+    )
+    financial_data_timeout_seconds: int = Field(
+        default=15,
+        alias="FINANCIAL_DATA_TIMEOUT_SECONDS",
+        ge=1,
+        le=120,
+    )
+    financial_data_max_response_bytes: int = Field(
+        default=2_097_152,
+        alias="FINANCIAL_DATA_MAX_RESPONSE_BYTES",
+        ge=1024,
+        le=10_485_760,
+    )
+    financial_data_max_retries: int = Field(
+        default=2,
+        alias="FINANCIAL_DATA_MAX_RETRIES",
+        ge=0,
+        le=5,
+    )
+
     @field_validator("allow_paid_models")
     @classmethod
     def paid_models_must_remain_disabled(cls, value: bool) -> bool:
@@ -165,6 +198,12 @@ class Settings(BaseSettings):
             "market_data_max_response_bytes": self.market_data_max_response_bytes,
             "market_data_max_retries": self.market_data_max_retries,
             "market_data_history_days": self.market_data_history_days,
+            "financial_cache_ttl_seconds": self.financial_cache_ttl_seconds,
+            "financial_data_live_enabled": self.financial_data_live_enabled,
+            "financial_data_primary_provider": self.financial_data_primary_provider,
+            "financial_data_timeout_seconds": self.financial_data_timeout_seconds,
+            "financial_data_max_response_bytes": self.financial_data_max_response_bytes,
+            "financial_data_max_retries": self.financial_data_max_retries,
             "database_configured": bool(self.database_url.get_secret_value()),
             "redis_configured": bool(self.redis_url.get_secret_value()),
             "openrouter_key_configured": bool(self.openrouter_api_key.get_secret_value()),

@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 3 — COMPLETE. Phase 0–2 are complete. The repository includes application foundation, company identity/resolution, source-metadata contracts, and Market Intelligence (`GET /market/snapshot`, deterministic calculations, fixture adapters, optional opt-in Yahoo chart live mode default OFF with explicit data origin). Phase 4 Financial & Filing Intelligence is **not started** and awaits owner authorization. Filings, research agents, retrieval, reports, Streamlit, MCP, and trading are **not** implemented.
+> **Current status:** Phase 4 — COMPLETE. Phase 0–3 are complete. The repository includes application foundation, company identity/resolution, source-metadata contracts, Market Intelligence (`GET /market/snapshot`), and Financial & Filing Intelligence (`GET /financials/snapshot`, deterministic fundamentals, fixture adapters, optional opt-in SEC companyfacts live mode default OFF, India fixture/authority foundation). Phase 5+ (news/events/industry/regulatory research and later capabilities) are **not started** and await owner authorization. Full SEC/India live filing coverage, valuation multiples, research agents, RAG, reports, Streamlit, MCP, and trading are **not** implemented.
 
 ## Vision
 
@@ -115,6 +115,8 @@ Health checks:
 - `GET /ready` — foundation readiness
 - `GET /version` — service metadata
 - `GET /companies/resolve?q=...` — local deterministic company resolution (Phase 2 Prompt 1)
+- `GET /market/snapshot?q=...` — market observations and deterministic metrics (Phase 3)
+- `GET /financials/snapshot?q=...` — financial fundamentals and deterministic metrics (Phase 4 Prompt 1)
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

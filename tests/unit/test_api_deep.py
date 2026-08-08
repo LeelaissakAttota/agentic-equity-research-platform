@@ -91,7 +91,14 @@ class ApiContractDeepTests(TestCase):
         paths = set(app.openapi()["paths"])
         self.assertEqual(
             paths,
-            {"/health", "/ready", "/version", "/companies/resolve", "/market/snapshot"},
+            {
+                "/health",
+                "/ready",
+                "/version",
+                "/companies/resolve",
+                "/market/snapshot",
+                "/financials/snapshot",
+            },
         )
         self.assertEqual(
             app.openapi()["info"]["title"],

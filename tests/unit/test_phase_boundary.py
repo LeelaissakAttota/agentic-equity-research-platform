@@ -38,12 +38,13 @@ class PhaseBoundaryTests(TestCase):
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])
 
-    def test_phase4_filing_intelligence_not_started(self) -> None:
-        filing_markers = ("sec edgar", "10-k parser", "income_statement", "balance_sheet")
+    def test_phase5_news_intelligence_not_started(self) -> None:
+        """Phase 5+ agent/orchestration markers must remain absent."""
+        phase5_markers = ("langgraph_workflow", "verification_engine", "synthesis agent")
         violations: list[str] = []
         for path in PACKAGE.rglob("*.py"):
             text = path.read_text(encoding="utf-8").lower()
-            for marker in filing_markers:
+            for marker in phase5_markers:
                 if marker in text:
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])

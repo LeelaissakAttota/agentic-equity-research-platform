@@ -1,5 +1,6 @@
 """Phase 3 market intelligence domain package."""
 
+from financial_intelligence.domain.data_origin import DataOrigin
 from financial_intelligence.domain.market.calculations import (
     CALCULATION_LIBRARY_VERSION,
     MarketMetric,
@@ -18,7 +19,6 @@ from financial_intelligence.domain.market.calendar import (
     is_weekday_session,
 )
 from financial_intelligence.domain.market.observations import (
-    DataOrigin,
     FreshnessStatus,
     MarketDataAvailability,
     MarketObservationSeries,

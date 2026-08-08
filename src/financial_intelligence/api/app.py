@@ -9,7 +9,7 @@ from fastapi import FastAPI
 
 from financial_intelligence.api.errors import register_exception_handlers
 from financial_intelligence.api.middleware import CorrelationIdMiddleware
-from financial_intelligence.api.routes import companies, health, market
+from financial_intelligence.api.routes import companies, financials, health, market
 from financial_intelligence.composition import AppContainer, build_container
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.observability.logging import configure_logging, get_logger
@@ -52,4 +52,5 @@ def create_app(
     application.include_router(health.router)
     application.include_router(companies.router)
     application.include_router(market.router)
+    application.include_router(financials.router)
     return application

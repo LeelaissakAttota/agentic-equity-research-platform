@@ -222,6 +222,30 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 
 **Consequences:** `GET /market/snapshot` returns structured OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED outcomes with Tier-2 `SourceMetadata`; stale/missing data is visible; calculations never run in an LLM; live quote acquisition remains future work.
 
+## ADR-029 — Fixture-first Phase 4 financial adapters with deterministic fundamentals
+
+**Decision:** Phase 4 Prompt 1 ships Financial & Filing Intelligence through application-owned `FinancialDataPort`, in-memory/fixture financial packages for Apple and Reliance Industries, optional in-process TTL cache, primary→secondary fallback, and a versioned deterministic financial calculation library. Optional SEC EDGAR companyfacts HTTP adapter is enabled only when `FINANCIAL_DATA_LIVE_ENABLED=true`. Default remains offline fixture mode. Financial snapshots require uniquely `RESOLVED` company identity before attaching fundamentals. India live NSE/BSE/SEBI adapters remain deferred; fixture/reference contracts only.
+
+**Rationale:** Frozen Phase 4 requires traceable financial facts, filing metadata, and reproducible ratio/growth calculations without LLM extraction or premature India scraping. Fixture adapters preserve offline CI, fail-closed paid-model policy, and Phase 2 identity safety.
+
+**Consequences:** `GET /financials/snapshot` returns structured OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED outcomes with Tier-1/Tier-2 source metadata; missing facts remain absent; calculations never run in an LLM; valuation multiples needing market+fundamentals bridge remain deferred to later prompts; SEC live mode is opt-in and demo-scale CIK mapping only.
+
+## ADR-030 — Defer valuation multiples until market+fundamentals as-of bridge
+
+**Decision:** Phase 4 Prompt 2 does **not** implement P/E, P/B, EV/EBITDA, or similar valuation multiples. EPS remains a reportable `FinancialFact` when present. A valuation bridge requires trustworthy, period-aligned market price and per-share fundamentals with explicit as-of semantics and preserved dual provenance.
+
+**Rationale:** Prompt 2 evaluated whether Phase 4 fundamentals alone are sufficient. They are not: market snapshots and financial packages are separate acquisition paths with independent freshness/as-of clocks. Computing P/E from an unrelated price timestamp and fiscal EPS would fabricate false precision. Resume-driven metrics are explicitly disallowed by the Prompt 2 contract.
+
+**Consequences:** Valuation multiples stay deferred to a later authorized prompt that designs an explicit market+fundamentals bridge; missing valuation inputs must degrade as omitted/unavailable rather than invented ratios.
+
+## ADR-031 — Explicit financial fact conflict resolution (no last-write-wins)
+
+**Decision:** When multiple sources provide values for the same company/concept/period, the platform records all candidates. Deterministic resolution is allowed only when candidates share compatible measurement basis (exact reporting period, unit, and currency) and either (a) normalized values agree, or (b) a unique higher authority tier (lower tier number) agrees internally. Otherwise the conflict remains `UNRESOLVED` and no fact is selected. Retrieval timestamp ordering never silently decides disagreements. Numeric coincidence across mismatched unit/currency/period is never treated as agreement.
+
+**Rationale:** ADR-019 requires conflicts to remain first-class. Silent last-write-wins would corrupt auditability of Tier-1 filings versus lower-tier structured feeds. Agreeing numbers with incompatible units or currencies would fabricate false certainty.
+
+**Consequences:** Packages may expose a `conflicts` collection; unresolved conflicts omit the contested concept from statements; API consumers see explicit conflict payloads when present.
+
 ## ADR-028 — Optional Yahoo chart live adapter with explicit data origin
 
 **Decision:** Phase 3 Prompt 3 adds an optional, key-free Yahoo Finance chart HTTP adapter behind `MarketDataPort`, enabled only when `MARKET_DATA_LIVE_ENABLED=true`. Default remains offline fixture mode. Observations carry explicit `DataOrigin` (`live` / `cached_live` / `fixture` / `unavailable`). Composition is cache → (optional live primary) → fixture secondary. Provider symbol mapping (e.g. `RELIANCE.NS` / `.BO`) stays in infrastructure and never becomes canonical identity. Valuation multiples requiring fundamentals remain deferred to Phase 4. Exchange holiday calendars and full corporate-action engines remain documented limitations. Optional live providers do not affect `/ready`.

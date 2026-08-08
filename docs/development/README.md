@@ -18,6 +18,7 @@ Foundation routes:
 - `GET /ready` — foundation readiness (`200` ready, `503` not ready)
 - `GET /version` — service metadata
 - `GET /companies/resolve?q=Apple` — deterministic company resolution against the local in-memory reference catalog (`200` for RESOLVED/AMBIGUOUS/NOT_FOUND; `400` invalid query; framework `422` for some parameter validation failures)
+- `GET /financials/snapshot?q=Apple&exchange=NASDAQ` — financial fundamentals snapshot (`200` for OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED; `400` invalid query). Response may include derived `metrics`, explainable `omissions`, filing/source provenance, and explicit `conflicts` when present. Default data is **fixture/demo** unless optional SEC live mode is enabled. India live adapters are **not** wired; Reliance coverage is fixture-labelled. Valuation multiples are **deferred** (ADR-030). Phase 4 is complete; Phase 5 is not started.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 

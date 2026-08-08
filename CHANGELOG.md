@@ -4,6 +4,46 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 4 completion checkpoint
+
+- Owner approved Phase 4 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.
+- Reconfirmed pytest (288 passed), Ruff, mypy, clean install/OpenAPI, Docker/Compose, secret/paid-model, architecture, and Phase 5 absence gates.
+- Established the Phase 4 Git checkpoint on `main` with message `feat(phase-04): implement financial and filing intelligence`.
+- Phase 4 Financial & Filing Intelligence scope is complete; documented limitations remain explicit.
+- Phase 5 remains not started and awaits explicit owner authorization.
+
+### Phase 4 Prompt 3 (owner approved)
+
+- Acceptance audit and financial contract freeze for Phase 4 Prompts 1–2.
+- Hardened conflict resolution: unit/currency/exact-period compatibility required before value agreement (ADR-031 clarification).
+- Hardened fact invariants (ratio/percent reject currency; package filing_id consistency).
+- Added Phase 4 contract-freeze / Prompt 2 verification / provenance regressions.
+- Revalidated valuation deferral (ADR-030); documentation truth updates.
+- No new Phase 5 capabilities; OpenRouter/LLM calls = 0; Prompt 3 is not a Git checkpoint.
+- Acceptance: no blocking Phase 4 gaps within authorized scope; Prompt 4 may release-checkpoint after owner approval.
+
+### Phase 4 Prompt 2 (owner approved)
+
+- Hardened financial domain (NaN/Infinity, scale/unit/currency, duplicates, timezone, filing URL validation, identity consistency).
+- Hardened period comparability with explainable incomparability reasons; omitted metrics replace silent skips.
+- Added explicit fact-conflict handling (authority-tier resolution; no last-write-wins) — ADR-031.
+- Deepened offline SEC companyfacts tests (amendments, instant facts, malformed/empty/oversized/429/5xx/timeout).
+- Added India filing foundation (NSE→BSE→SEBI→IR precedence + fixture-labelled parser); live India HTTP deferred.
+- Added deterministic filing pipeline foundation; hardened concept mapping (unknown/ambiguous unmapped).
+- Extended financial snapshot API with omissions/conflicts provenance; adversarial API/cache/fallback coverage.
+- Valuation multiples remain deferred (ADR-030); OpenRouter/LLM calls = 0; Phase 4 Prompt 2 is not a Git checkpoint.
+
+### Phase 4 Prompt 1 (owner approved; local uncommitted foundation preserved)
+
+- Added canonical financial domain: `FinancialFact`, reporting periods, units/scale, income/balance/cash-flow statements, filing metadata, shared `DataOrigin`.
+- Added deterministic financial calculation library (growth, margins, liquidity, FCF) with explicit formula versions.
+- Added `FinancialDataPort`, fixture-backed in-memory adapter, in-process TTL cache, primary→secondary fallback (ADR-029).
+- Added optional SEC EDGAR companyfacts HTTP adapter (`FINANCIAL_DATA_LIVE_ENABLED`, default false).
+- Added `GetFinancialSnapshot` requiring uniquely resolved company identity before attaching fundamentals.
+- Added `GET /financials/snapshot` with OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED/INVALID contracts.
+- Representative Apple (US) and Reliance Industries (India) fixture fundamentals; India live adapters deferred.
+- No OpenRouter/LLM calls; valuation multiples bridge deferred; Phase 4 Prompt 1 is not a Git checkpoint.
+
 ### Phase 3 completion checkpoint
 
 - Owner approved Phase 3 Prompts 1–3; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push.

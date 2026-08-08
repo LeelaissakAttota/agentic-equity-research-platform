@@ -15,6 +15,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 
+from financial_intelligence.domain.data_origin import DataOrigin
 from financial_intelligence.domain.identity import (
     CompanyId,
     CurrencyCode,
@@ -32,15 +33,6 @@ class FreshnessStatus(StrEnum):
     FRESH = "fresh"
     STALE = "stale"
     UNKNOWN = "unknown"
-
-
-class DataOrigin(StrEnum):
-    """Explicit origin of market observations (never conflate fixture with live)."""
-
-    LIVE = "live"
-    CACHED_LIVE = "cached_live"
-    FIXTURE = "fixture"
-    UNAVAILABLE = "unavailable"
 
 
 class MarketDataAvailability(StrEnum):

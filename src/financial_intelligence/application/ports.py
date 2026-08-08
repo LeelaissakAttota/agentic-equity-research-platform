@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import Protocol, runtime_checkable
 
+from financial_intelligence.domain.financial import CompanyFinancialPackage
 from financial_intelligence.domain.identity import (
     CompanyId,
     CompanyIdentity,
@@ -94,3 +95,21 @@ class MarketDataPort(Protocol):
         company_id: CompanyId,
     ) -> MarketObservationSeries | None:
         """Return normalized OHLCV for a listing, or None when unavailable."""
+
+
+@runtime_checkable
+class FinancialDataPort(Protocol):
+    """Application-owned financial/filing data boundary.
+
+    Concrete adapters (fixture / optional SEC companyfacts HTTP) are selected
+    in composition. Implementations must never invent financial facts when
+    upstream data is missing.
+    """
+
+    def get_financial_package(
+        self,
+        company_id: CompanyId,
+        *,
+        fiscal_year: int | None = None,
+    ) -> CompanyFinancialPackage | None:
+        """Return normalized financial package for a company, or None when unavailable."""
