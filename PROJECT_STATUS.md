@@ -40,7 +40,7 @@ Autonomous Research Workflows foundation vertical slice on top of Phase 6:
 ## Phase checkpoints
 
 - Phase 6: `1df132b10cc4ed36f28c32ecdbaa89987c2d4de0`
-- Phase 7: `<Phase 7 commit hash to be filled after commit>`
+- Phase 7: `37288868b2296787874f4fa80bbbfdc51bf0bcb0`
 - Remote: `origin` → `git@github.com:LeelaissakAttota/agentic-equity-research-platform.git`
 
 ## Change protocol
