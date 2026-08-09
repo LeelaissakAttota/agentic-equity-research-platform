@@ -3,14 +3,27 @@
 ## Current gate
 
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
-- **Active phase:** Phase 7 — COMPLETE
-- **Active prompt:** Phase 7 Prompt 4 — COMPLETE
-- **State:** Phase 0–7 complete; Phase 7 Prompts 1–4 implemented and release-validated
-- **Next permitted work:** Phase 8 after owner authorization
-- **Production readiness:** Not production-ready (Phase 7 is process-local foundation)
-- **Phase 0–6:** COMPLETE
+- **Active phase:** Phase 8 — COMPLETE
+- **Active prompt:** Phase 8 Prompt 4 — RELEASE CHECKPOINT
+- **State:** Phases 0–8 complete; Phase 8 Prompts 1–4 owner-approved and release-validated
+- **Next permitted work:** Phase 9 remains locked pending explicit owner authorization
+- **Production readiness:** Not production-ready (Phase 9–10 remain)
+- **Phases 0–6:** COMPLETE
 - **Phase 7:** COMPLETE (Prompts 1–4)
-- **Phase 8:** NOT STARTED / AWAITING OWNER AUTHORIZATION
+- **Phase 8:** COMPLETE (Prompts 1–4)
+- **Phase 9:** NOT STARTED
+
+## Phase 8 summary (Prompts 1–3)
+
+- **Verification foundation (Prompt 1, owner approved):** Typed claim, evidence, result, contradiction, confidence-factor, and critic-request contracts; deterministic verification engine; application use case; composition-root integration.
+- **Hardening (Prompt 2):** Evidence claim-type compatibility; strict numeric value/unit/currency/period matching; non-finite numeric rejection; supporting-evidence-only confidence calculation; 22-case adversarial verification suite.
+- **Acceptance audit (Prompt 3):** Versioned confidence policy, canonical source/provenance vocabularies, strict identity/time/URL invariants, deterministic critic convergence/exhaustion decisions, unsafe memory-summary evidence inference removed, and 18-case contract-freeze suite.
+- **Release checkpoint (Prompt 4):** Final validation, documentation closure, intentional staged-content/secret audit, one Phase 8 commit, push, and local/remote synchronization verification.
+- **Validation:** Focused Phase 8 tests 40/40; full regression 469/469; architecture 10/10; phase boundary 4/4; settings/policy/baseline 15/15; Ruff lint and format clean; mypy clean across 166 source files; offline `create_app`/OpenAPI smoke produced 23 paths; Compose configuration valid; `git diff --check` clean except informational LF-to-CRLF warnings.
+- **Cost and model posture:** OpenRouter calls 0; runtime LLM calls 0; paid calls 0; `ALLOW_PAID_MODELS=false` remains fail-closed.
+- **Boundary:** No Phase 9 implementation, report rendering, multilingual presentation, MCP, trading, RAG/vector database, or durable persistence was added.
+
+The ordered continuation record is [PHASE_HISTORY.md](PHASE_HISTORY.md).
 
 ## Phase 7 summary (Prompts 1–4)
 
@@ -22,6 +35,7 @@ Autonomous Research Workflows foundation vertical slice on top of Phase 6:
 - **Release checkpoint (Prompt 4):** Final validation, documentation closure, single release commit, push, synchronization verification
 
 **Decisions frozen (Prompt 3 acceptance):**
+
 - Durable PostgreSQL/Redis persistence: **NOT required** (ADR-044)
 - LangGraph: **NOT required** (ADR-046)
 - RAG/vector memory: **NOT required** (ADR-045)
@@ -35,6 +49,7 @@ Autonomous Research Workflows foundation vertical slice on top of Phase 6:
 - Monitoring is explicit invocation only (no background polling/scheduler)
 - Report rendering deferred (contract foundation only); notification channels deferred
 - RAG/vector memory deferred within Phase 7
+- Phase 8 verification is a deterministic foundation; workflow-wide typed claim production and durable persistence remain future work
 - Limited/demo-scale underlying datasets where applicable
 
 ## Phase checkpoints

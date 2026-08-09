@@ -71,6 +71,8 @@ This separation enables freshness checks and future “what changed?” comparis
 
 Confidence must be explainable and computed from factors such as source authority, directness, independent corroboration, freshness, extraction quality, validation outcomes, and unresolved contradictions. It is not the model's subjective probability. Store the score version and contributing factors; “unknown” is preferable to false precision.
 
+The current Phase 8 foundation serializes deterministic confidence under `phase8-deterministic-v1`. Critic assessment is a bounded stop decision (`sufficient_evidence`, `research_required`, or `attempts_exhausted`); it does not make a confidence score into truth or execute re-research by itself.
+
 ## Evidence graph and stores
 
 - PostgreSQL is the planned canonical store for run, claim, source, evidence, relationship, and verification metadata.

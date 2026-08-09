@@ -65,3 +65,7 @@ Avoid rewriting shared history. Never use destructive reset/clean/force operatio
 ## Releases
 
 Release tags and semantic-version policy will be established before external releases. A tag requires accepted phase/release criteria, changelog, reproducible build, security checks, migration/rollback notes, and owner approval.
+
+## Phase release checkpoints
+
+For the remaining phase-gated work, Prompts 1–3 remain uncommitted review checkpoints. After the owner approves the final pre-release review, Prompt 4 may stage only intentional files for that phase, create one clear phase commit, push it to the approved GitHub remote, verify local `main` and `origin/main` synchronization, and report the result. Prompt 4 must not infer approval from an earlier prompt.

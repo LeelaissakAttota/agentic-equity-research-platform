@@ -4,6 +4,39 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 8 Prompt 4 (release checkpoint)
+
+- Owner approved Prompts 1–3 and authorized the Phase 8 release checkpoint.
+- Reconfirmed focused Phase 8, full regression, architecture, phase-boundary, configuration/cost, Ruff, mypy, OpenAPI, Compose, diff-integrity, staged-content, and secret-risk gates.
+- Closed documentation and the ordered phase/prompt continuation record for a single intentional Phase 8 commit and verified push.
+- Phase 8 marked COMPLETE; Phase 9 remains NOT STARTED / AWAITING OWNER AUTHORIZATION.
+- Runtime OpenRouter/LLM/paid calls remain 0.
+
+### Phase 8 Prompt 3 (owner approved)
+
+- Completed the Phase 8 technical acceptance audit and added an 18-test contract-freeze suite.
+- Hardened claim/evidence identity, duplicate evidence, URL, datetime, future-retrieval, stale-support, numeric metadata, critic bounds, and engine policy invariants.
+- Added deterministic critic convergence/exhaustion assessment and versioned confidence policy `phase8-deterministic-v1`.
+- Reused canonical `DataOrigin` and `SourceAuthorityTier` vocabularies; removed unsafe workflow-memory-summary conversion into synthetic Tier-1 evidence.
+- Added `PHASE_HISTORY.md` as the ordered continuation index and recorded the owner-approved Prompt 4 release sequence.
+- Validation passed: focused Phase 8 40/40, full regression 469/469, architecture 10/10, phase boundary 4/4, settings/policy/baseline 15/15, Ruff, mypy, OpenAPI 23 paths, Compose, and diff integrity.
+- Phase 8 remains in progress; Prompt 4 and Phase 9 were not started. No staging, commit, or push occurred.
+
+### Phase 8 Prompt 2 (owner approved)
+
+- Recovered the interrupted 22-case verification suite and restored valid deterministic tests for factual, numeric, conflicting, stale, missing-evidence, and critic-request behavior.
+- Hardened evidence matching so claim-type mismatches and numeric unit, currency, scale, period, fiscal-year, percentage/ratio, missing-value, NaN, and Infinity cases fail closed.
+- Confidence calculation considers supporting evidence only; contradicting or neutral evidence cannot inflate the score.
+- Validation passed: verification 22/22, full regression 451/451, architecture 10/10, phase boundary 4/4, Ruff lint/format, mypy (166 source files), OpenAPI (23 paths), Compose config, and diff integrity.
+- OpenRouter/LLM/paid calls remain 0; no Phase 9 work, Git staging, commit, or push was performed.
+
+### Phase 8 Prompt 1 (owner approved)
+
+- Added typed verification claims, evidence bundles, confidence factors, contradiction records, results, and critic-request contracts.
+- Added a framework-independent deterministic verification engine, application use case, and composition-root wiring.
+- Confidence is an explainable evidence-quality score, not a probability; conflicts and insufficient evidence remain explicit.
+- No LLM/OpenRouter, RAG/vector, durable persistence, or later-phase runtime dependency was introduced.
+
 ### Phase 7 Prompt 4 (release checkpoint)
 
 - Final validation: pytest 429 passed, Ruff, mypy, architecture boundaries, phase boundaries, OpenAPI 23 paths, Docker/Compose config.

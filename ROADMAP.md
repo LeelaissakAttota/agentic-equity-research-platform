@@ -13,8 +13,8 @@ This Phase 0–10 sequence is frozen by the Master Architecture review. Adding, 
 | 4 | Financial & Filing Intelligence | Parsed filings, normalized statements, ratios, trends, and filing evidence | Phase 3 accepted — **COMPLETE** |
 | 5 | News, Events, Industry & Regulatory Intelligence | Evidence-backed qualitative research across replaceable sources | Phase 4 accepted — **COMPLETE** |
 | 6 | Autonomous Research Planning & Dynamic Orchestration | Intent-driven plans, dependency-aware execution, monitoring, and bounded recovery | Phase 5 accepted — **COMPLETE** |
-|| 7 | Evidence Graph, RAG & Research Memory | Hybrid retrieval, claim/source relationships, governed memory, and change comparisons. **Prompt 1 (authorized):** workflow foundation first (ADR-043); RAG deferred | Phase 6 accepted — **COMPLETE** |
-| 8 | Verification, Confidence & Reflection | Deterministic verification, conflicts, quality scoring, critic loop, and targeted re-research | Phase 7 accepted |
+| 7 | Evidence Graph, RAG & Research Memory | Hybrid retrieval, claim/source relationships, governed memory, and change comparisons. **Prompt 1 (authorized):** workflow foundation first (ADR-043); RAG deferred | Phase 6 accepted — **COMPLETE** |
+| 8 | Verification, Confidence & Reflection | Deterministic verification, conflicts, quality scoring, critic loop, and targeted re-research | Phase 7 accepted — **COMPLETE** |
 | 9 | Conversational Research, Multilingual Output & Word Reports | Follow-up research, English/Telugu presentation, visuals, and professional DOCX artifacts | Phase 8 accepted |
 | 10 | MCP/API Integration, Evaluation & Production Hardening | Selected MCP exposure, comprehensive evaluation, security/reliability hardening, and deployability evidence | Phase 9 accepted |
 

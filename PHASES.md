@@ -180,7 +180,7 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Authorized Phase 7 Prompt 1 status:** OWNER APPROVED.
 
-**Authorized Phase 7 Prompt 2 status:** COMPLETE / OWNER APPROVED — hardening + structured Research Memory + watchlists/monitoring foundation + notification contracts + report-request contract + dashboard list API. RAG/vector memory remain deferred. Phase 8 remains not started.
+**Authorized Phase 7 Prompt 2 status:** COMPLETE / OWNER APPROVED — hardening + structured Research Memory + watchlists/monitoring foundation + notification contracts + report-request contract + dashboard list API. RAG/vector memory remain deferred.
 
 **Authorized Phase 7 Prompt 3 status:** OWNER APPROVED — final acceptance audit complete; no blocking gaps; ready for release checkpoint.
 
@@ -210,7 +210,7 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Phase 7 completion status:** COMPLETE (Prompts 1–4).
 
-**Authorized Phase 8 Prompt 1 status:** NOT STARTED / AWAITING OWNER AUTHORIZATION.
+**Authorized Phase 8 Prompt 1 status:** COMPLETE / OWNER APPROVED — deterministic typed verification foundation, explainable confidence factors, contradiction records, and targeted critic-request contracts.
 
 ## Phase 8 — Verification, Confidence & Reflection
 
@@ -227,6 +227,12 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 **Out of scope:** Final multilingual UX/report styling and MCP production exposure.
 
 **Dependencies:** Accepted Phase 7 evidence/retrieval/memory foundation.
+
+**Authorized Phase 8 Prompt 2 status:** COMPLETE / OWNER APPROVED — adversarial verification hardening, supporting-only confidence inputs, strict numeric metadata matching, non-finite value rejection, and 22-case verification coverage.
+
+**Authorized Phase 8 Prompt 3 status:** COMPLETE / OWNER APPROVED — final technical acceptance audit and contract freeze passed with no blocking foundation gaps.
+
+**Authorized Phase 8 Prompt 4 status:** COMPLETE — final validation, documentation closure, staged-content audit, one Phase 8 Git checkpoint, push, and synchronization verification. Phase 9 remains not started pending explicit owner authorization.
 
 ## Phase 9 — Conversational Research, Multilingual Output & Word Reports
 

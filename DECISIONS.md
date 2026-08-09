@@ -387,3 +387,27 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 **Rationale:** Frozen Phase 3 acceptance requires replaceable adapters and safe provider degradation. Fixture-only data cannot truthfully claim usable market intelligence for arbitrary real India/US listings. Yahoo chart HTTP is $0/no-key, allowlisted, and tested via fake transports so CI stays offline.
 
 **Consequences:** Live mode is opt-in; fixture data must never be labeled live; Alpha Vantage/Finnhub remain unused optional keys; multi-provider conflict comparison beyond fallback provenance remains limited; Yahoo TOS/reliability risk is accepted as optional Tier-2 structured data, not Tier-1 exchange authority.
+
+## ADR-047 — Deterministic, framework-independent verification foundation
+
+**Decision:** Phase 8 verification is implemented as typed domain contracts and deterministic application logic. Claims, evidence bundles, contradiction records, confidence factors, verification results, and targeted critic requests remain independent of FastAPI, provider SDKs, OpenRouter, LangGraph, storage engines, and presentation layers. Confidence is an explainable evidence-quality score, not a probability or factual authority.
+
+**Rationale:** Verification rules for source authority, numeric metadata, freshness, contradiction visibility, and sufficiency can be executed reproducibly without an LLM. Keeping the domain framework-independent preserves auditability and prevents model prose from becoming evidence.
+
+**Consequences:** Runtime LLM/OpenRouter calls remain zero for Phase 8 Prompts 1–2. Critic requests are structured recommendations for bounded later orchestration, not an autonomous or unbounded loop. Persistence, synthesis, and presentation remain separate concerns.
+
+## ADR-048 — Numeric verification fails closed on incompatible or non-finite values
+
+**Decision:** Numeric evidence supports a claim only when claim type and normalized value match and required unit, currency, and reporting-period metadata are compatible. Missing expected values, mismatched scale/unit/currency/period, percentage-versus-ratio differences, and non-finite `Decimal` values (`NaN` or Infinity) cannot produce supporting evidence. Confidence is calculated from supporting evidence only; neutral or contradicting evidence cannot increase it.
+
+**Rationale:** Financial verification must not accept text overlap or string-equal invalid numerics as proof. Prompt 2 adversarial testing confirmed that non-finite values required an explicit fail-closed guard.
+
+**Consequences:** Invalid or incompatible numeric evidence remains contradicting or non-supporting with explicit low confidence and critic guidance. No tolerance, currency conversion, or unit conversion is inferred silently; any future normalization policy requires a separate approved decision and tests.
+
+## ADR-049 — Phase 8 Prompt 3 verification acceptance freeze
+
+**Decision:** Phase 8 foundation closure requires a deterministic single-claim verification contract with canonical source/provenance vocabularies, strict identity and evidence validation, versioned explainable confidence, preserved contradictions, and a bounded critic stop decision. `CriticAssessment` may return `sufficient_evidence`, `research_required`, or `attempts_exhausted`; it does not execute re-research. Free-form workflow memory summaries are not typed claims or evidence and must not be assigned synthetic authority. The prior summary-to-Tier-1 workflow verification path is removed.
+
+**Rationale:** Prompt 3 adversarial tests found that missing metadata, future timestamps, fresh neutral evidence, duplicated identity, unsafe URLs, unversioned scoring, and synthetic workflow evidence could overstate verification quality. A deterministic contract freeze closes those gaps without introducing models, provider calls, or later-phase presentation features.
+
+**Consequences:** Phase 8 Prompt 3 has no blocking foundation gap and may proceed to the owner-gated Prompt 4 release checkpoint. Workflow/run-wide verification remains deferred until upstream capabilities emit typed claims and resolvable evidence. No public verification endpoint, autonomous re-research executor, LLM critic, RAG/vector store, durable verification persistence, synthesis, report generation, or Phase 9 feature is required for this foundation closure.

@@ -20,7 +20,7 @@ FORBIDDEN_CONTENT_MARKERS = (
 
 
 class PhaseBoundaryTests(TestCase):
-    """Confirm Phase 7+ and deferred frameworks were not introduced early."""
+    """Confirm only owner-authorized phase capabilities are present."""
 
     def test_no_forbidden_runtime_dependencies(self) -> None:
         with (ROOT / "pyproject.toml").open("rb") as handle:
@@ -39,13 +39,12 @@ class PhaseBoundaryTests(TestCase):
         self.assertEqual(violations, [])
 
     def test_phase7_rag_and_later_not_started(self) -> None:
-        """RAG/report/trading/verification markers must remain absent.
+        """RAG/report/trading markers must remain absent.
 
-        Phase 7 Prompt 1 may introduce workflow foundation modules, but must not
-        introduce embeddings, vector stores, report generators, or Phase 8 engines.
+        Phase 7 introduced workflow foundation modules and Phase 8 introduced
+        deterministic verification, but RAG, reports, UI, and trading stay locked.
         """
         phase7_markers = (
-            "verification_engine",
             "synthesis agent",
             "embedding_pipeline",
             "docx_report",
@@ -61,17 +60,11 @@ class PhaseBoundaryTests(TestCase):
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])
 
-    def test_phase8_verification_not_started(self) -> None:
-        phase8_markers = (
-            "verification_engine",
-            "critic_workflow",
-            "confidence_rubric",
-            "reflection_loop",
-        )
-        violations: list[str] = []
-        for path in PACKAGE.rglob("*.py"):
-            text = path.read_text(encoding="utf-8").lower()
-            for marker in phase8_markers:
-                if marker in text:
-                    violations.append(f"{path.relative_to(ROOT)}:{marker}")
-        self.assertEqual(violations, [])
+    def test_phase8_verification_foundation_is_present(self) -> None:
+        """The authorized deterministic verification foundation must remain wired."""
+        verification_module = PACKAGE / "domain" / "verification" / "engine.py"
+        composition = (PACKAGE / "composition" / "__init__.py").read_text(encoding="utf-8")
+
+        self.assertTrue(verification_module.is_file())
+        self.assertIn("VerificationEngine", composition)
+        self.assertIn("VerifyClaimUseCase", composition)

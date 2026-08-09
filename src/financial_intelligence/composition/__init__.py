@@ -40,8 +40,10 @@ from financial_intelligence.application.readiness import ReadinessRegistry
 from financial_intelligence.application.regulatory_snapshot import GetRegulatorySnapshot
 from financial_intelligence.application.request_research_report import RequestResearchReport
 from financial_intelligence.application.resolve_company import ResolveCompany
+from financial_intelligence.application.verify_claims import VerifyClaimUseCase
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.domain.orchestration import ResearchExecutionBudget
+from financial_intelligence.domain.verification.engine import VerificationEngine
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
 from financial_intelligence.infrastructure.financial import (
     CachingFinancialDataAdapter,
@@ -106,6 +108,8 @@ class AppContainer:
     manage_watchlist: ManageWatchlist
     notifications: NotificationPort
     request_research_report: RequestResearchReport
+    verification_engine: VerificationEngine
+    verify_claim: VerifyClaimUseCase
 
 
 def _sec_user_agent() -> str:
@@ -137,6 +141,7 @@ def build_container(
     Phase 2-5 use cases (no LLM planner, no external workflow-engine dependency).
     Phase 7 Prompt 1 adds in-memory workflow persistence / approval / pause-resume
     coordination on top of Phase 6 (not durable DB; not RAG or vector memory).
+    Phase 8 Prompt 1 adds deterministic verification engine (no LLM, no RAG).
     """
 
     resolved = settings if settings is not None else Settings()
@@ -311,6 +316,10 @@ def build_container(
         workflow_store=workflow_store,
         clock=clock,
     )
+
+    verification_engine = VerificationEngine()
+    verify_claim = VerifyClaimUseCase(engine=verification_engine)
+
     return AppContainer(
         settings=resolved,
         readiness=readiness,
@@ -339,4 +348,6 @@ def build_container(
         manage_watchlist=manage_watchlist,
         notifications=notifications,
         request_research_report=request_research_report,
+        verification_engine=verification_engine,
+        verify_claim=verify_claim,
     )

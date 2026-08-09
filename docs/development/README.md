@@ -1,6 +1,6 @@
 # Development Notes
 
-## Local Phase 1–7 foundation
+## Local Phase 1–8 foundation
 
 ```powershell
 Copy-Item .env.example .env
@@ -28,7 +28,10 @@ Foundation routes:
 - `GET /research/workflows` — bounded listing for dashboard foundation.
 - `POST /watchlists` / `POST /watchlists/{id}/checks` — watchlist + explicit monitoring check (no schedulers).
 - Structured Research Memory is deterministic task/result memory — **not** embeddings/RAG.
-- Phase 7 COMPLETE (Prompts 1–4); Phase 8 NOT STARTED / AWAITING OWNER AUTHORIZATION.
+- Phase 8 Prompts 1–3 add a deterministic verification domain/application foundation: typed claims and evidence, explicit contradictions, versioned explainable confidence factors, targeted critic requests, and bounded critic stop decisions. It is composed internally and does not yet add a public verification endpoint.
+- Verification is strict and fail-closed: claim type, numeric value, unit, currency, and reporting period must be compatible; missing or non-finite numeric values cannot support a claim; only supporting evidence contributes to confidence.
+- Workflow memory summaries are not claims or evidence and are never assigned source authority implicitly; workflow-wide verification remains deferred until typed claim/evidence production exists.
+- Phases 7 and 8 are COMPLETE (Prompts 1–4). Phase 9 is NOT STARTED / AWAITING OWNER AUTHORIZATION.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 

@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phase 7 — COMPLETE (Prompts 1–4). Phase 0–7 complete. Phase 7 delivers autonomous research workflows foundation (workflow identity, lifecycle, checkpoints, human approval, structured memory, watchlists, notifications, dashboard API). RAG/vector DB, report rendering, Streamlit, MCP, trading remain deferred. Phase 8 is **NOT STARTED / AWAITING OWNER AUTHORIZATION**.
+> **Current status:** Phases 0–8 are complete. Phase 8 delivers a deterministic, evidence-first verification and bounded critic foundation with versioned confidence and adversarial contract coverage. Phase 9 has not started and requires explicit owner authorization. RAG/vector DB, report rendering, Streamlit, MCP, and trading remain deferred.
 
 ## Vision
 
@@ -61,12 +61,12 @@ The platform supplies structured intelligence only. Broker/MT5 orders, trading c
 
 ## Implemented versus planned
 
-| Implemented in Phase 0–3 Prompt 1 | Planned in later phases |
+| Implemented through Phase 8 Prompt 2 | Planned in later phases |
 |---|---|
 | Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Live market/filing providers and broader research capabilities |
-| Typed settings, FastAPI factory, health/readiness/version, correlation, structured logging, API errors | LangGraph orchestration, OpenRouter calls, PostgreSQL/pgvector, Redis and research memory |
-| Company identity/resolution + source metadata foundation | Financial/filing intelligence, news/events, verification/critic, synthesis |
-| Fixture + optional opt-in Yahoo chart market observations, deterministic metrics, `GET /market/snapshot` with data origin | Streamlit, multilingual synthesis, charts and `.docx` report generation |
+| Typed settings, FastAPI factory, health/readiness/version, correlation, structured logging, API errors | OpenRouter calls, PostgreSQL/pgvector, Redis, and vector retrieval |
+| Company resolution; market, financial, news/event, industry, and regulatory foundations; deterministic research planning/execution and governed workflows | Broader live provider coverage and production-grade durable persistence |
+| Structured in-memory research history/watchlists plus deterministic claim verification, contradiction records, explainable confidence factors, and targeted critic requests | Later Phase 8 evaluation/closure; Streamlit, multilingual synthesis, charts, and `.docx` report generation |
 
 No unimplemented runtime capability is represented as working today. See `PROJECT_STATUS.md` for the authoritative gate.
 
@@ -90,6 +90,8 @@ Planned internal boundaries include API, application, domain, infrastructure, or
 ## Phase-gated development
 
 Work proceeds only through the approved phases in [ROADMAP.md](ROADMAP.md) and [PHASES.md](PHASES.md). A phase may begin only after the preceding phase satisfies its tests and acceptance criteria and the project owner explicitly authorizes the next prompt/phase.
+
+For ordered continuation context and prompt-level evidence, see [PHASE_HISTORY.md](PHASE_HISTORY.md). `PROJECT_STATUS.md` remains authoritative for the current gate.
 
 ## Development baseline
 

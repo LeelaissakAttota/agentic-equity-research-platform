@@ -4,7 +4,7 @@ This file applies to the entire repository.
 
 ## Start every task
 
-1. Read `PROJECT_STATUS.md`, `PROJECT_RULES.md`, and the relevant phase in `PHASES.md`.
+1. Read `PHASE_HISTORY.md`, `PROJECT_STATUS.md`, `PROJECT_RULES.md`, and the relevant phase in `PHASES.md`.
 2. Inspect existing files and Git status before editing.
 3. Confirm the requested work belongs to the active, explicitly authorized phase.
 4. Preserve user changes, architecture assets, remotes, and Git identity settings.
