@@ -38,11 +38,12 @@ class PhaseBoundaryTests(TestCase):
                     violations.append(f"{path.relative_to(ROOT)}:{marker}")
         self.assertEqual(violations, [])
 
-    def test_phase7_rag_and_later_not_started(self) -> None:
-        """RAG/report/trading markers must remain absent.
+    def test_rag_advanced_artifacts_and_trading_remain_absent(self) -> None:
+        """RAG, advanced artifact systems, UI, and trading markers remain absent.
 
         Phase 7 introduced workflow foundation modules and Phase 8 introduced
-        deterministic verification, but RAG, reports, UI, and trading stay locked.
+        deterministic verification. Phase 9 Prompts 1-2 add structured synthesis
+        and Prompt 3 adds minimal in-memory DOCX, but RAG, PDF, UI, and trading stay locked.
         """
         phase7_markers = (
             "synthesis agent",
@@ -68,3 +69,19 @@ class PhaseBoundaryTests(TestCase):
         self.assertTrue(verification_module.is_file())
         self.assertIn("VerificationEngine", composition)
         self.assertIn("VerifyClaimUseCase", composition)
+
+    def test_phase9_prompt2_synthesis_and_bounded_reporting_are_present(self) -> None:
+        """Authorized deterministic synthesis and in-memory reporting are wired."""
+        synthesis_module = PACKAGE / "domain" / "synthesis" / "policy.py"
+        synthesis_route = PACKAGE / "api" / "routes" / "synthesis.py"
+        composition = (PACKAGE / "composition" / "__init__.py").read_text(encoding="utf-8")
+
+        self.assertTrue(synthesis_module.is_file())
+        self.assertTrue(synthesis_route.is_file())
+        self.assertIn("GenerateResearchSynthesis", composition)
+        renderer = PACKAGE / "infrastructure" / "reporting" / "deterministic.py"
+        self.assertTrue(renderer.is_file())
+        renderer_source = renderer.read_text(encoding="utf-8").lower()
+        self.assertNotIn("python-docx", renderer_source)
+        self.assertNotIn("docx.document", renderer_source)
+        self.assertNotIn("open(", renderer_source)

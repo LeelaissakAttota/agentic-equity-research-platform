@@ -18,6 +18,7 @@ from financial_intelligence.api.routes import (
     news,
     regulatory,
     research,
+    synthesis,
     watchlists,
     workflows,
 )
@@ -68,6 +69,7 @@ def create_app(
     application.include_router(industry.router)
     application.include_router(regulatory.router)
     application.include_router(research.router)
+    application.include_router(synthesis.router)
     application.include_router(workflows.router)
     application.include_router(watchlists.router)
     return application

@@ -18,6 +18,7 @@ from financial_intelligence.application.create_research_workflow import CreateRe
 from financial_intelligence.application.deterministic_planner import DeterministicPlanner
 from financial_intelligence.application.execute_research_plan import ExecuteResearchPlan
 from financial_intelligence.application.financial_snapshot import GetFinancialSnapshot
+from financial_intelligence.application.generate_research_synthesis import GenerateResearchSynthesis
 from financial_intelligence.application.industry_snapshot import GetIndustryContextSnapshot
 from financial_intelligence.application.manage_research_workflow import ManageResearchWorkflow
 from financial_intelligence.application.manage_watchlist import ManageWatchlist
@@ -38,11 +39,13 @@ from financial_intelligence.application.ports import (
 )
 from financial_intelligence.application.readiness import ReadinessRegistry
 from financial_intelligence.application.regulatory_snapshot import GetRegulatorySnapshot
+from financial_intelligence.application.reporting_ports import ResearchReportGeneratorPort
 from financial_intelligence.application.request_research_report import RequestResearchReport
 from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.application.verify_claims import VerifyClaimUseCase
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.domain.orchestration import ResearchExecutionBudget
+from financial_intelligence.domain.synthesis import DeterministicSynthesisAssembler
 from financial_intelligence.domain.verification.engine import VerificationEngine
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
 from financial_intelligence.infrastructure.financial import (
@@ -73,6 +76,7 @@ from financial_intelligence.infrastructure.regulatory import (
     CachingRegulatoryAdapter,
     InMemoryRegulatoryAdapter,
 )
+from financial_intelligence.infrastructure.reporting import DeterministicResearchReportGenerator
 from financial_intelligence.infrastructure.watchlist import InMemoryWatchlistStore
 from financial_intelligence.infrastructure.workflow import InMemoryResearchWorkflowStore
 
@@ -110,6 +114,8 @@ class AppContainer:
     request_research_report: RequestResearchReport
     verification_engine: VerificationEngine
     verify_claim: VerifyClaimUseCase
+    generate_research_synthesis: GenerateResearchSynthesis
+    research_report_generator: ResearchReportGeneratorPort
 
 
 def _sec_user_agent() -> str:
@@ -142,6 +148,7 @@ def build_container(
     Phase 7 Prompt 1 adds in-memory workflow persistence / approval / pause-resume
     coordination on top of Phase 6 (not durable DB; not RAG or vector memory).
     Phase 8 Prompt 1 adds deterministic verification engine (no LLM, no RAG).
+    Phase 9 Prompt 1 adds deterministic verified synthesis (no LLM or renderer).
     """
 
     resolved = settings if settings is not None else Settings()
@@ -319,6 +326,19 @@ def build_container(
 
     verification_engine = VerificationEngine()
     verify_claim = VerifyClaimUseCase(engine=verification_engine)
+    synthesis_assembler = DeterministicSynthesisAssembler()
+    research_report_generator = DeterministicResearchReportGenerator()
+    if clock is None:
+        generate_research_synthesis = GenerateResearchSynthesis(
+            resolve_company=resolve_company,
+            assembler=synthesis_assembler,
+        )
+    else:
+        generate_research_synthesis = GenerateResearchSynthesis(
+            resolve_company=resolve_company,
+            assembler=synthesis_assembler,
+            clock=clock,
+        )
 
     return AppContainer(
         settings=resolved,
@@ -350,4 +370,6 @@ def build_container(
         request_research_report=request_research_report,
         verification_engine=verification_engine,
         verify_claim=verify_claim,
+        generate_research_synthesis=generate_research_synthesis,
+        research_report_generator=research_report_generator,
     )

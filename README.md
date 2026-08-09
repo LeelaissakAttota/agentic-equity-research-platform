@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phases 0–8 are complete. Phase 8 delivers a deterministic, evidence-first verification and bounded critic foundation with versioned confidence and adversarial contract coverage. Phase 9 has not started and requires explicit owner authorization. RAG/vector DB, report rendering, Streamlit, MCP, and trading remain deferred.
+> **Current status:** Phases 0–9 are complete and the owner approved the Phase 9 release checkpoint after all tests, documentation, security/cost checks, and changed-tree audit passed. Phase 10 is not started and awaits authorization. RAG/vector DB, narrative translation, Streamlit, MCP, and trading remain deferred.
 
 ## Vision
 
@@ -61,12 +61,12 @@ The platform supplies structured intelligence only. Broker/MT5 orders, trading c
 
 ## Implemented versus planned
 
-| Implemented through Phase 8 Prompt 2 | Planned in later phases |
+| Implemented through Phase 9 | Planned in later phases |
 |---|---|
 | Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Live market/filing providers and broader research capabilities |
 | Typed settings, FastAPI factory, health/readiness/version, correlation, structured logging, API errors | OpenRouter calls, PostgreSQL/pgvector, Redis, and vector retrieval |
 | Company resolution; market, financial, news/event, industry, and regulatory foundations; deterministic research planning/execution and governed workflows | Broader live provider coverage and production-grade durable persistence |
-| Structured in-memory research history/watchlists plus deterministic claim verification, contradiction records, explainable confidence factors, and targeted critic requests | Later Phase 8 evaluation/closure; Streamlit, multilingual synthesis, charts, and `.docx` report generation |
+| Structured in-memory research history/watchlists; deterministic verification; confidence/conflict preservation; evidence-linked synthesis; stable JSON, safe Markdown, and minimal professional DOCX reports; language/report contracts | Follow-up conversation, evaluated English/Telugu narrative rendering, charts, Streamlit, advanced report templates, and durable artifact storage |
 
 No unimplemented runtime capability is represented as working today. See `PROJECT_STATUS.md` for the authoritative gate.
 
@@ -124,6 +124,7 @@ Health checks:
 - `GET /regulatory/events/snapshot?q=...` — regulatory events with authority/allegation labels (Phase 5; fixture-first)
 - `POST /research/plans` — create deterministic research plan (Phase 6; does not execute)
 - `POST /research/execute` — create-and-execute a bounded plan synchronously (Phase 6; plans not persisted)
+- `POST /research/synthesis` — verify supplied typed claim evidence and return deterministic evidence-linked synthesis, optionally with an in-memory structured JSON, safe Markdown, or base64 DOCX report (Phase 9 Prompts 1–3; no LLM, translation, report-side fetching, or file writes)
 - `POST /research/workflows` — create a persistent research workflow (Phase 7; in-memory store)
 - `GET /research/workflows` — bounded dashboard listing (`limit`/`offset`/`status_filter`/`company_id`)
 - `GET /research/workflows/{workflow_id}` — load workflow status/result

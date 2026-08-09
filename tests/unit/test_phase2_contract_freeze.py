@@ -372,6 +372,7 @@ class ApiContractFreezeTests(TestCase):
                 "/regulatory/events/snapshot",
                 "/research/plans",
                 "/research/execute",
+                "/research/synthesis",
                 "/research/workflows",
                 "/research/workflows/{workflow_id}",
                 "/research/workflows/{workflow_id}/execute",

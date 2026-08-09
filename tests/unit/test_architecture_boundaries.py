@@ -188,3 +188,12 @@ class ArchitectureBoundaryTests(TestCase):
             self.assertIn("ResearchWorkflowStorePort", source)
             self.assertFalse(any("infrastructure" in name for name in imports))
             self.assertNotIn("InMemoryResearchWorkflowStore", source)
+
+    def test_research_synthesis_depends_on_domain_policy_not_adapters(self) -> None:
+        path = APPLICATION_ROOT / "generate_research_synthesis.py"
+        source = path.read_text(encoding="utf-8")
+        imports = _imported_modules(path)
+        self.assertIn("ResolveCompany", source)
+        self.assertIn("DeterministicSynthesisAssembler", source)
+        self.assertFalse(any("infrastructure" in name for name in imports))
+        self.assertNotIn("FastAPI", source)

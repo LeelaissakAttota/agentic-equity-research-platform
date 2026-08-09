@@ -15,8 +15,8 @@ This Phase 0–10 sequence is frozen by the Master Architecture review. Adding, 
 | 6 | Autonomous Research Planning & Dynamic Orchestration | Intent-driven plans, dependency-aware execution, monitoring, and bounded recovery | Phase 5 accepted — **COMPLETE** |
 | 7 | Evidence Graph, RAG & Research Memory | Hybrid retrieval, claim/source relationships, governed memory, and change comparisons. **Prompt 1 (authorized):** workflow foundation first (ADR-043); RAG deferred | Phase 6 accepted — **COMPLETE** |
 | 8 | Verification, Confidence & Reflection | Deterministic verification, conflicts, quality scoring, critic loop, and targeted re-research | Phase 7 accepted — **COMPLETE** |
-| 9 | Conversational Research, Multilingual Output & Word Reports | Follow-up research, English/Telugu presentation, visuals, and professional DOCX artifacts | Phase 8 accepted |
-| 10 | MCP/API Integration, Evaluation & Production Hardening | Selected MCP exposure, comprehensive evaluation, security/reliability hardening, and deployability evidence | Phase 9 accepted |
+| 9 | Conversational Research, Multilingual Output & Word Reports | Evidence-linked verified synthesis plus deterministic JSON/Markdown/minimal DOCX reporting. Broader conversation, translated narrative, UI/charts, and advanced templates remain documented deferrals — **COMPLETE / RELEASE CHECKPOINT OWNER APPROVED** | Phase 8 accepted |
+| 10 | MCP/API Integration, Evaluation & Production Hardening | Selected MCP exposure, comprehensive evaluation, security/reliability hardening, and deployability evidence — **NOT STARTED / AWAITING OWNER AUTHORIZATION** | Phase 9 accepted |
 
 ## Cross-phase gates
 

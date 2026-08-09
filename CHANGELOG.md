@@ -4,6 +4,46 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 9 Prompt 4 (owner-approved release checkpoint)
+
+- Recovered and verified `main` at protected Phase 8 ancestor `fcc145a0b4bb33c0c274f758f36d2ef508135a6a`, with no staged files, no local tracking divergence, intentional Prompt 1–3 changes intact, and five protected unrelated owner documents untouched.
+- Passed the 534-test full regression and a dedicated 251-test Phase 1–9 cross-phase endpoint/contract gate.
+- Passed Ruff, formatting, strict mypy, diff integrity, architecture/phase/settings/repository, OpenAPI/create-app, Docker Compose, secret/path/dependency, paid-model, and runtime-surface gates.
+- Closed project-control documentation to Phase 9 COMPLETE at the validated local pre-release boundary; Phase 10 remains NOT STARTED / AWAITING OWNER AUTHORIZATION.
+- Classified the complete changed/untracked tree into intentional Phase 9 content and five protected unrelated owner documents; no generated cache, environment, credential, temporary, binary executable, or unsafe report-write surface is present.
+- Runtime OpenRouter/LLM/paid/external calls remain 0; mandatory external API cost remains $0; `ALLOW_PAID_MODELS=false` remains fail-closed.
+- The owner reviewed the complete pre-release report and authorized one intentional Phase 9 commit and verified non-force push. Phase 10 remains separately gated.
+
+### Phase 9 Prompt 3 (awaiting owner review)
+
+- Completed the Phase 9 acceptance audit and published an implementation/partial/deferred/blocking matrix covering synthesis, provenance, conflicts, confidence, temporal/missing semantics, reporting, language, identity, API, architecture, security, cost, determinism, and readiness.
+- Added a semantic external-contract freeze for synthesis claims, verification/evidence linkage, confidence/conflict/omission contexts, section taxonomy, report metadata, language preferences, JSON/Markdown/DOCX, and API response behavior.
+- Added verification-bypass, multi-dimensional conflict, stale/current/historical, degraded-research, language-status, Apple/Reliance semantic golden, cross-phase reuse, security, filename, and DOCX package tests.
+- Hardened all synthesis API request models with `extra=forbid`; injected verification/policy fields now fail framework validation instead of being silently ignored.
+- Added deterministic minimal OOXML DOCX rendering through the existing report port: fixed package order/timestamps, escaped evidence text, cover metadata, stable sections, confidence/conflicts/missing/sources, safe filename, and base64 transport. No file write, network call, PDF, or dependency was added.
+- Confirmed LLM, LangGraph, RAG/vector memory, and durable persistence are not required for the accepted Phase 9 closure boundary. Broader conversation, translated narrative, UI/charts, advanced templates, artifact persistence, and Phase 10 capabilities remain explicit deferrals.
+- Prompt 4, staging, commit, push, and Phase 10 were not started.
+
+### Phase 9 Prompt 2 (owner approved)
+
+- Hardened synthesis input integrity by recomputing Phase 8 status/confidence, rejecting semantic duplicate evidence, and validating citation company/security/listing identity.
+- Added a bounded material-claim taxonomy and authority-sufficiency policy so material revenue, earnings, margin, valuation, market, regulatory, event, industry, and competitor claims cannot become facts without appropriate evidence context.
+- Added claim-aware freshness: current market observations use a bounded 24-hour presentation policy, while period-qualified financial facts remain historical rather than being mislabeled current; Phase 8 stale status is never upgraded.
+- Added deterministic stable structured JSON and safe Markdown report adapters behind the existing application port. Reports expose unavailable sections, omissions, per-claim confidence, conflicts, missing states, citations, and as-of context without aggregation, translation, network access, or file writes.
+- Extended the existing `POST /research/synthesis` request with optional `report_format`/`report_title` and material/citation identity fields. No endpoint was added; DOCX is explicitly rejected.
+- Added adversarial coverage for forged verification, duplicate/low-authority evidence, conflicts, stale market versus historical financial data, missing-versus-zero, cross-identity evidence, injection, malformed URL/timestamps, deterministic output, unavailable sections, report API behavior, and Apple/Reliance identity isolation.
+- OpenRouter/LLM/paid calls and new dependencies remain 0. Prompt 3, Prompt 4, Phase 10, staging, commit, and push were not started.
+
+### Phase 9 Prompt 1 (owner approved)
+
+- Added framework-independent synthesis contracts for verified claims, structured research documents/sections, citations, confidence, contradictions, missing-data states, deterministic identity, and multilingual-ready output preferences.
+- Added an explicit Phase 8 verified-claim gate: strong verified claims may render factually; partial, conflicting, contradicted, stale, unsupported, and policy-excluded claims remain qualified and traceable.
+- Added stable section assembly and bounded materiality-based executive summaries with no investment advice, randomness, LLM, or external calls.
+- Added report-generation JSON/Markdown/DOCX capability contracts behind `ResearchReportGeneratorPort`; no renderer or report-library dependency was added.
+- Added `GenerateResearchSynthesis` and exactly one `POST /research/synthesis` endpoint with canonical company resolution, safe errors, correlation IDs, and structured evidence-linked output.
+- Added offline Apple, Reliance, GOOG/GOOGL, Reliance/NASDAQ, hostile-content, URL-safety, architecture, and scope-freeze tests.
+- OpenRouter/LLM/paid calls remain 0; mandatory external API cost remains $0. Prompt 1 was not a Git checkpoint.
+
 ### Phase 8 Prompt 4 (release checkpoint)
 
 - Owner approved Prompts 1–3 and authorized the Phase 8 release checkpoint.

@@ -1,6 +1,6 @@
 # Development Notes
 
-## Local Phase 1–8 foundation
+## Local Phase 1–9 foundation
 
 ```powershell
 Copy-Item .env.example .env
@@ -24,6 +24,7 @@ Foundation routes:
 - `GET /regulatory/events/snapshot?q=Reliance&exchange=NSE` — regulatory snapshot (fixture-first; secondary coverage stays ALLEGED).
 - `POST /research/plans` JSON body `{ "q": "Apple", "exchange": "NASDAQ", "objective": "comprehensive_equity_research" }` — creates a deterministic plan (`200` for ok/resolution_blocked; `400` invalid). Does not execute tasks.
 - `POST /research/execute` — same body shape (optional budget fields) create-and-executes a fresh plan synchronously within budget. Plans are not persisted; there is no plan-id lookup. Returns `ResearchExecutionResult` (task outcomes, evidence refs, warnings). No investment conclusion.
+- `POST /research/synthesis` — Phase 9 Prompts 1–3: accepts a canonical company query plus bounded typed claims/evidence, runs the existing deterministic Phase 8 verification use case, and returns evidence-linked structured sections and an executive summary. Optional `report_format=structured_json|markdown|docx` returns deterministic content in memory through the report port; DOCX uses base64 transport and a sanitized filename. It does not query providers, call an LLM, translate narrative, render PDF, accept output paths, or write report files.
 - `POST /research/workflows` — Phase 7: create a workflow (Phase 6 plan + lifecycle/approval) in the **in-memory** store.
 - `GET /research/workflows` — bounded listing for dashboard foundation.
 - `POST /watchlists` / `POST /watchlists/{id}/checks` — watchlist + explicit monitoring check (no schedulers).
@@ -31,7 +32,7 @@ Foundation routes:
 - Phase 8 Prompts 1–3 add a deterministic verification domain/application foundation: typed claims and evidence, explicit contradictions, versioned explainable confidence factors, targeted critic requests, and bounded critic stop decisions. It is composed internally and does not yet add a public verification endpoint.
 - Verification is strict and fail-closed: claim type, numeric value, unit, currency, and reporting period must be compatible; missing or non-finite numeric values cannot support a claim; only supporting evidence contributes to confidence.
 - Workflow memory summaries are not claims or evidence and are never assigned source authority implicitly; workflow-wide verification remains deferred until typed claim/evidence production exists.
-- Phases 7 and 8 are COMPLETE (Prompts 1–4). Phase 9 is NOT STARTED / AWAITING OWNER AUTHORIZATION.
+- Phases 7–9 are COMPLETE. The owner approved the Phase 9 Prompt 4 Git release checkpoint after all pre-release gates passed. Phase 10 is NOT STARTED / AWAITING OWNER AUTHORIZATION.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 

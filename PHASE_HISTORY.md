@@ -6,11 +6,11 @@ Future work must read this file with `PROJECT_STATUS.md`, `PROJECT_RULES.md`, an
 
 ## Current continuation point
 
-- **Current phase:** Phase 8 — complete
-- **Current prompt:** Prompt 4 — release checkpoint
-- **Last owner-approved prompt:** Phase 8 Prompt 4
-- **Next locked work:** All Phase 9 work pending explicit owner authorization
-- **Working-tree policy:** The Phase 8 checkpoint contains only intentional Phase 8 source, tests, reports, and project-control documentation. Unrelated user files remain unstaged.
+- **Current phase:** Phase 9 — complete / release checkpoint owner approved
+- **Current prompt:** Prompt 4 — complete / Git release authorized
+- **Last owner-approved prompt:** Phase 9 Prompt 4
+- **Next locked work:** Phase 10 awaits explicit owner authorization
+- **Working-tree policy:** The Prompt 4 release includes only intentional Phase 9 files in one commit and verified non-force push. The five preserved pre-Phase-9 untracked documents remain excluded and untouched.
 
 ## Ordered index
 
@@ -24,9 +24,9 @@ Future work must read this file with `PROJECT_STATUS.md`, `PROJECT_RULES.md`, an
 | 5 — Qualitative intelligence | Prompts 1–3 foundation/hardening/acceptance freeze; Prompt 4 completion checkpoint | Complete | [PHASES.md](PHASES.md), [CHANGELOG.md](CHANGELOG.md), ADR-032–038 in [DECISIONS.md](DECISIONS.md), Git checkpoint `28924e9` |
 | 6 — Research planning & orchestration | Prompts 1–3 foundation/execution/acceptance freeze; Prompt 4 completion checkpoint | Complete | [PHASES.md](PHASES.md), [CHANGELOG.md](CHANGELOG.md), ADR-039–042 in [DECISIONS.md](DECISIONS.md), Git checkpoint `1df132b` |
 | 7 — Autonomous research workflows | Prompts 1–2 workflow foundation/hardening; Prompt 3 acceptance audit; Prompt 4 completion checkpoint | Complete | [PHASES.md](PHASES.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), [CHANGELOG.md](CHANGELOG.md), ADR-043–046 in [DECISIONS.md](DECISIONS.md), Git checkpoint `3728886` |
-| 8 — Verification, confidence & reflection | Prompt 1 foundation; Prompt 2 hardening/recovery; Prompt 3 acceptance audit; Prompt 4 release checkpoint | Complete | [PHASE_8_PROMPT_1_FINAL_REPORT.md](PHASE_8_PROMPT_1_FINAL_REPORT.md), Prompt 2 in [CHANGELOG.md](CHANGELOG.md), [PHASE_8_PROMPT_3_FINAL_REPORT.md](PHASE_8_PROMPT_3_FINAL_REPORT.md), [PHASE_8_PROMPT_4_FINAL_REPORT.md](PHASE_8_PROMPT_4_FINAL_REPORT.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), ADR-047–049 in [DECISIONS.md](DECISIONS.md) |
-| 9 — Conversation, multilingual output & Word reports | No prompt authorized | Not started | [PHASES.md](PHASES.md), [ROADMAP.md](ROADMAP.md) |
-| 10 — Integration, evaluation & production hardening | No prompt authorized | Not started | [PHASES.md](PHASES.md), [ROADMAP.md](ROADMAP.md) |
+| 8 — Verification, confidence & reflection | Prompt 1 foundation; Prompt 2 hardening/recovery; Prompt 3 acceptance audit; Prompt 4 release checkpoint | Complete | [PHASE_8_PROMPT_1_FINAL_REPORT.md](PHASE_8_PROMPT_1_FINAL_REPORT.md), Prompt 2 in [CHANGELOG.md](CHANGELOG.md), [PHASE_8_PROMPT_3_FINAL_REPORT.md](PHASE_8_PROMPT_3_FINAL_REPORT.md), [PHASE_8_PROMPT_4_FINAL_REPORT.md](PHASE_8_PROMPT_4_FINAL_REPORT.md), ADR-047–049 in [DECISIONS.md](DECISIONS.md), Git checkpoint `fcc145a` |
+| 9 — Conversation, multilingual output & Word reports | Prompts 1–4 owner approved; single intentional release checkpoint authorized | Complete | [PHASE_9_PROMPT_1_SCOPE.md](PHASE_9_PROMPT_1_SCOPE.md), [PHASE_9_PROMPT_1_FINAL_REPORT.md](PHASE_9_PROMPT_1_FINAL_REPORT.md), [PHASE_9_PROMPT_2_SCOPE.md](PHASE_9_PROMPT_2_SCOPE.md), [PHASE_9_PROMPT_2_FINAL_REPORT.md](PHASE_9_PROMPT_2_FINAL_REPORT.md), [PHASE_9_ACCEPTANCE_MATRIX.md](PHASE_9_ACCEPTANCE_MATRIX.md), [PHASE_9_PROMPT_3_FINAL_REPORT.md](PHASE_9_PROMPT_3_FINAL_REPORT.md), [PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md](PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md), ADR-050–052 in [DECISIONS.md](DECISIONS.md) |
+| 10 — Integration, evaluation & production hardening | No prompt authorized | Not started / awaiting owner authorization | [PHASES.md](PHASES.md), [ROADMAP.md](ROADMAP.md) |
 
 ## Evidence rules for future updates
 

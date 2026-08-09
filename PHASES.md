@@ -250,6 +250,16 @@ Configuration success/failure and secret-redaction cases; deterministic app-fact
 
 **Dependencies:** Accepted Phase 8 verified synthesis contracts.
 
+**Authorized Phase 9 Prompt 1 status:** COMPLETE / OWNER APPROVED — deterministic verified-claim synthesis contracts and gate, stable sections, bounded executive-summary foundation, confidence/conflict/missing-data rendering, citation linkage, multilingual-ready preference contract, report-generation port/contracts, `GenerateResearchSynthesis`, one `POST /research/synthesis` endpoint, and offline Apple/Reliance/GOOG-GOOGL/hostile-content coverage. Scope contract: [PHASE_9_PROMPT_1_SCOPE.md](PHASE_9_PROMPT_1_SCOPE.md).
+
+**Authorized Phase 9 Prompt 2 status:** COMPLETE / OWNER APPROVED — synthesis integrity hardening; explicit material-claim kinds and authority sufficiency; forged confidence/status and semantic-duplicate rejection; claim-aware freshness; preserved conflict/missing/provenance identity; deterministic stable JSON and inert Markdown rendering; optional report output through the existing endpoint; adversarial Apple/Reliance/GOOG-GOOGL, identity, injection, timestamp, URL, confidence, and architecture coverage. Scope contract: [PHASE_9_PROMPT_2_SCOPE.md](PHASE_9_PROMPT_2_SCOPE.md).
+
+**Authorized Phase 9 Prompt 3 status:** COMPLETE / OWNER APPROVED — acceptance audit and semantic contract freeze; verification-bypass, conflict, degradation, cross-phase reuse, language, security, cost, deterministic-report, and Apple/Reliance golden audits; strict unknown-field API rejection; minimal deterministic in-memory DOCX package with safe filename/base64 transport and no new dependency. Acceptance matrix: [PHASE_9_ACCEPTANCE_MATRIX.md](PHASE_9_ACCEPTANCE_MATRIX.md). Final report: [PHASE_9_PROMPT_3_FINAL_REPORT.md](PHASE_9_PROMPT_3_FINAL_REPORT.md).
+
+**Authorized Phase 9 Prompt 4 status:** COMPLETE / OWNER APPROVED — recovery, full/cross-phase regression, quality, architecture, phase, API, security, cost, configuration, documentation, and changed-tree classification gates passed. The owner reviewed the complete pre-release report and authorized the single intentional Phase 9 Git release checkpoint and verified non-force push. Report: [PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md](PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md).
+
+Phase 9 is **COMPLETE**. Phase 10 is **NOT STARTED / AWAITING OWNER AUTHORIZATION**.
+
 ## Phase 10 — MCP/API Integration, Evaluation & Production Hardening
 
 **Objective:** Validate deployability, expose approved integrations, and produce production-readiness evidence.

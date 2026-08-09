@@ -3,15 +3,32 @@
 ## Current gate
 
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
-- **Active phase:** Phase 8 — COMPLETE
-- **Active prompt:** Phase 8 Prompt 4 — RELEASE CHECKPOINT
-- **State:** Phases 0–8 complete; Phase 8 Prompts 1–4 owner-approved and release-validated
-- **Next permitted work:** Phase 9 remains locked pending explicit owner authorization
-- **Production readiness:** Not production-ready (Phase 9–10 remain)
+- **Active phase:** Phase 9 — COMPLETE / RELEASE CHECKPOINT OWNER APPROVED
+- **Active prompt:** Phase 9 Prompt 4 — COMPLETE / GIT RELEASE AUTHORIZED
+- **State:** Phases 0–9 complete; Phase 9 release checkpoint approved for one intentional commit and verified push
+- **Next permitted work:** Phase 10 remains locked pending explicit owner authorization
+- **Production readiness:** Not production-ready (Phase 10 remains)
 - **Phases 0–6:** COMPLETE
 - **Phase 7:** COMPLETE (Prompts 1–4)
 - **Phase 8:** COMPLETE (Prompts 1–4)
-- **Phase 9:** NOT STARTED
+- **Phase 9:** COMPLETE (Prompts 1–4 owner approved; release checkpoint authorized)
+
+## Phase 9 completion summary (Prompts 1–4)
+
+- **Deterministic synthesis foundation:** Typed verified-claim, research-document/section/claim, citation, confidence, contradiction, missing-data, language/locale, and synthesis-status contracts.
+- **Phase 8 gate:** Only Phase 8 `VerificationResult` artifacts enter synthesis; forged supported statuses without classified supporting evidence fail closed. Conflicting, contradicted, stale, and insufficient claims remain explicitly qualified.
+- **Assembly and summary:** Stable section ordering, deterministic synthesis identity, bounded materiality-based executive summary, explicit no-advice policy, and complete claim/evidence traceability.
+- **Identity and provenance:** Canonical issuer/security/listing identities remain distinct; Apple/NASDAQ, Reliance NSE/BSE/INR, GOOG/GOOGL, source authority, data origin, timestamps, URLs/locators, and reference IDs are preserved.
+- **Prompt 1:** COMPLETE / OWNER APPROVED — deterministic verified synthesis, stable sections/summary, evidence-linked citations, language preference contract, report port, application service, and one synthesis endpoint.
+- **Prompt 2:** COMPLETE / OWNER APPROVED — forged-result and duplicate-evidence rejection, material-claim authority policy, cross-company/listing provenance guards, claim-aware freshness, conflict/missing semantics, deterministic JSON and safe Markdown report adapters, API report option, and adversarial/golden coverage.
+- **Prompt 3:** COMPLETE / OWNER APPROVED — acceptance matrix, external-contract freeze, cross-phase reuse/bypass/conflict/degradation/security audit, strict unknown-field API rejection, and deterministic minimal DOCX closure.
+- **Prompt 4:** COMPLETE / OWNER APPROVED — full and cross-phase regression, quality/security/cost/configuration gates, documentation closure, changed-tree classification, and the single Phase 9 Git release checkpoint are authorized.
+- **Interfaces:** `GenerateResearchSynthesis`, `ResearchReportGeneratorPort`, deterministic in-memory JSON/Markdown/DOCX rendering, and the same single `POST /research/synthesis` endpoint. DOCX is transported as bounded base64 content with a sanitized filename; no report files are written by the API.
+- **Validation:** Full regression 534/534; dedicated Phase 1–9 cross-phase gate 251/251; architecture/phase/settings/repository gate 39/39; Ruff/mypy/diff/OpenAPI/Compose/security/cost gates pass. Evidence: [PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md](PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md).
+- **Boundaries:** No narrative translation engine, PDF, arbitrary file-writing report API, Streamlit, LLM/OpenRouter, RAG/vector database, LangGraph, trading, MCP production exposure, or Phase 10 capability.
+- **Git:** The owner approved the Phase 9 release after reviewing the complete pre-release report. The Prompt 4 workflow permits one intentional Phase 9 commit and verified non-force push; Phase 10 remains separate.
+
+Completion evidence: [PHASE_9_PROMPT_1_FINAL_REPORT.md](PHASE_9_PROMPT_1_FINAL_REPORT.md), [PHASE_9_PROMPT_2_FINAL_REPORT.md](PHASE_9_PROMPT_2_FINAL_REPORT.md), [PHASE_9_ACCEPTANCE_MATRIX.md](PHASE_9_ACCEPTANCE_MATRIX.md), [PHASE_9_PROMPT_3_FINAL_REPORT.md](PHASE_9_PROMPT_3_FINAL_REPORT.md), and [PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md](PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md).
 
 ## Phase 8 summary (Prompts 1–3)
 
@@ -47,7 +64,7 @@ Autonomous Research Workflows foundation vertical slice on top of Phase 6:
 - In-memory workflow/memory/watchlist/notification stores (not durable); process restart loses state
 - Soft pause/resume process-local; no distributed workers or distributed idempotency
 - Monitoring is explicit invocation only (no background polling/scheduler)
-- Report rendering deferred (contract foundation only); notification channels deferred
+- Report artifact persistence and advanced templates/charts remain deferred; deterministic JSON/Markdown/DOCX rendering is available in memory
 - RAG/vector memory deferred within Phase 7
 - Phase 8 verification is a deterministic foundation; workflow-wide typed claim production and durable persistence remain future work
 - Limited/demo-scale underlying datasets where applicable
@@ -56,6 +73,7 @@ Autonomous Research Workflows foundation vertical slice on top of Phase 6:
 
 - Phase 6: `1df132b10cc4ed36f28c32ecdbaa89987c2d4de0`
 - Phase 7: `37288868b2296787874f4fa80bbbfdc51bf0bcb0`
+- Phase 8: `fcc145a0b4bb33c0c274f758f36d2ef508135a6a`
 - Remote: `origin` → `git@github.com:LeelaissakAttota/agentic-equity-research-platform.git`
 
 ## Change protocol

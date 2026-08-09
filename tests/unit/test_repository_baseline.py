@@ -80,7 +80,6 @@ FORBIDDEN_PHASE3PLUS_MODULE_NAMES = {
     "research_memory.py",
     "verification_engine.py",
     "critic.py",
-    "synthesis.py",
     "docx_report.py",
     "streamlit_app.py",
     "mcp_server.py",
@@ -150,8 +149,8 @@ class RepositoryBaselineTests(TestCase):
 
         self.assertEqual(actual_hash, EXPECTED_ARCHITECTURE_SHA256)
 
-    def test_deferred_live_provider_and_later_phase_modules_are_absent(self) -> None:
-        """Live provider clients and Phase 4+ research modules must not exist yet."""
+    def test_deferred_live_provider_and_unapproved_modules_are_absent(self) -> None:
+        """Live provider clients and still-unapproved modules must remain absent."""
 
         package_root = REPOSITORY_ROOT / "src" / "financial_intelligence"
         present = {
