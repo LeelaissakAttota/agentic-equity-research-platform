@@ -65,6 +65,7 @@ from financial_intelligence.infrastructure.market import (
     InMemoryMarketDataAdapter,
     YahooChartMarketDataAdapter,
 )
+from financial_intelligence.infrastructure.mcp import SelectedMcpFacade
 from financial_intelligence.infrastructure.memory import InMemoryResearchMemoryStore
 from financial_intelligence.infrastructure.news import (
     CachingNewsEventAdapter,
@@ -116,6 +117,7 @@ class AppContainer:
     verify_claim: VerifyClaimUseCase
     generate_research_synthesis: GenerateResearchSynthesis
     research_report_generator: ResearchReportGeneratorPort
+    selected_mcp: SelectedMcpFacade
 
 
 def _sec_user_agent() -> str:
@@ -164,6 +166,14 @@ def build_container(
             name="application",
             ready=True,
             detail="application foundation loaded",
+        ),
+    )
+    readiness.register(
+        "configuration",
+        lambda: ReadinessCheckResult(
+            name="configuration",
+            ready=True,
+            detail=f"{resolved.app_env}_configuration_validated",
         ),
     )
     catalog: CompanyCatalogPort = InMemoryCompanyCatalog()
@@ -339,6 +349,11 @@ def build_container(
             assembler=synthesis_assembler,
             clock=clock,
         )
+    selected_mcp = SelectedMcpFacade(
+        metadata=metadata,
+        readiness=readiness,
+        resolve_company=resolve_company,
+    )
 
     return AppContainer(
         settings=resolved,
@@ -372,4 +387,5 @@ def build_container(
         verify_claim=verify_claim,
         generate_research_synthesis=generate_research_synthesis,
         research_report_generator=research_report_generator,
+        selected_mcp=selected_mcp,
     )

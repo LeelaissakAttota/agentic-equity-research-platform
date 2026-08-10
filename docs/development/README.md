@@ -1,6 +1,6 @@
 # Development Notes
 
-## Local Phase 1–9 foundation
+## Local Phase 1–10 Prompt 3A foundation
 
 ```powershell
 Copy-Item .env.example .env
@@ -17,6 +17,7 @@ Foundation routes:
 - `GET /health` — process liveness (`200`)
 - `GET /ready` — foundation readiness (`200` ready, `503` not ready)
 - `GET /version` — service metadata
+- `GET /v1/health`, `GET /v1/ready`, `GET /v1/version` — backward-compatible current-major aliases; `/v1/companies/resolve` and `/v1/research/synthesis` expose the two approved business aliases. Legacy routes remain supported.
 - `GET /companies/resolve?q=Apple` — deterministic company resolution against the local in-memory reference catalog (`200` for RESOLVED/AMBIGUOUS/NOT_FOUND; `400` invalid query; framework `422` for some parameter validation failures)
 - `GET /financials/snapshot?q=Apple&exchange=NASDAQ` — financial fundamentals snapshot (`200` for OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED; `400` invalid query). Response may include derived `metrics`, explainable `omissions`, filing/source provenance, and explicit `conflicts` when present. Default data is **fixture/demo** unless optional SEC live mode is enabled. India live adapters are **not** wired; Reliance coverage is fixture-labelled. Valuation multiples are **deferred** (ADR-030). Phase 4 is complete.
 - `GET /news/events/snapshot?q=Apple&exchange=NASDAQ` — news/event snapshot (`200` for OK/UNAVAILABLE/DEGRADED/PARTIAL/RESOLUTION_BLOCKED; `400` invalid query). Fixture-first Phase 5; events carry evidence refs, conflicts, authority tiers, and `data_origin`. No live news provider and no LLM.
@@ -32,7 +33,38 @@ Foundation routes:
 - Phase 8 Prompts 1–3 add a deterministic verification domain/application foundation: typed claims and evidence, explicit contradictions, versioned explainable confidence factors, targeted critic requests, and bounded critic stop decisions. It is composed internally and does not yet add a public verification endpoint.
 - Verification is strict and fail-closed: claim type, numeric value, unit, currency, and reporting period must be compatible; missing or non-finite numeric values cannot support a claim; only supporting evidence contributes to confidence.
 - Workflow memory summaries are not claims or evidence and are never assigned source authority implicitly; workflow-wide verification remains deferred until typed claim/evidence production exists.
-- Phases 7–9 are COMPLETE. The owner approved the Phase 9 Prompt 4 Git release checkpoint after all pre-release gates passed. Phase 10 is NOT STARTED / AWAITING OWNER AUTHORIZATION.
+- Phases 7–9 are COMPLETE. Phase 10 Prompts 1–3 are COMPLETE / OWNER APPROVED; Prompt 3A is COMPLETE / BLOCKERS REMAIN / AWAITING OWNER REVIEW. Phase 10 remains IN PROGRESS. Phase 11 is an undefined locked boundary only and is not started.
+
+Production-safety configuration:
+
+- `ALLOWED_HOSTS=localhost,127.0.0.1` is the safe container default. Production rejects wildcard, empty, malformed, or URL-shaped values. Configure the target deployment hostname explicitly before exposure.
+- `API_MAX_REQUEST_BODY_BYTES=1048576` bounds declared and chunked bodies. Allowed range: 4096–10485760 bytes.
+- `LOG_LEVEL=DEBUG` is rejected in production. `ALLOW_PAID_MODELS=true` remains rejected in every environment.
+- `/ready` reports a non-secret `configuration` check. It does not claim PostgreSQL, Redis, providers, auth, rate limiting, or other deferred dependencies are ready.
+- Authentication/rate limiting remain deployment-dependent Phase 10 work; Prompt 1 does not add them.
+
+Prompt 2 boundary rules:
+
+- Multiple Host or Content-Length headers are rejected rather than reconciled. Host ports must be decimal `1–65535`; forwarded-host headers are not trusted.
+- Content-Length uses strict ASCII digits, but actual ASGI chunks are always counted. More than 1024 chunks is rejected even when byte total is small. The bounded body is request-local and replayed linearly.
+- Multiple correlation headers are ambiguous and replaced with a generated UUIDv4.
+- Route-raised HTTP details are never reflected; unexpected telemetry uses the static route template and exception type only. `httpx`, `httpcore`, and Uvicorn access INFO logs are suppressed to prevent URL/query leakage.
+- Watchlists accept at most 100 entries and the four frozen monitoring capabilities; workflow memory lists accept `limit=1..200`.
+- Request-size limiting is not rate limiting. Auth, rate limits, persistence, MCP, load/SLO/recovery, and deployment certification remain deferred.
+
+Prompt 3 contract freeze:
+
+- Host outer whitespace/control and extreme numeric ports fail as `invalid_host`; extreme numeric Content-Length fails safely before integer conversion; whitespace/control correlation IDs generate UUIDv4.
+- The final acceptance matrix is [PHASE_10_ACCEPTANCE_MATRIX.md](../../PHASE_10_ACCEPTANCE_MATRIX.md). Passing current hardening tests does not satisfy still-blocking versioned REST/MCP, evaluation, reliability/security, operations/SLO, recovery/rollback, and deployment deliverables.
+- Do not publicly expose the service as authenticated/rate-limited/durable/distributed. Phase 10 Prompt 4 is not ready or authorized.
+
+Prompt 3A production-readiness evidence:
+
+- `/v1` is the current REST major prefix for the five approved aliases; legacy endpoints remain supported. Breaking changes require a new major prefix and removals require owner approval plus a released deprecation window.
+- Selected MCP is an **in-process facade**, not a network server. Its exact allowlist is `service_status` and `resolve_company`; both are read-only and offline. It provides no dynamic tools, shell/filesystem/network access, secrets, policy mutation, approval, verification bypass, or trading action.
+- The deterministic evaluation and bounded local reliability/load suites are reproducible tests, not production SLA or internet-scale performance evidence.
+- Operations evidence is in `docs/operations/`; the threat and dependency reviews are in `docs/security/`.
+- The local candidate and protected Phase 9 rollback images passed production-mode health/readiness/version smoke. Supply-chain scan/SBOM evidence remains blocking and Prompt 4 is not ready.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 

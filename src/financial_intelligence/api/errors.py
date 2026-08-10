@@ -19,6 +19,18 @@ from financial_intelligence.observability.logging import get_logger
 
 logger = get_logger("financial_intelligence.api.errors")
 
+_SAFE_HTTP_MESSAGES = {
+    400: "Bad request",
+    401: "Authentication required",
+    403: "Forbidden",
+    404: "Resource not found",
+    405: "Method not allowed",
+    409: "Request conflict",
+    413: "Request body too large",
+    415: "Unsupported media type",
+    429: "Too many requests",
+}
+
 
 class ApiErrorBody(BaseModel):
     """Stable client-facing error payload."""
@@ -43,6 +55,12 @@ def _correlation_id_from_request(request: Request) -> str:
     if isinstance(state_value, str) and state_value:
         return state_value
     return resolve_correlation_id(request.headers.get("X-Correlation-ID")).value
+
+
+def _request_operation(request: Request) -> str:
+    route = request.scope.get("route")
+    route_path = getattr(route, "path", None)
+    return route_path if isinstance(route_path, str) else "unmatched"
 
 
 def build_error_response(
@@ -101,7 +119,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         exc: StarletteHTTPException,
     ) -> JSONResponse:
         correlation_id = _correlation_id_from_request(request)
-        message = exc.detail if isinstance(exc.detail, str) else "HTTP error"
+        message = _SAFE_HTTP_MESSAGES.get(exc.status_code, "Request failed")
         return build_error_response(
             code="http_error",
             message=message,
@@ -115,11 +133,11 @@ def register_exception_handlers(app: FastAPI) -> None:
         exc: Exception,
     ) -> JSONResponse:
         correlation_id = _correlation_id_from_request(request)
-        logger.exception(
+        logger.error(
             "unhandled_exception",
             extra={
                 "correlation_id": correlation_id,
-                "path": str(request.url.path),
+                "operation": _request_operation(request),
                 "error_type": type(exc).__name__,
             },
         )

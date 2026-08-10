@@ -6,11 +6,11 @@ Future work must read this file with `PROJECT_STATUS.md`, `PROJECT_RULES.md`, an
 
 ## Current continuation point
 
-- **Current phase:** Phase 9 — complete / release checkpoint owner approved
-- **Current prompt:** Prompt 4 — complete / Git release authorized
-- **Last owner-approved prompt:** Phase 9 Prompt 4
-- **Next locked work:** Phase 10 awaits explicit owner authorization
-- **Working-tree policy:** The Prompt 4 release includes only intentional Phase 9 files in one commit and verified non-force push. The five preserved pre-Phase-9 untracked documents remain excluded and untouched.
+- **Current phase:** Phase 10 — in progress
+- **Current prompt:** Prompt 3A — complete / blockers remain / awaiting owner review
+- **Last owner-authorized prompt:** Phase 10 Prompt 3A; Prompts 1–3 owner approved
+- **Next locked work:** Supply-chain scan/SBOM evidence requires owner direction; Prompt 4 and any post-Phase-10 work are not authorized
+- **Working-tree policy:** Prompts 1–3A remain local and unstaged. The Phase 9 release and six preserved untracked audit/owner documents remain untouched.
 
 ## Ordered index
 
@@ -26,7 +26,9 @@ Future work must read this file with `PROJECT_STATUS.md`, `PROJECT_RULES.md`, an
 | 7 — Autonomous research workflows | Prompts 1–2 workflow foundation/hardening; Prompt 3 acceptance audit; Prompt 4 completion checkpoint | Complete | [PHASES.md](PHASES.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), [CHANGELOG.md](CHANGELOG.md), ADR-043–046 in [DECISIONS.md](DECISIONS.md), Git checkpoint `3728886` |
 | 8 — Verification, confidence & reflection | Prompt 1 foundation; Prompt 2 hardening/recovery; Prompt 3 acceptance audit; Prompt 4 release checkpoint | Complete | [PHASE_8_PROMPT_1_FINAL_REPORT.md](PHASE_8_PROMPT_1_FINAL_REPORT.md), Prompt 2 in [CHANGELOG.md](CHANGELOG.md), [PHASE_8_PROMPT_3_FINAL_REPORT.md](PHASE_8_PROMPT_3_FINAL_REPORT.md), [PHASE_8_PROMPT_4_FINAL_REPORT.md](PHASE_8_PROMPT_4_FINAL_REPORT.md), ADR-047–049 in [DECISIONS.md](DECISIONS.md), Git checkpoint `fcc145a` |
 | 9 — Conversation, multilingual output & Word reports | Prompts 1–4 owner approved; single intentional release checkpoint authorized | Complete | [PHASE_9_PROMPT_1_SCOPE.md](PHASE_9_PROMPT_1_SCOPE.md), [PHASE_9_PROMPT_1_FINAL_REPORT.md](PHASE_9_PROMPT_1_FINAL_REPORT.md), [PHASE_9_PROMPT_2_SCOPE.md](PHASE_9_PROMPT_2_SCOPE.md), [PHASE_9_PROMPT_2_FINAL_REPORT.md](PHASE_9_PROMPT_2_FINAL_REPORT.md), [PHASE_9_ACCEPTANCE_MATRIX.md](PHASE_9_ACCEPTANCE_MATRIX.md), [PHASE_9_PROMPT_3_FINAL_REPORT.md](PHASE_9_PROMPT_3_FINAL_REPORT.md), [PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md](PHASE_9_PROMPT_4_PRE_RELEASE_REPORT.md), ADR-050–052 in [DECISIONS.md](DECISIONS.md) |
-| 10 — Integration, evaluation & production hardening | No prompt authorized | Not started / awaiting owner authorization | [PHASES.md](PHASES.md), [ROADMAP.md](ROADMAP.md) |
+| 10 — Integration, evaluation & production hardening | Prompts 1–3 owner approved; Prompt 3A interface/evaluation/reliability/security/operations/deployment closure complete locally; supply-chain scan/SBOM evidence remains blocking | In progress | [PHASE_10_PROMPT_1_SCOPE.md](PHASE_10_PROMPT_1_SCOPE.md), [PHASE_10_PROMPT_1_FINAL_REPORT.md](PHASE_10_PROMPT_1_FINAL_REPORT.md), [PHASE_10_PROMPT_2_SCOPE.md](PHASE_10_PROMPT_2_SCOPE.md), [PHASE_10_PROMPT_2_FINAL_REPORT.md](PHASE_10_PROMPT_2_FINAL_REPORT.md), [PHASE_10_ACCEPTANCE_MATRIX.md](PHASE_10_ACCEPTANCE_MATRIX.md), [PHASE_10_PROMPT_3_FINAL_REPORT.md](PHASE_10_PROMPT_3_FINAL_REPORT.md), [PHASE_10_BLOCKING_GAPS_MATRIX.md](PHASE_10_BLOCKING_GAPS_MATRIX.md), [PHASE_10_PROMPT_3A_FINAL_REPORT.md](PHASE_10_PROMPT_3A_FINAL_REPORT.md), ADR-053–056 in [DECISIONS.md](DECISIONS.md) |
+
+The defined project phase map ends at Phase 10. “Phase 11” is only a locked boundary reference; no Phase 11 title, objective, or implementation and no Phase 12+ definition exist.
 
 ## Evidence rules for future updates
 

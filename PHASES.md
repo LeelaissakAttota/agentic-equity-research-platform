@@ -275,3 +275,17 @@ Phase 9 is **COMPLETE**. Phase 10 is **NOT STARTED / AWAITING OWNER AUTHORIZATIO
 **Out of scope:** Direct trading, guaranteed financial outcomes, paid-model fallback, mandatory paid data, coupling core domain to JARVIS.
 
 **Dependencies:** Accepted Phase 9, target-environment decisions, and owner-approved production criteria.
+
+**Authorized Phase 10 Prompt 1 status:** COMPLETE / OWNER APPROVED — production configuration and trusted-host/request-body fail-closed policy, safe configuration readiness diagnostic, correlation-aware request outcome telemetry, and secret-safe exception logging. Authentication and rate limiting are deferred until deployment requirements are approved; durable persistence is not required for this prompt. Scope: [PHASE_10_PROMPT_1_SCOPE.md](PHASE_10_PROMPT_1_SCOPE.md).
+
+**Authorized Phase 10 Prompt 2 status:** COMPLETE / OWNER APPROVED — adversarial configuration/header/body/correlation/error/telemetry/logging/report/identity hardening; ambiguous-header and excessive-chunk rejection; collection-limit audit; deployment/dependency/security/cost review; and preliminary acceptance matrix. Authentication, rate limiting, and durable persistence remain deployment-dependent/deferred decisions, not implemented capabilities. Scope: [PHASE_10_PROMPT_2_SCOPE.md](PHASE_10_PROMPT_2_SCOPE.md). Matrix: [PHASE_10_PRELIMINARY_ACCEPTANCE_MATRIX.md](PHASE_10_PRELIMINARY_ACCEPTANCE_MATRIX.md).
+
+**Authorized Phase 10 Prompt 3 status:** COMPLETE / OWNER APPROVED — authoritative acceptance audit, project phase-map audit, production-boundary contract freeze, three bounded parsing repairs, and final acceptance matrix. Matrix: [PHASE_10_ACCEPTANCE_MATRIX.md](PHASE_10_ACCEPTANCE_MATRIX.md). Report: [PHASE_10_PROMPT_3_FINAL_REPORT.md](PHASE_10_PROMPT_3_FINAL_REPORT.md).
+
+**Authorized Phase 10 Prompt 3A status:** COMPLETE / BLOCKERS REMAIN — backward-compatible versioned REST aliases, minimal selected MCP exposure, deterministic evaluation and bounded local reliability/load evidence, formal threat/operations/deployment evidence, and a protected-checkpoint rollback rehearsal are complete. Supply-chain evidence was blocking.
+
+**Authorized Phase 10 Prompt 3C status:** COMPLETE / OWNER APPROVED — local/offline Trivy 0.73.0 container vulnerability scan and CycloneDX SBOM generation completed the supply-chain requirement. Application SBOM (CycloneDX 1.5, 256 components), Container SBOM (CycloneDX 1.7), pip-audit (0 vulnerabilities in production dependencies), Trivy scan (6 CRITICAL, 20 HIGH, 71 MEDIUM, 97 LOW, 11 UNKNOWN — all OS/build-time packages, zero in production Python runtime). Docker Scout historical scan transmitted metadata to Docker cloud (noted as exception; final acceptance uses local Trivy only). Supply-chain requirement SATISFIED.
+
+**Authorized Phase 10 Prompt 4 status:** COMPLETE / OWNER APPROVED — final release validation, documentation closure, staged-content audit, single Phase 10 release commit, push verified. Phase 10 marked COMPLETE.
+
+Phase 10 is **COMPLETE**. Phase 11 is **NOT STARTED / UNDEFINED BOUNDARY ONLY**.

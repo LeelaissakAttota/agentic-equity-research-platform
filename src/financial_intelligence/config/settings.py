@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from typing import Any, Literal, Self
 
@@ -12,6 +13,9 @@ AppEnvironment = Literal["development", "test", "staging", "production"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 SERVICE_NAME = "agentic-financial-intelligence"
+_SAFE_HOST_PATTERN = re.compile(
+    r"^(?:localhost|(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(?:\.(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?))*|(?:\d{1,3}\.){3}\d{1,3})$"
+)
 
 _SECRET_FIELD_NAMES = frozenset(
     {
@@ -41,6 +45,17 @@ class Settings(BaseSettings):
     app_env: AppEnvironment = Field(default="development", alias="APP_ENV")
     log_level: LogLevel = Field(default="INFO", alias="LOG_LEVEL")
     service_name: str = Field(default=SERVICE_NAME, alias="SERVICE_NAME")
+    allowed_hosts: str = Field(
+        default="localhost,127.0.0.1",
+        alias="ALLOWED_HOSTS",
+        max_length=1024,
+    )
+    api_max_request_body_bytes: int = Field(
+        default=1_048_576,
+        alias="API_MAX_REQUEST_BODY_BYTES",
+        ge=4096,
+        le=10_485_760,
+    )
 
     openrouter_api_key: SecretStr = Field(default=SecretStr(""), alias="OPENROUTER_API_KEY")
     allow_paid_models: bool = Field(default=False, alias="ALLOW_PAID_MODELS")
@@ -169,7 +184,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def reject_duplicate_free_model_ids(self) -> Self:
-        """Reject duplicate configured free-model identifiers when present."""
+        """Reject unsafe or internally inconsistent runtime configuration."""
 
         configured = [
             model_id
@@ -183,7 +198,43 @@ class Settings(BaseSettings):
         if len(configured) != len(set(configured)):
             msg = "configured free model IDs must be unique"
             raise ValueError(msg)
+
+        allowed_hosts = self.allowed_host_values()
+        if self.app_env == "production":
+            if self.log_level == "DEBUG":
+                msg = "LOG_LEVEL=DEBUG is rejected in production"
+                raise ValueError(msg)
+            if not allowed_hosts or "*" in allowed_hosts:
+                msg = "production ALLOWED_HOSTS must be an explicit non-wildcard allowlist"
+                raise ValueError(msg)
+        if self.market_data_live_enabled and self.market_data_primary_provider == "none":
+            msg = "live market data requires an enabled primary provider"
+            raise ValueError(msg)
+        if self.financial_data_live_enabled and self.financial_data_primary_provider == "none":
+            msg = "live financial data requires an enabled primary provider"
+            raise ValueError(msg)
         return self
+
+    def allowed_host_values(self) -> tuple[str, ...]:
+        """Return a stable validated host allowlist without ports or wildcards."""
+
+        values = tuple(
+            dict.fromkeys(
+                part.strip().lower() for part in self.allowed_hosts.split(",") if part.strip()
+            )
+        )
+        for host in values:
+            if host == "*":
+                continue
+            if len(host) > 253 or not _SAFE_HOST_PATTERN.fullmatch(host):
+                msg = "ALLOWED_HOSTS contains an invalid hostname"
+                raise ValueError(msg)
+            if host.replace(".", "").isdigit():
+                octets = host.split(".")
+                if len(octets) != 4 or any(int(octet) > 255 for octet in octets):
+                    msg = "ALLOWED_HOSTS contains an invalid IP address"
+                    raise ValueError(msg)
+        return values
 
     def secret_values(self) -> dict[str, str]:
         """Return secret field values for internal redaction tests only."""
@@ -203,6 +254,8 @@ class Settings(BaseSettings):
             "app_env": self.app_env,
             "log_level": self.log_level,
             "service_name": self.service_name,
+            "allowed_hosts": self.allowed_host_values(),
+            "api_max_request_body_bytes": self.api_max_request_body_bytes,
             "allow_paid_models": self.allow_paid_models,
             "primary_free_model": self.primary_free_model or None,
             "fallback_free_model_1": self.fallback_free_model_1 or None,

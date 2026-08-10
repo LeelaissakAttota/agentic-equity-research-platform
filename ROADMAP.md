@@ -16,7 +16,9 @@ This Phase 0–10 sequence is frozen by the Master Architecture review. Adding, 
 | 7 | Evidence Graph, RAG & Research Memory | Hybrid retrieval, claim/source relationships, governed memory, and change comparisons. **Prompt 1 (authorized):** workflow foundation first (ADR-043); RAG deferred | Phase 6 accepted — **COMPLETE** |
 | 8 | Verification, Confidence & Reflection | Deterministic verification, conflicts, quality scoring, critic loop, and targeted re-research | Phase 7 accepted — **COMPLETE** |
 | 9 | Conversational Research, Multilingual Output & Word Reports | Evidence-linked verified synthesis plus deterministic JSON/Markdown/minimal DOCX reporting. Broader conversation, translated narrative, UI/charts, and advanced templates remain documented deferrals — **COMPLETE / RELEASE CHECKPOINT OWNER APPROVED** | Phase 8 accepted |
-| 10 | MCP/API Integration, Evaluation & Production Hardening | Selected MCP exposure, comprehensive evaluation, security/reliability hardening, and deployability evidence — **NOT STARTED / AWAITING OWNER AUTHORIZATION** | Phase 9 accepted |
+| 10 | MCP/API Integration, Evaluation & Production Hardening | Selected MCP exposure, comprehensive evaluation, security/reliability hardening, and deployability evidence — **COMPLETE / RELEASE CHECKPOINT OWNER APPROVED** | Phase 9 accepted |
+
+No Phase 11 or Phase 12+ is defined. Phase 10 is the highest and final phase in this frozen roadmap; references to Phase 11 are boundary labels, not a phase specification.
 
 ## Cross-phase gates
 

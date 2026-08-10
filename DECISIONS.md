@@ -435,3 +435,60 @@ Database schema/ORM/migrations, background execution, auth, graph implementation
 **Rationale:** `PHASES.md` names `.docx` as a Phase 9 deliverable, while the accepted Prompt 1–2 architecture already supplies all structured, verified content needed for deterministic rendering. Standard-library OOXML avoids adding a report dependency and keeps hostile evidence inert. Models, orchestration frameworks, retrieval, and databases do not improve deterministic report correctness and are not acceptance prerequisites.
 
 **Consequences:** JSON, Markdown, and minimal DOCX artifacts are stable and evidence-linked. Advanced branded templates, charts, visual Word-render regression, artifact persistence/registry, arbitrary follow-up conversation, and evaluated Telugu/Hindi narrative generation remain documented future work. PDF is not implemented. Phase 9 may proceed to its owner-gated Prompt 4 release checkpoint after Prompt 3 review; Phase 10 remains closed.
+
+## ADR-053 — Fail-closed production request boundary before external integration
+
+**Decision:** Phase 10 Prompt 1 adds a configuration-driven production request boundary before MCP or target-environment integration. Production requires a non-wildcard trusted-host allowlist and non-debug logging. Every HTTP request has a bounded total body size, including chunked requests. Rejections use the existing correlation-aware error shape and baseline security headers. Readiness reports only that typed configuration passed; it does not claim deferred services are available. Structured error telemetry records exception type but never exception messages or stack traces.
+
+Authentication and rate limiting are **deferred** until the owner approves a target deployment, identity provider, trust boundary, enforcement threshold, and distributed-state decision. Durable persistence is not required for this Prompt 1 slice.
+
+**Rationale:** Host validation, bounded inputs, safe failures, and secret-safe traceability are deterministic prerequisites that strengthen every existing REST capability without changing domain behavior. Inventing auth, Redis-backed limits, MCP, or deployment-specific health dependencies before the target environment is known would create false production-readiness claims and unnecessary coupling.
+
+**Consequences:** Existing Phase 1–9 endpoints and contracts remain unchanged behind the new API boundary. Container defaults admit only local health traffic until deployment hosts are configured. Large or streaming uploads are intentionally unsupported by the current JSON API and require a separately designed bounded streaming contract. No dependency, endpoint, model/provider call, database, or external cost is introduced. Phase 10 remains in progress.
+
+## ADR-054 — Reject ambiguous HTTP metadata and minimize operational telemetry
+
+**Decision:** Phase 10 Prompt 2 treats multiple Host, Content-Length, or correlation headers as ambiguous control metadata. Duplicate Host/Content-Length values are rejected even when identical; duplicate correlation values are discarded and replaced with UUIDv4. Host ports must be decimal `1–65535`. Content-Length is ASCII digits only and never replaces actual received-byte counting. Body chunk count is capped at 1024 and replay uses a request-local deque. Route-raised HTTP detail and concrete exception paths are not client/log output. URL-bearing HTTP client/core and access INFO logs are suppressed.
+
+Existing workflow-list invalid inputs retain their established 400 application contract; only previously unbounded workflow-memory limits and watchlist collection counts are tightened.
+
+**Rationale:** Reconciliation of ambiguous headers creates request-smuggling, host-spoofing, and trace-injection risk. A byte limit alone does not bound zero-length chunk overhead. Concrete URLs, queries, HTTP exception details, and exception paths can contain credentials or sensitive user data. These controls are deterministic and do not require authentication, Redis, a model, or new dependencies.
+
+**Consequences:** Current JSON APIs reject malformed/ambiguous traffic before business logic, at the cost of refusing unusual clients that send duplicate equivalent headers. Safe boundary rejections remain correlation-aware. Large/streaming upload support requires a separate approved contract. Authentication, request-rate limiting, durable persistence, MCP, load/SLO/recovery, and deployment certification remain separate Phase 10 decisions.
+
+## ADR-055 — Freeze Phase 10 acceptance without overstating production readiness
+
+**Decision:** Phase 10 Prompt 3 freezes the Prompt 1–3 production-boundary contracts and records the repository-defined phase-level gaps in `PHASE_10_ACCEPTANCE_MATRIX.md`. Host and correlation metadata are validated exactly as received rather than whitespace-normalized; extreme numeric Host ports and Content-Length values fail safely before unbounded integer conversion. Authentication, authorization, request-rate limiting, durable persistence, and cloud deployment remain deployment-dependent decisions. Redis, PostgreSQL, LangGraph, LLMs, and a specific external observability platform are not selected as closure requirements.
+
+The frozen Phase 10 contract still explicitly requires versioned REST/MCP exposure, comprehensive evaluation, reliability/security evidence, operational SLO/dashboard/runbook evidence, recovery/rollback, and deployment/release evidence. Those are blocking gaps; passing the current 610-test suite does not make Prompt 4 release-ready. The defined roadmap ends at Phase 10. “Phase 11” is only a locked boundary reference and has no repository-defined title, objective, or implementation.
+
+**Rationale:** `PHASES.md` and `ROADMAP.md` are authoritative. Treating unimplemented deliverables as optional would weaken the phase gate, while inventing auth, databases, distributed systems, an MCP surface, or a cloud stack during an acceptance-audit prompt would be premature and unsafe. Exact header parsing closes demonstrated ambiguity/resource defects without changing research semantics.
+
+**Consequences:** Prompt 3 may be owner-reviewed as a successful audit/stabilization step, but Phase 10 stays in progress and Prompt 4 remains locked. Later owner authorization must either implement/evidence the blocking deliverables or explicitly amend the frozen Phase 10 contract through a documented decision. No dependency, model/provider call, external service, endpoint, staging, commit, or push is introduced.
+
+## ADR-056 — Close Phase 10 interface blockers with compatible aliases and a static MCP facade
+
+**Decision:** Prompt 3A will retain all unversioned REST contracts and add `/v1` aliases only for
+the approved foundation (`health`, `ready`, `version`), company resolution, and verified research
+synthesis surfaces. OpenAPI will declare `v1` as the current API contract and record the legacy
+unversioned compatibility policy. Breaking changes require a new major path prefix; removals require
+owner approval, documentation, and at least one released deprecation window.
+
+Selected MCP exposure is an in-process delivery facade, not a network server or protocol SDK. Its
+immutable allowlist contains only `service_status` and `resolve_company`, delegates to existing
+application/readiness contracts, validates bounded arguments, and uses explicit dispatch. It cannot
+discover tools, invoke arbitrary attributes, access files/network/secrets/configuration, mutate
+workflows, bypass verification, generate advice, or trade.
+
+**Rationale:** The frozen Phase 10 deliverables require versioned REST and selected MCP adapters, but
+not duplicate migration of every endpoint or installation of a broad framework. The selected
+surfaces are mature, read-only, deterministic, and already protected by existing identity and
+verification contracts. Compatibility aliases and a static adapter provide testable interface
+contracts with minimal new attack surface and no dependency/cost increase.
+
+**Consequences:** Legacy clients remain compatible. The current selected versioned/MCP surface is
+intentionally smaller than the total REST API and must expand only through owner-approved,
+allowlisted adapters and tests. The MCP facade is not remote exposure, public authentication, or a
+claim of full MCP protocol interoperability. Prompt 3A must separately supply evaluation,
+reliability, security, operations, recovery, and deployment evidence before release readiness can
+be re-audited.

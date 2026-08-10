@@ -2,7 +2,7 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phases 0–9 are complete and the owner approved the Phase 9 release checkpoint after all tests, documentation, security/cost checks, and changed-tree audit passed. Phase 10 is not started and awaits authorization. RAG/vector DB, narrative translation, Streamlit, MCP, and trading remain deferred.
+> **Current status:** Phases 0–10 are complete and released. Phase 10 Prompts 1–4 are owner approved. Versioned REST, selected MCP, deterministic evaluations, bounded local reliability/load, threat/operations, rollback, local deployment, and supply-chain evidence (local SBOM and Trivy container scan) all pass. Production auth/rate decisions remain deployment-dependent. Phase 11 is locked and undefined.
 
 ## Vision
 
@@ -61,12 +61,12 @@ The platform supplies structured intelligence only. Broker/MT5 orders, trading c
 
 ## Implemented versus planned
 
-| Implemented through Phase 9 | Planned in later phases |
+| Implemented through Phase 10 Prompt 3A | Planned/required before Phase 10 closure |
 |---|---|
 | Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Live market/filing providers and broader research capabilities |
-| Typed settings, FastAPI factory, health/readiness/version, correlation, structured logging, API errors | OpenRouter calls, PostgreSQL/pgvector, Redis, and vector retrieval |
+| Typed settings, fail-closed production host/header/body/correlation policy, safe telemetry, legacy REST plus selected `/v1` aliases, and minimal read-only/offline MCP facade | Approved dependency/container vulnerability scan and SBOM evidence; target-deployment auth/rate decisions remain deferred |
 | Company resolution; market, financial, news/event, industry, and regulatory foundations; deterministic research planning/execution and governed workflows | Broader live provider coverage and production-grade durable persistence |
-| Structured in-memory research history/watchlists; deterministic verification; confidence/conflict preservation; evidence-linked synthesis; stable JSON, safe Markdown, and minimal professional DOCX reports; language/report contracts | Follow-up conversation, evaluated English/Telugu narrative rendering, charts, Streamlit, advanced report templates, and durable artifact storage |
+| Structured in-memory research history/watchlists; deterministic verification/synthesis/reporting; bounded offline production evaluations; local reliability/load, threat, SLO/runbook, deployment, and rollback evidence | Follow-up conversation, evaluated English/Telugu narrative rendering, charts, Streamlit, advanced report templates, and durable artifact storage |
 
 No unimplemented runtime capability is represented as working today. See `PROJECT_STATUS.md` for the authoritative gate.
 
@@ -132,6 +132,15 @@ Health checks:
 - `GET /research/workflows/{workflow_id}/memory` — structured research-memory records
 - `POST /research/workflows/{workflow_id}/report` — report-request contract (rendering deferred)
 - `POST /watchlists`, `GET /watchlists/{id}`, `POST /watchlists/{id}/checks` — watchlist + explicit monitoring check
+
+Phase 10 Prompt 1 production settings:
+
+- `ALLOWED_HOSTS` — comma-separated production host allowlist; wildcard, empty, malformed values, and production `DEBUG` logging fail closed.
+- `API_MAX_REQUEST_BODY_BYTES` — whole-request limit from 4 KiB through 10 MiB; default 1 MiB. Declared and chunked oversized bodies receive a safe `413` response.
+- Production request logs contain correlation ID, route template, method, status category/code, and duration only. Bodies, query values, exception messages, stack traces, credentials, and secrets are not emitted.
+- Authentication and rate limiting are deferred until a target deployment and enforcement policy are owner-approved.
+
+Phase 10 Prompt 2 hardening rejects duplicate/ambiguous Host, Content-Length, and correlation headers; malformed host ports; excessive chunk counts; secret-bearing HTTP exception details; and unbounded watchlist/memory collection requests. Prompt 3 freezes these contracts and additionally fails closed on Host outer whitespace/control, extreme numeric Host/Content-Length values, and whitespace/control correlation IDs. Prompt 3A adds the approved `/v1` aliases, a static two-capability MCP facade, offline evaluations, bounded local reliability/load evidence, threat/operations guidance, and local deployment/rollback evidence. See [the Prompt 3A blocker matrix](PHASE_10_BLOCKING_GAPS_MATRIX.md); supply-chain scan/SBOM evidence remains blocking.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 

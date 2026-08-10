@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from financial_intelligence.api.errors import build_error_response
 from financial_intelligence.application.manage_watchlist import (
@@ -18,17 +18,30 @@ from financial_intelligence.composition import AppContainer
 from financial_intelligence.domain.watchlist import WatchlistId
 
 router = APIRouter(tags=["watchlists"])
+MonitoringCapabilityValue = Literal["market", "financial", "news", "regulatory"]
+
+
+def _default_capabilities() -> list[MonitoringCapabilityValue]:
+    return ["market"]
 
 
 class WatchlistEntryBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     q: str = Field(min_length=1, max_length=200)
     exchange: str | None = Field(default=None, max_length=32)
 
 
 class CreateWatchlistBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     name: str = Field(min_length=1, max_length=128)
-    entries: list[WatchlistEntryBody] = Field(default_factory=list)
-    capabilities: list[str] = Field(default_factory=lambda: ["market"])
+    entries: list[WatchlistEntryBody] = Field(default_factory=list, max_length=100)
+    capabilities: list[MonitoringCapabilityValue] = Field(
+        default_factory=_default_capabilities,
+        min_length=1,
+        max_length=4,
+    )
     interval_hours: int = Field(default=24, ge=1, le=720)
 
 

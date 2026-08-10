@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from financial_intelligence.api.errors import register_exception_handlers
-from financial_intelligence.api.middleware import CorrelationIdMiddleware
+from financial_intelligence.api.middleware import CorrelationIdMiddleware, RequestSafetyMiddleware
 from financial_intelligence.api.routes import (
     companies,
     financials,
@@ -21,6 +21,10 @@ from financial_intelligence.api.routes import (
     synthesis,
     watchlists,
     workflows,
+)
+from financial_intelligence.api.versioning import (
+    VERSIONED_API_PREFIX,
+    install_openapi_version_policy,
 )
 from financial_intelligence.composition import AppContainer, build_container
 from financial_intelligence.config.settings import Settings
@@ -60,6 +64,12 @@ def create_app(
     application.state.container = resolved_container
     application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(CorrelationIdMiddleware)
+    application.add_middleware(
+        RequestSafetyMiddleware,
+        max_body_bytes=resolved_container.settings.api_max_request_body_bytes,
+        allowed_hosts=resolved_container.settings.allowed_host_values(),
+        enforce_allowed_hosts=resolved_container.settings.app_env == "production",
+    )
     register_exception_handlers(application)
     application.include_router(health.router)
     application.include_router(companies.router)
@@ -72,4 +82,8 @@ def create_app(
     application.include_router(synthesis.router)
     application.include_router(workflows.router)
     application.include_router(watchlists.router)
+    application.include_router(health.router, prefix=VERSIONED_API_PREFIX)
+    application.include_router(companies.router, prefix=VERSIONED_API_PREFIX)
+    application.include_router(synthesis.router, prefix=VERSIONED_API_PREFIX)
+    install_openapi_version_policy(application)
     return application

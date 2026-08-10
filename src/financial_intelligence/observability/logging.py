@@ -12,6 +12,7 @@ from financial_intelligence.observability.correlation import get_correlation_id
 
 _CONFIGURED = False
 _HANDLER_NAME = "financial_intelligence.structured"
+_NOISY_OR_URL_BEARING_LOGGERS = ("uvicorn.access", "httpx", "httpcore")
 _SECRET_KEY_FRAGMENTS = (
     "password",
     "passwd",
@@ -77,7 +78,10 @@ class StructuredFormatter(logging.Formatter):
             payload[key] = _redact_value(key, value)
 
         if record.exc_info:
-            payload["exc_info"] = self.formatException(record.exc_info)
+            exception_type = record.exc_info[0]
+            payload["exception_type"] = (
+                exception_type.__name__ if exception_type is not None else "Exception"
+            )
         return json.dumps(payload, default=str, ensure_ascii=False)
 
 
@@ -115,7 +119,8 @@ def configure_logging(level: str = "INFO", *, force: bool = False) -> None:
     normalized = level.upper()
     if _CONFIGURED and not force:
         root.setLevel(normalized)
-        logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+        for logger_name in _NOISY_OR_URL_BEARING_LOGGERS:
+            logging.getLogger(logger_name).setLevel(logging.WARNING)
         return
 
     # Remove only our previous structured handler to avoid stacking duplicates
@@ -128,7 +133,8 @@ def configure_logging(level: str = "INFO", *, force: bool = False) -> None:
     handler.setFormatter(StructuredFormatter())
     root.addHandler(handler)
     root.setLevel(normalized)
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    for logger_name in _NOISY_OR_URL_BEARING_LOGGERS:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
     _CONFIGURED = True
 
 

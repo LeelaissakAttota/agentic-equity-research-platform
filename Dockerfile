@@ -23,6 +23,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/opt/venv/bin:$PATH" \
     APP_ENV=production \
     LOG_LEVEL=INFO \
+    ALLOWED_HOSTS="localhost,127.0.0.1" \
+    API_MAX_REQUEST_BODY_BYTES=1048576 \
     ALLOW_PAID_MODELS=false
 
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser

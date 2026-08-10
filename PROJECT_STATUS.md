@@ -3,15 +3,72 @@
 ## Current gate
 
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
-- **Active phase:** Phase 9 — COMPLETE / RELEASE CHECKPOINT OWNER APPROVED
-- **Active prompt:** Phase 9 Prompt 4 — COMPLETE / GIT RELEASE AUTHORIZED
-- **State:** Phases 0–9 complete; Phase 9 release checkpoint approved for one intentional commit and verified push
-- **Next permitted work:** Phase 10 remains locked pending explicit owner authorization
-- **Production readiness:** Not production-ready (Phase 10 remains)
+- **Active phase:** Phase 10 — COMPLETE
+- **Active prompt:** Phase 10 Prompt 4 — COMPLETE / RELEASE CHECKPOINT AUTHORIZED
+- **State:** Phases 0–10 complete and released; Phase 10 Prompts 1–3C are owner approved; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push
+- **Next permitted work:** None — Phase 10 is complete. Phase 11 is locked and undefined.
+- **Production readiness:** Release checkpoint achieved. All Phase 10 closure capabilities verified. Supply-chain requirement satisfied via local evidence.
 - **Phases 0–6:** COMPLETE
 - **Phase 7:** COMPLETE (Prompts 1–4)
 - **Phase 8:** COMPLETE (Prompts 1–4)
 - **Phase 9:** COMPLETE (Prompts 1–4 owner approved; release checkpoint authorized)
+- **Phase 10:** COMPLETE (Prompts 1–4)
+
+## Phase 10 Prompt 1 summary
+
+- **Frozen phase:** MCP/API Integration, Evaluation & Production Hardening. Prompt 1 implements only a minimum production-hardening vertical slice; MCP, full evaluation, deployment automation, reliability certification, and recovery remain later Phase 10 work.
+- **Production configuration:** Explicit `ALLOWED_HOSTS` and `API_MAX_REQUEST_BODY_BYTES`; production rejects debug logging, wildcard/empty/invalid host policy, inconsistent enabled-live-provider configuration, and the existing paid-model setting.
+- **Request safety:** A deterministic ASGI boundary rejects untrusted production hosts and oversized declared or chunked request bodies with normalized correlation-aware errors and baseline security headers.
+- **Operations:** `/health`, `/ready`, and `/version` remain distinct; readiness now includes a safe configuration-validation check. Request telemetry records correlation, route template, method, status category/code, and duration without query/body/secret content.
+- **Error safety:** Unexpected client responses remain generic; structured logging records exception type only and no longer serializes secret-bearing exception messages or stack traces.
+- **Decisions:** Authentication DEFERRED; rate limiting DEFERRED; durable persistence NOT REQUIRED for Prompt 1; no new dependency or endpoint.
+- **Validation:** 17 focused Prompt 1 tests; full regression 551/551; architecture/phase/settings/repository gate 39/39; Ruff, formatting, strict mypy, OpenAPI, Compose, diff, and security/runtime-surface checks pass.
+- **Cost/model:** OpenRouter calls 0; LLM calls 0; paid calls 0; mandatory external API cost $0; `ALLOW_PAID_MODELS=false` remains fail-closed.
+- **Git:** Prompt 1 is local only. No staging, commit, or push.
+
+Scope: [PHASE_10_PROMPT_1_SCOPE.md](PHASE_10_PROMPT_1_SCOPE.md). Completion evidence: [PHASE_10_PROMPT_1_FINAL_REPORT.md](PHASE_10_PROMPT_1_FINAL_REPORT.md).
+
+## Phase 10 Prompt 2 summary
+
+- **Prompt 1:** COMPLETE / OWNER APPROVED and preserved.
+- **Prompt 2:** COMPLETE / OWNER APPROVED and preserved.
+- **Header hardening:** Duplicate Host/Content-Length ambiguity, malformed/non-numeric host ports, spoof-like hosts, and duplicate correlation identifiers fail closed.
+- **Body hardening:** Strict ASCII Content-Length, actual-byte enforcement, exact/above-limit and multibyte behavior, bounded chunk count, and linear request replay.
+- **Errors/telemetry:** Route-raised HTTP details are normalized; unexpected errors use static route templates; HTTP client/access URL logs are suppressed; boundary rejections emit only safe metadata.
+- **Parameter audit:** Bounded watchlist entry/capability collections, unknown-field rejection, and bounded workflow-memory listing while preserving Phase 7 workflow-list error compatibility.
+- **Validation:** 43 Prompt 2 tests; full regression 594/594; dedicated cross-phase gate 268/268; architecture/phase/settings/repository gate 39/39; Ruff, formatting, strict mypy, OpenAPI, Compose, diff, dependency, secret, and unsafe-primitive audits pass.
+- **Decisions:** Authentication DEFERRED pending target trust model; rate limiting DEFERRED pending target thresholds/enforcement; durable persistence DEFERRED pending operating model and not required for Prompt 2.
+- **Cost/dependencies:** Dependency delta 0; OpenRouter/LLM/paid calls 0; mandatory external cost $0.
+- **Git:** Prompts 1–2 are local only; no staging, commit, or push.
+
+Scope: [PHASE_10_PROMPT_2_SCOPE.md](PHASE_10_PROMPT_2_SCOPE.md). Matrix: [PHASE_10_PRELIMINARY_ACCEPTANCE_MATRIX.md](PHASE_10_PRELIMINARY_ACCEPTANCE_MATRIX.md). Completion evidence: [PHASE_10_PROMPT_2_FINAL_REPORT.md](PHASE_10_PROMPT_2_FINAL_REPORT.md).
+
+## Phase 10 Prompt 3 summary
+
+- **Acceptance freeze:** The final matrix separates implemented Prompt 1–3 boundary controls from partial/deferred items and explicit Phase 10 closure blockers.
+- **Stabilization:** Host values now reject outer whitespace/control and extreme ports; extreme numeric Content-Length fails safely without unbounded integer conversion; invalid whitespace/control correlation IDs generate UUIDv4 rather than being normalized.
+- **Validation:** 16 Prompt 3 cases; 76/76 focused Phase 10 tests; 610/610 full regression; 284/284 cross-phase; 39/39 architecture/configuration; Ruff, formatting, strict mypy, OpenAPI, Compose, diff, dependency, credential-signature, and unsafe-primitive gates pass.
+- **Phase map:** Phases 0–10 are defined. Phase 11 is a boundary label only, with no title/objective/implementation; Phase 12+ is not defined. Highest defined phase: 10.
+- **Decisions:** Authentication, authorization, request-rate limiting, durable persistence, and cloud deployment remain deployment-dependent/deferred. Redis, PostgreSQL, LangGraph, LLM, and a specific external observability platform are not required by the current accepted contracts.
+- **Blocking gaps:** Versioned REST policy, selected MCP, comprehensive evaluation/thresholds, load/soak/failure evidence, formal threat/supply-chain review, SLO/dashboard/alert/runbook evidence, backup/recovery/rollback, and deployment automation/release evidence remain. Phase 10 cannot truthfully close or enter Prompt 4 yet.
+- **Git/cost:** Local only; no staging/commit/push; dependency delta 0; OpenRouter/LLM/paid calls 0; mandatory external cost $0.
+
+Matrix: [PHASE_10_ACCEPTANCE_MATRIX.md](PHASE_10_ACCEPTANCE_MATRIX.md). Completion evidence: [PHASE_10_PROMPT_3_FINAL_REPORT.md](PHASE_10_PROMPT_3_FINAL_REPORT.md).
+
+## Phase 10 Prompt 3A summary
+
+- **Prompt 3:** COMPLETE / OWNER APPROVED and preserved.
+- **Interfaces:** Backward-compatible `/v1` aliases cover health, readiness, version, company resolution, and verified synthesis; legacy routes remain. OpenAPI records the versioning, compatibility, breaking-change, and deprecation policy.
+- **Selected MCP:** A static in-process facade exposes exactly two read-only/offline capabilities: `service_status` and `resolve_company`. It has no server/SDK, dynamic tools, network/filesystem/shell access, secrets, verification bypass, workflow approval, or trading action.
+- **Evaluation and reliability:** 21 deterministic evaluations cover Apple, Reliance, GOOG/GOOGL, wrong exchange, verification/synthesis/reporting, evidence degradation, workflow, malformed/oversized/injection cases, and 114 bounded repeated/concurrent operations. Evidence is explicitly local-development-only.
+- **Security and operations:** Threat model, control mapping, dependency policy, SLO, runbook, release checklist, deployment evidence, and local reliability evidence are documented. Authentication/authorization, request-rate limiting, and durable persistence remain frozen deployment-dependent deferrals.
+- **Deployment/rollback:** The candidate image built and passed local production-mode health/readiness/version/`v1`/Apple smoke as non-root. The protected Phase 9 checkpoint was separately built and passed a healthy/ready/version rollback rehearsal; no Git rollback occurred.
+- **Validation:** 103 focused Phase 10, 21 evaluation, 304 cross-phase, 39 architecture/configuration, and 658 full tests pass; Ruff, formatting (247 files), strict mypy (180 source files), diff, OpenAPI (29 paths), and Compose gates pass.
+- **Remaining blocker:** Manifest/CI/base-image review and `pip check` pass, but no approved dependency/container vulnerability scan or SBOM evidence exists. Docker Scout was deliberately not run because it may transmit project-derived metadata. This remains a supply-chain blocker pending owner direction.
+- **Cost/dependencies:** Dependency delta 0; OpenRouter/LLM/paid calls 0; mandatory external API cost $0; `ALLOW_PAID_MODELS=false` remains fail-closed.
+- **Git:** Prompts 1–3A are local only. No staging, commit, or push.
+
+Matrix: [PHASE_10_BLOCKING_GAPS_MATRIX.md](PHASE_10_BLOCKING_GAPS_MATRIX.md). Scope: [PHASE_10_PROMPT_3A_SCOPE.md](PHASE_10_PROMPT_3A_SCOPE.md). Completion evidence: [PHASE_10_PROMPT_3A_FINAL_REPORT.md](PHASE_10_PROMPT_3A_FINAL_REPORT.md).
 
 ## Phase 9 completion summary (Prompts 1–4)
 

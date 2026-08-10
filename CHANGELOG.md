@@ -4,6 +4,48 @@ All notable changes will be documented here. The project intends to adopt Semant
 
 ## [Unreleased]
 
+### Phase 10 Prompt 4 (owner-approved release checkpoint)
+
+- Completed final release validation across all Phase 10 Prompt 1–3C capabilities: fail-closed production configuration, trusted-host enforcement, request-body bounds, safe errors/telemetry/logging, versioned REST backward-compatible aliases, static in-process MCP facade, deterministic evaluations, local reliability/load evidence, threat model/control mapping, supply-chain review with local SBOM and vulnerability scans, SLO/runbook/recovery/rollback/release evidence, and deployment smoke test.
+- Full regression: 658 passed, 0 failed, 0 skipped. Phase 10 focused: 103 passed. Cross-phase: 304 passed. Architecture/configuration: 39 passed. Evaluations: 21 passed. Ruff: PASS. Formatting: PASS. mypy: PASS (180 source files). OpenAPI: 29 paths. Docker Compose: PASS.
+- Supply-chain: Application SBOM (CycloneDX 1.5, 256 components), Container SBOM (CycloneDX 1.7), pip-audit (0 vulnerabilities in production dependencies), Trivy 0.73.0 local container scan (6 CRITICAL, 20 HIGH, 71 MEDIUM, 97 LOW, 11 UNKNOWN — all OS/build-time packages, zero in production Python runtime). Docker Scout historical scan transmitted metadata to Docker cloud (noted as exception; final acceptance uses local Trivy only).
+- Production dependencies: fastapi, pydantic, pydantic-settings, uvicorn, tzdata — zero known vulnerabilities. Dev/build dependencies with findings (cryptography, python-multipart, PyJWT, requests, RestrictedPython, syft, msgpack, setuptools) excluded from production image.
+- Identity/verification/synthesis regression: Apple/NASDAQ, Reliance/NSE, wrong exchange, GOOG/GOOGL — all green. No-investment-advice, prompt-injection, no-trading boundaries intact.
+- Single Phase 10 release commit with message `feat(phase-10): harden production readiness` and verified push to origin/main.
+- Phase 10 marked COMPLETE. Phase 11 remains locked and undefined.
+
+### Phase 10 Prompt 3A (blockers resolved via Prompt 3C)
+
+### Phase 10 Prompt 3 (awaiting owner review)
+
+- Audited the authoritative Phase 10 contract and project map: Phases 0–10 are defined; Phase 11 is a boundary label only; Phase 12+ is not defined.
+- Published the final acceptance matrix with explicit implemented, partial/documented, deferred-by-design, and blocking classifications.
+- Repaired three genuine fail-closed parser defects: Host outer-whitespace/control normalization, extreme numeric Host/Content-Length conversion failure, and correlation outer-whitespace/control normalization.
+- Added 16 semantic Prompt 3 cases; final gates pass 610 full, 76 focused Phase 10, 284 cross-phase, and 39 architecture/configuration tests, plus Ruff, formatting, strict mypy, OpenAPI, Compose, diff, dependency, credential-signature, and unsafe-primitive checks.
+- Confirmed dependency delta, OpenRouter calls, LLM calls, paid calls, and mandatory external cost remain 0; no staging, commit, or push occurred.
+- Recorded blocking versioned REST/MCP, evaluation, reliability/security, operations/SLO, recovery/rollback, and deployment evidence. Phase 10 remains IN PROGRESS; Prompt 4 is not ready or authorized.
+
+### Phase 10 Prompt 2 (owner approved)
+
+- Adversarially hardened the approved Prompt 1 production boundary without changing Phase 1–9 research semantics or adding a dependency/endpoint.
+- Rejected duplicate Host and Content-Length headers, malformed/non-numeric host ports, spoof/control/oversized hosts, non-ASCII-digit Content-Length values, duplicate correlation IDs, and excessive body-chunk counts.
+- Replaced quadratic body replay with bounded request-local deque replay; verified declared, absent-length, exact-limit, one-byte-over, mid-stream, multibyte, empty, and hostile JSON behavior.
+- Normalized route-raised HTTP exception messages, replaced concrete error paths with route templates, suppressed URL-bearing HTTP client/access logs, and added safe boundary-rejection telemetry.
+- Bounded watchlist entry/capability collections, rejected unknown watchlist control fields, and bounded workflow-memory query limits while preserving the established workflow-list invalid-request contract.
+- Added a 43-test Prompt 2 adversarial suite; full regression now passes 594 tests, with 268 cross-phase and 39 architecture/configuration tests passing.
+- Published the preliminary Phase 10 acceptance matrix. Authentication, rate limiting, durable persistence, MCP, comprehensive evaluation, SLOs/load/recovery/deployment evidence, Prompt 3, and Phase 11 remain deferred or incomplete.
+- New dependencies, OpenRouter/LLM/paid calls, and mandatory external cost remain 0. No staging, commit, or push.
+
+### Phase 10 Prompt 1 (owner approved)
+
+- Froze the repository-defined Phase 10 scope and implemented only a minimal production-readiness foundation; MCP, authentication, rate limiting, persistence, evaluation scorecards, deployment automation, and Phase 11 remain deferred.
+- Added fail-closed production configuration for explicit trusted hosts, non-debug logging, live-provider consistency, bounded request bodies, and the existing paid-model prohibition.
+- Added deterministic host and whole-body request safety, including content-length and chunked-body enforcement with normalized correlation-aware errors.
+- Preserved distinct health/readiness/version semantics and added a safe configuration readiness diagnostic.
+- Added route-template/status/duration request telemetry and removed secret-bearing exception messages and stack traces from structured exception logs.
+- Added 17 focused production-hardening, identity, error, host/body, observability, and Phase 9 report-path regression tests; full regression now passes 551 tests.
+- Added no dependency, endpoint, LLM/OpenRouter call, paid fallback, external service, arbitrary file write, or Phase 11 capability. Prompt 1 remains unstaged, uncommitted, and unpushed.
+
 ### Phase 9 Prompt 4 (owner-approved release checkpoint)
 
 - Recovered and verified `main` at protected Phase 8 ancestor `fcc145a0b4bb33c0c274f758f36d2ef508135a6a`, with no staged files, no local tracking divergence, intentional Prompt 1–3 changes intact, and five protected unrelated owner documents untouched.

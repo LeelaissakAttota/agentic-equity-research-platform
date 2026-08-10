@@ -1,4 +1,4 @@
-# Local foundation compose (Phase 1–3 Prompt 1).
+# Local foundation compose (through Phase 10 Prompt 1).
 # PostgreSQL and Redis are intentionally absent: those integrations are not
 # implemented yet. Do not interpret this file as claiming database readiness.
 # Market data is fixture-backed in-process; no live quote services are started.
@@ -15,6 +15,8 @@ services:
     environment:
       APP_ENV: development
       LOG_LEVEL: INFO
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      API_MAX_REQUEST_BODY_BYTES: "1048576"
       ALLOW_PAID_MODELS: "false"
       PRIMARY_FREE_MODEL: ""
       FALLBACK_FREE_MODEL_1: ""

@@ -116,6 +116,11 @@ class ApiContractDeepTests(TestCase):
                 "/watchlists",
                 "/watchlists/{watchlist_id}",
                 "/watchlists/{watchlist_id}/checks",
+                "/v1/health",
+                "/v1/ready",
+                "/v1/version",
+                "/v1/companies/resolve",
+                "/v1/research/synthesis",
             },
         )
         self.assertEqual(
@@ -123,6 +128,7 @@ class ApiContractDeepTests(TestCase):
             "Agentic Financial Intelligence & Equity Research Platform",
         )
         self.assertEqual(app.openapi()["info"]["version"], "0.1.0")
+        self.assertEqual(app.openapi()["info"]["x-api-version"], "v1")
         forbidden = {
             "/research",
             "/news",

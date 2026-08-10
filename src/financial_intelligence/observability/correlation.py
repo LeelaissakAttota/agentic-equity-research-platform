@@ -37,7 +37,7 @@ def resolve_correlation_id(raw: str | None) -> CorrelationId:
 
     if raw is None:
         return generate_correlation_id()
-    candidate = raw.strip()
+    candidate = raw
     if not candidate or len(candidate) > MAX_CORRELATION_ID_LENGTH:
         return generate_correlation_id()
     if not _SAFE_CORRELATION_PATTERN.fullmatch(candidate):

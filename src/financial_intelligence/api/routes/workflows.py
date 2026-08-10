@@ -369,6 +369,13 @@ def list_workflow_memory(
     limit: int = 100,
 ) -> dict[str, Any] | JSONResponse:
     container = _container(request)
+    if limit < 1 or limit > 200:
+        return build_error_response(
+            code="invalid_memory_list_query",
+            message="limit must be between 1 and 200",
+            correlation_id=_correlation_id(request),
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
     try:
         wid = WorkflowId.from_string(workflow_id)
     except ValueError:
