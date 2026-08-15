@@ -1,0 +1,163 @@
+{
+  "operation_status": "ok",
+  "status": "insufficient",
+  "message": "deterministic research synthesis generated",
+  "synthesis_id": "41ea51ad-4aea-51ca-b2c2-1e4abbf223a8",
+  "research_run_id": "10d3943d-ff08-4793-9b5e-730f09144d25",
+  "company": {
+    "company_id": "22222222-2222-4222-8222-222222222001",
+    "legal_name": "Apple Inc.",
+    "display_name": "Apple",
+    "country": "US",
+    "sector": "Information Technology",
+    "industry": "Consumer Electronics",
+    "aliases": [
+      { "value": "Apple", "alias_type": "short_name" },
+      { "value": "Apple Inc", "alias_type": "common_name" }
+    ],
+    "securities": [
+      {
+        "security_id": "32222222-2222-4222-8222-222222222001",
+        "company_id": "22222222-2222-4222-8222-222222222001",
+        "security_type": "common_share",
+        "display_name": "Apple Common Share",
+        "listings": [
+          {
+            "listing_id": "42222222-2222-4222-8222-222222222001",
+            "security_id": "32222222-2222-4222-8222-222222222001",
+            "exchange": "NASDAQ",
+            "mic": "XNAS",
+            "ticker": "AAPL",
+            "currency": "USD",
+            "country": "US",
+            "is_primary": true,
+            "status": "active"
+          }
+        ]
+      }
+    ]
+  },
+  "language": {
+    "language_code": "en",
+    "rendering_locale": "en-US",
+    "translation_status": "not_applied"
+  },
+  "title": "Research Synthesis — Apple",
+  "sections": [
+    {
+      "section_type": "financial_performance",
+      "title": "Financial Performance and Health",
+      "claims": [
+        {
+          "claim_id": "11111111-1111-4111-8111-000000000001",
+          "company_id": "22222222-2222-4222-8222-222222222001",
+          "security_id": "32222222-2222-4222-8222-222222222001",
+          "listing_id": "42222222-2222-4222-8222-222222222001",
+          "research_run_id": "10d3943d-ff08-4793-9b5e-730f09144d25",
+          "section": "financial_performance",
+          "text": "Evidence is stale as of 2024-09-28: Apple revenue was 100 billion",
+          "disposition": "stale",
+          "verification_status": "stale",
+          "confidence": {
+            "claim_id": "11111111-1111-4111-8111-000000000001",
+            "score": 1.0,
+            "score_version": "phase8-deterministic-v1",
+            "label": "stale",
+            "factors": [
+              "source_authority",
+              "evidence_recency",
+              "no_contradictions",
+              "evidence_completeness",
+              "explicit_period_match",
+              "explicit_unit_currency_match"
+            ]
+          },
+          "citation_ids": [
+            "CIT-11111111-1111-4111-8111-000000000001-EVD-1"
+          ],
+          "contradiction_ids": [],
+          "material_claim_kind": "revenue",
+          "freshness": {
+            "claim_id": "11111111-1111-4111-8111-000000000001",
+            "classification": "stale",
+            "as_of": "2024-09-28T00:00:00Z",
+            "assessed_at": "2026-08-15T02:53:43.218861Z",
+            "policy": "phase8-verification-status"
+          },
+          "structured_value": {
+            "value": "100",
+            "unit": "billion",
+            "currency": "USD",
+            "reporting_period": "FY2024",
+            "as_of": "2024-09-28T00:00:00Z"
+          }
+        }
+      ]
+    }
+  ],
+  "executive_summary": {
+    "method": "phase9-deterministic-materiality-v1",
+    "max_items": 5,
+    "items": [
+      {
+        "claim_id": "11111111-1111-4111-8111-000000000001",
+        "text": "Evidence is stale as of 2024-09-28: Apple revenue was 100 billion",
+        "disposition": "stale",
+        "confidence_label": "stale",
+        "citation_ids": [
+          "CIT-11111111-1111-4111-8111-000000000001-EVD-1"
+        ]
+      }
+    ]
+  },
+  "confidence_contexts": [
+    {
+      "claim_id": "11111111-1111-4111-8111-000000000001",
+      "score": 1.0,
+      "score_version": "phase8-deterministic-v1",
+      "label": "stale",
+      "factors": [
+        "source_authority",
+        "evidence_recency",
+        "no_contradictions",
+        "evidence_completeness",
+        "explicit_period_match",
+        "explicit_unit_currency_match"
+      ]
+    }
+  ],
+  "contradictions": [],
+  "missing_data": [
+    {
+      "claim_id": "11111111-1111-4111-8111-000000000001",
+      "reason": "stale",
+      "detail": "Claim retained with stale semantics; no value was fabricated."
+    }
+  ],
+  "citations": [
+    {
+      "citation_id": "CIT-11111111-1111-4111-8111-000000000001-EVD-1",
+      "section": "financial_performance",
+      "claim_id": "11111111-1111-4111-8111-000000000001",
+      "evidence_id": "EVD-1",
+      "source_id": "SEC-EDGAR",
+      "authority_tier": 1,
+      "data_origin": "fixture",
+      "provider": "SEC EDGAR",
+      "source_name": "SEC EDGAR",
+      "url": "https://www.sec.gov/Archives/apple-fy2024",
+      "locator": null,
+      "published_at": "2024-09-28T00:00:00Z",
+      "retrieved_at": "2026-08-08T01:00:00Z",
+      "as_of": "2024-09-28T00:00:00Z",
+      "reference_id": "SEC-EDGAR-FY2024",
+      "company_id": "22222222-2222-4222-8222-222222222001",
+      "security_id": "32222222-2222-4222-8222-222222222001",
+      "listing_id": "42222222-2222-4222-8222-222222222001"
+    }
+  ],
+  "correlation_id": "ef387c78-bde1-43a9-bb03-2c35e56a13b6",
+  "generated_at": "2026-08-15T02:53:43.218861Z",
+  "kind": "research_synthesis",
+  "report": null
+}

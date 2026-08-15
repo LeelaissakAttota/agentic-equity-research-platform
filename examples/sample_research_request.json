@@ -1,0 +1,10 @@
+{
+  "q": "Apple",
+  "country": "US",
+  "exchange": "NASDAQ",
+  "ticker": "AAPL",
+  "objective": "comprehensive_equity_research",
+  "objective_text": "Evaluate Apple fundamentals, risks, and catalysts.",
+  "jurisdiction": "US",
+  "time_horizon_days": 365
+}
