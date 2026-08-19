@@ -86,7 +86,7 @@ class ImportSideEffectTests(TestCase):
             timeout=30,
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertIn("0.1.0", completed.stdout)
+        self.assertIn("1.0.0", completed.stdout)
         self.assertIn("create_app", completed.stdout)
         combined = completed.stdout + completed.stderr
         self.assertNotIn("OpenRouter", combined)

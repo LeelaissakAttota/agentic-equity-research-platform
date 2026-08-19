@@ -4,7 +4,7 @@
 
 - Current API major version: `v1`.
 - Versioned prefix: `/v1`.
-- Package/service release version remains independent (`0.1.0` at this checkpoint).
+- Package/service release version remains independent from the API major prefix and is `1.0.0` for the current release candidate.
 - OpenAPI exposes `info.x-api-version=v1` and a top-level `x-api-versioning` policy.
 
 The selected versioned surface is `/v1/health`, `/v1/ready`, `/v1/version`,

@@ -127,7 +127,7 @@ class ApiContractDeepTests(TestCase):
             app.openapi()["info"]["title"],
             "Agentic Financial Intelligence & Equity Research Platform",
         )
-        self.assertEqual(app.openapi()["info"]["version"], "0.1.0")
+        self.assertEqual(app.openapi()["info"]["version"], "1.0.0")
         self.assertEqual(app.openapi()["info"]["x-api-version"], "v1")
         forbidden = {
             "/research",

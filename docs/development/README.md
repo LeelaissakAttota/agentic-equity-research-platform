@@ -1,6 +1,6 @@
 # Development Notes
 
-## Local Phase 1–10 Prompt 3A foundation
+## Local v1.0.0 release candidate
 
 ```powershell
 Copy-Item .env.example .env
@@ -33,7 +33,7 @@ Foundation routes:
 - Phase 8 Prompts 1–3 add a deterministic verification domain/application foundation: typed claims and evidence, explicit contradictions, versioned explainable confidence factors, targeted critic requests, and bounded critic stop decisions. It is composed internally and does not yet add a public verification endpoint.
 - Verification is strict and fail-closed: claim type, numeric value, unit, currency, and reporting period must be compatible; missing or non-finite numeric values cannot support a claim; only supporting evidence contributes to confidence.
 - Workflow memory summaries are not claims or evidence and are never assigned source authority implicitly; workflow-wide verification remains deferred until typed claim/evidence production exists.
-- Phases 7–9 are COMPLETE. Phase 10 Prompts 1–3 are COMPLETE / OWNER APPROVED; Prompt 3A is COMPLETE / BLOCKERS REMAIN / AWAITING OWNER REVIEW. Phase 10 remains IN PROGRESS. Phase 11 is an undefined locked boundary only and is not started.
+- Phases 0–10 are COMPLETE. Final Release Blocker 2 is closed locally for the `v1.0.0` candidate. Exact-candidate supply-chain evidence is retained, but Final Release Blocker 1 remains open pending owner review of 26 candidate-affecting Critical/High findings; no Git tag or GitHub Release exists yet. Phase 11 is an undefined locked boundary only, and JARVIS integration is not started.
 
 Production-safety configuration:
 
@@ -41,7 +41,7 @@ Production-safety configuration:
 - `API_MAX_REQUEST_BODY_BYTES=1048576` bounds declared and chunked bodies. Allowed range: 4096–10485760 bytes.
 - `LOG_LEVEL=DEBUG` is rejected in production. `ALLOW_PAID_MODELS=true` remains rejected in every environment.
 - `/ready` reports a non-secret `configuration` check. It does not claim PostgreSQL, Redis, providers, auth, rate limiting, or other deferred dependencies are ready.
-- Authentication/rate limiting remain deployment-dependent Phase 10 work; Prompt 1 does not add them.
+- Authentication and rate limiting remain deployment-dependent deferrals and are not implemented by the release candidate.
 
 Prompt 2 boundary rules:
 
@@ -50,27 +50,27 @@ Prompt 2 boundary rules:
 - Multiple correlation headers are ambiguous and replaced with a generated UUIDv4.
 - Route-raised HTTP details are never reflected; unexpected telemetry uses the static route template and exception type only. `httpx`, `httpcore`, and Uvicorn access INFO logs are suppressed to prevent URL/query leakage.
 - Watchlists accept at most 100 entries and the four frozen monitoring capabilities; workflow memory lists accept `limit=1..200`.
-- Request-size limiting is not rate limiting. Auth, rate limits, persistence, MCP, load/SLO/recovery, and deployment certification remain deferred.
+- Request-size limiting is not rate limiting. Authentication, rate limits, durable persistence, public-cloud certification, and internet-scale load/SLA evidence remain deferred. Selected MCP, bounded local load/reliability, SLO/runbook, recovery/rollback, and local deployment evidence were added by later Phase 10 prompts.
 
-Prompt 3 contract freeze:
+Historical Prompt 3 contract freeze:
 
 - Host outer whitespace/control and extreme numeric ports fail as `invalid_host`; extreme numeric Content-Length fails safely before integer conversion; whitespace/control correlation IDs generate UUIDv4.
-- The final acceptance matrix is [PHASE_10_ACCEPTANCE_MATRIX.md](../../PHASE_10_ACCEPTANCE_MATRIX.md). Passing current hardening tests does not satisfy still-blocking versioned REST/MCP, evaluation, reliability/security, operations/SLO, recovery/rollback, and deployment deliverables.
-- Do not publicly expose the service as authenticated/rate-limited/durable/distributed. Phase 10 Prompt 4 is not ready or authorized.
+- The final acceptance matrix is [PHASE_10_ACCEPTANCE_MATRIX.md](../../PHASE_10_ACCEPTANCE_MATRIX.md). Its blocking classifications describe the Prompt 3 point in history and were subsequently closed or reclassified by owner-approved Prompt 3A/3C/4 work.
+- Do not publicly expose the service as authenticated, rate-limited, durable, distributed, or SLA-certified; those capabilities remain deferred despite Phase 10 completion.
 
-Prompt 3A production-readiness evidence:
+Phase 10 Prompt 3A/3C/4 production-readiness evidence:
 
 - `/v1` is the current REST major prefix for the five approved aliases; legacy endpoints remain supported. Breaking changes require a new major prefix and removals require owner approval plus a released deprecation window.
 - Selected MCP is an **in-process facade**, not a network server. Its exact allowlist is `service_status` and `resolve_company`; both are read-only and offline. It provides no dynamic tools, shell/filesystem/network access, secrets, policy mutation, approval, verification bypass, or trading action.
 - The deterministic evaluation and bounded local reliability/load suites are reproducible tests, not production SLA or internet-scale performance evidence.
 - Operations evidence is in `docs/operations/`; the threat and dependency reviews are in `docs/security/`.
-- The local candidate and protected Phase 9 rollback images passed production-mode health/readiness/version smoke. Supply-chain scan/SBOM evidence remains blocking and Prompt 4 is not ready.
+- The Phase 10 candidate and protected Phase 9 rollback images passed production-mode health/readiness/version smoke. Prompt 3C historically added local SBOM/Trivy evidence and Prompt 4 completed the Phase 10 release checkpoint. Fresh evidence for the current `v1.0.0` image is retained under `release_evidence/v1.0.0/`; its unresolved Critical/High security disposition remains Final Release Blocker 1.
 
 Optional resolve parameters: `country`, `exchange`, `ticker`. Explicit constraints are never ignored to force a match.
 
 The reference catalog is a small offline fixture only—not complete market coverage and not live data.
 
-Docker (application only; PostgreSQL/Redis and live providers are not implemented):
+Docker (image `agentic-financial-intelligence:1.0.0`; PostgreSQL/Redis and broad live providers are not implemented):
 
 ```powershell
 docker compose build

@@ -1,22 +1,36 @@
 # Changelog
 
-All notable changes will be documented here. The project intends to adopt Semantic Versioning when releasable software exists.
+All notable changes are documented here. Release versions follow Semantic Versioning.
 
-## [Unreleased]
+## [1.0.0] - Unreleased
 
-### Phase 10 Prompt 4 (owner-approved release checkpoint)
+### Final release metadata and documentation alignment
+
+- Aligned the authoritative package/runtime/OpenAPI version to `1.0.0`; the future Git tag and GitHub Release name remain `v1.0.0` and have not been created.
+- Aligned the local Compose image reference to `agentic-financial-intelligence:1.0.0` without publishing an image.
+- Replaced the obsolete planning-shaped synthesis example with a current, schema-valid, fixture-labelled verified-claim request.
+- Reconciled current README, phase/status, architecture, development, API, security/supply-chain, and release-checklist documentation while preserving historical phase reports as historical evidence.
+- Final Release Blocker 2 is closed locally. Final Release Blocker 1 evidence is retained for exact image `sha256:b05d7725d17df2da7b94f8b73afc0aa9d6bcc384a227b48a1d031640104c3b0f`, but the blocker remains open pending owner review of 26 candidate-affecting Critical/High findings.
+
+### Final release exact-candidate supply-chain evidence
+
+- Added a hashed `release_evidence/v1.0.0/` manifest, exact runtime requirements capture, CycloneDX 1.6 application SBOM, CycloneDX 1.7 container SBOM, pip-audit JSON/human summary, Trivy JSON/table/human summary, all-findings classification, and sanitized secret-hygiene summary.
+- `pip-audit 2.10.1` reports no known vulnerabilities across 21 exact active-runtime distributions. Trivy 0.73.0 reports 215 package/advisory records: 6 Critical, 22 High, 79 Medium, 97 Low, and 11 Unknown; no finding was hidden and no dependency or base image was automatically changed.
+- Applicability review classifies 2 Critical/High records as not applicable and 26 as requiring owner review. Evidence generation is complete, but residual risk is not owner-accepted; Final Release Blocker 1 therefore remains open.
+
+### Phase 10 Prompt 4 (historical owner-approved release checkpoint)
 
 - Completed final release validation across all Phase 10 Prompt 1–3C capabilities: fail-closed production configuration, trusted-host enforcement, request-body bounds, safe errors/telemetry/logging, versioned REST backward-compatible aliases, static in-process MCP facade, deterministic evaluations, local reliability/load evidence, threat model/control mapping, supply-chain review with local SBOM and vulnerability scans, SLO/runbook/recovery/rollback/release evidence, and deployment smoke test.
 - Full regression: 658 passed, 0 failed, 0 skipped. Phase 10 focused: 103 passed. Cross-phase: 304 passed. Architecture/configuration: 39 passed. Evaluations: 21 passed. Ruff: PASS. Formatting: PASS. mypy: PASS (180 source files). OpenAPI: 29 paths. Docker Compose: PASS.
-- Supply-chain: Application SBOM (CycloneDX 1.5, 256 components), Container SBOM (CycloneDX 1.7), pip-audit (0 vulnerabilities in production dependencies), Trivy 0.73.0 local container scan (6 CRITICAL, 20 HIGH, 71 MEDIUM, 97 LOW, 11 UNKNOWN — all OS/build-time packages, zero in production Python runtime). Docker Scout historical scan transmitted metadata to Docker cloud (noted as exception; final acceptance uses local Trivy only).
-- Production dependencies: fastapi, pydantic, pydantic-settings, uvicorn, tzdata — zero known vulnerabilities. Dev/build dependencies with findings (cryptography, python-multipart, PyJWT, requests, RestrictedPython, syft, msgpack, setuptools) excluded from production image.
+- Historical checkpoint supply-chain evidence: Application SBOM (CycloneDX 1.5, 256 components), Container SBOM (CycloneDX 1.7), pip-audit (0 vulnerabilities in production dependencies), Trivy 0.73.0 local container scan (6 CRITICAL, 20 HIGH, 71 MEDIUM, 97 LOW, 11 UNKNOWN — all OS/build-time packages, zero in production Python runtime). Docker Scout historical scan transmitted metadata to Docker cloud (noted as exception; final acceptance used local Trivy only).
+- At that historical checkpoint, production dependencies were recorded as having zero known vulnerabilities; dev/build dependencies with findings were excluded from the production image. This does not replace exact-candidate validation for `v1.0.0`.
 - Identity/verification/synthesis regression: Apple/NASDAQ, Reliance/NSE, wrong exchange, GOOG/GOOGL — all green. No-investment-advice, prompt-injection, no-trading boundaries intact.
 - Single Phase 10 release commit with message `feat(phase-10): harden production readiness` and verified push to origin/main.
 - Phase 10 marked COMPLETE. Phase 11 remains locked and undefined.
 
-### Phase 10 Prompt 3A (blockers resolved via Prompt 3C)
+### Phase 10 Prompt 3A (historical; blockers resolved via Prompt 3C)
 
-### Phase 10 Prompt 3 (awaiting owner review)
+### Phase 10 Prompt 3 (historical state at owner review)
 
 - Audited the authoritative Phase 10 contract and project map: Phases 0–10 are defined; Phase 11 is a boundary label only; Phase 12+ is not defined.
 - Published the final acceptance matrix with explicit implemented, partial/documented, deferred-by-design, and blocking classifications.

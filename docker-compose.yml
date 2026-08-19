@@ -1,4 +1,4 @@
-# Local foundation compose (through Phase 10 Prompt 1).
+# Local v1.0.0 release-candidate Compose configuration.
 # PostgreSQL and Redis are intentionally absent: those integrations are not
 # implemented yet. Do not interpret this file as claiming database readiness.
 # Market data is fixture-backed in-process; no live quote services are started.
@@ -8,7 +8,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: agentic-financial-intelligence:phase1
+    image: agentic-financial-intelligence:1.0.0
     ports:
       # Host port is configurable because local port 8000 may already be occupied.
       - "${API_HOST_PORT:-8000}:8000"

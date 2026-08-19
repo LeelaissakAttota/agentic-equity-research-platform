@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agentic-financial-intelligence"
-version = "0.1.0"
+version = "1.0.0"
 description = "Evidence-first agentic financial intelligence and equity research platform."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
@@ -12,7 +12,7 @@ license = "MIT"
 authors = [{ name = "Project Contributors" }]
 keywords = ["financial-research", "equity-research", "evidence", "agentic-ai"]
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 4 - Beta",
   "Programming Language :: Python :: 3.12",
   "Typing :: Typed",
 ]

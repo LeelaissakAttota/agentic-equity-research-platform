@@ -11,4 +11,4 @@ class PackageHealthTests(TestCase):
     def test_package_exposes_a_version(self) -> None:
         """The minimal package should be importable and versioned."""
 
-        self.assertEqual(__version__, "0.1.0")
+        self.assertEqual(__version__, "1.0.0")

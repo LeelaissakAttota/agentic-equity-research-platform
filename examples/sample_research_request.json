@@ -3,8 +3,58 @@
   "country": "US",
   "exchange": "NASDAQ",
   "ticker": "AAPL",
-  "objective": "comprehensive_equity_research",
-  "objective_text": "Evaluate Apple fundamentals, risks, and catalysts.",
-  "jurisdiction": "US",
-  "time_horizon_days": 365
+  "research_run_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "language_code": "en",
+  "rendering_locale": "en-US",
+  "report_format": "markdown",
+  "report_title": "Apple Evidence-Linked Research",
+  "claims": [
+    {
+      "claim_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "claim_type": "numeric",
+      "text": "Apple revenue was 100 billion",
+      "company_id": "22222222-2222-4222-8222-222222222001",
+      "section": "financial_performance",
+      "materiality": 1,
+      "material_claim_kind": "revenue",
+      "security_id": "32222222-2222-4222-8222-222222222001",
+      "listing_id": "42222222-2222-4222-8222-222222222001",
+      "expected_value": "100",
+      "expected_unit": "billion",
+      "expected_currency": "USD",
+      "expected_period": "FY2026",
+      "expected_as_of": "2026-08-09T00:00:00Z",
+      "evidence": [
+        {
+          "evidence_id": "EVD-bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          "source_id": "SEC-EDGAR",
+          "authority_tier": 1,
+          "data_origin": "fixture",
+          "claim_type": "numeric",
+          "extracted_value": "100",
+          "extracted_unit": "billion",
+          "extracted_currency": "USD",
+          "extracted_period": "FY2026",
+          "as_of": "2026-08-09T00:00:00Z",
+          "retrieved_at": "2026-08-09T01:00:00Z",
+          "raw_snippet": "Apple revenue was 100 billion",
+          "url": "https://www.sec.gov/Archives/apple-fy2026"
+        }
+      ],
+      "source_contexts": [
+        {
+          "evidence_id": "EVD-bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          "source_id": "SEC-EDGAR",
+          "provider": "SEC EDGAR",
+          "source_name": "SEC EDGAR",
+          "url": "https://www.sec.gov/Archives/apple-fy2026",
+          "published_at": "2026-08-09T00:00:00Z",
+          "reference_id": "SEC-EDGAR-FY2026",
+          "company_id": "22222222-2222-4222-8222-222222222001",
+          "security_id": "32222222-2222-4222-8222-222222222001",
+          "listing_id": "42222222-2222-4222-8222-222222222001"
+        }
+      ]
+    }
+  ]
 }

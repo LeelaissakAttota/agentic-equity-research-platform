@@ -5,9 +5,10 @@
 - **Project:** Agentic Financial Intelligence & Equity Research Platform
 - **Active phase:** Phase 10 — COMPLETE
 - **Active prompt:** Phase 10 Prompt 4 — COMPLETE / RELEASE CHECKPOINT AUTHORIZED
-- **State:** Phases 0–10 complete and released; Phase 10 Prompts 1–3C are owner approved; Prompt 4 completed final validation, documentation closure, staged-content audit, Git commit, and push
-- **Next permitted work:** None — Phase 10 is complete. Phase 11 is locked and undefined.
-- **Production readiness:** Release checkpoint achieved. All Phase 10 closure capabilities verified. Supply-chain requirement satisfied via local evidence.
+- **State:** Phases 0–10 complete and released at their repository checkpoints. The `v1.0.0` release candidate now uses runtime/package/OpenAPI version `1.0.0` and Compose image `agentic-financial-intelligence:1.0.0`; no `v1.0.0` Git tag or GitHub Release exists yet.
+- **Release validation:** Final Release Blocker 2 is closed locally. Final Release Blocker 1 evidence is now retained under `release_evidence/v1.0.0/`, but the blocker remains open pending owner review of 26 candidate-affecting Critical/High container findings (5 Critical and 21 High after applicability review).
+- **Next permitted work:** Owner review of the retained exact-candidate security evidence, followed only by explicitly authorized remediation or residual-risk acceptance. Phase 11 is locked and undefined; JARVIS integration is not started.
+- **Production readiness:** The exact local image `sha256:b05d7725d17df2da7b94f8b73afc0aa9d6bcc384a227b48a1d031640104c3b0f` has current pip-audit, application/container SBOM, Trivy, and secret-hygiene evidence. Application dependencies report zero known vulnerabilities; Trivy reports 6 Critical, 22 High, 79 Medium, 97 Low, and 11 Unknown package/advisory records. No CVE-free claim is made and no Critical/High risk is silently accepted.
 - **Phases 0–6:** COMPLETE
 - **Phase 7:** COMPLETE (Prompts 1–4)
 - **Phase 8:** COMPLETE (Prompts 1–4)

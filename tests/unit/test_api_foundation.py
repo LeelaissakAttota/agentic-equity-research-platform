@@ -36,7 +36,7 @@ class HealthEndpointTests(TestCase):
         payload = response.json()
         self.assertEqual(payload["status"], "ok")
         self.assertEqual(payload["service"], "agentic-financial-intelligence")
-        self.assertEqual(payload["version"], "0.1.0")
+        self.assertEqual(payload["version"], "1.0.0")
         self.assertIn("X-Correlation-ID", response.headers)
         self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
 
@@ -81,7 +81,7 @@ class VersionEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertEqual(payload["service"], "agentic-financial-intelligence")
-        self.assertEqual(payload["version"], "0.1.0")
+        self.assertEqual(payload["version"], "1.0.0")
         self.assertEqual(payload["environment"], "test")
 
 

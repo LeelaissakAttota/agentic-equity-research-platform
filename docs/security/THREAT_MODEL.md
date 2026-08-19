@@ -48,12 +48,14 @@ identity or investment-policy manipulation.
 | Paid-model bypass | Settings reject `ALLOW_PAID_MODELS=true`; no LLM/OpenRouter runtime call | Settings/repository/Phase 10 scans | Future model integration requires a separate cost/security gate. |
 | Denial of service | Byte/chunk/collection/pagination bounds and finite request-local buffers | Boundary and local-load tests | No request-rate limiter, autoscaling, WAF, or public-edge protection. |
 | Unsafe deployment configuration | Production host/log/provider/paid policy fails closed; non-root/read-only/no-new-privileges container foundation | Config tests and local container smoke | TLS, proxy, secrets, auth, network policy, and cloud topology are undecided. |
-| Dependency/build compromise | Minimal constrained manifest, no new dependency, `pip check`, reviewed Docker/CI inputs | Supply-chain review | No lock/SBOM/CVE/container scan; base/Actions are not digest/commit pinned. |
+| Dependency/build compromise | Minimal constrained manifest, `pip check`, reviewed Docker/CI inputs, and retained exact-candidate pip-audit/SBOM/Trivy evidence | Supply-chain review and `release_evidence/v1.0.0/` | No lock file; base/Actions are not digest/commit pinned; 26 candidate-affecting Critical/High findings await owner disposition. |
 
 ## Security acceptance and residual risks
 
 Current deterministic controls mitigate the tested boundary and research-integrity threats. They do
 not make an unauthenticated public deployment acceptable. Before public exposure, approve and test
 an identity/authorization model, request-rate controls, TLS/proxy/network policy, managed secrets,
-monitoring/retention, and incident ownership. Before release, resolve the recorded supply-chain
-scanner limitation or explicitly accept it with owner/security approval.
+monitoring/retention, and incident ownership. Exact-candidate local SBOM/vulnerability evidence is
+retained under `release_evidence/v1.0.0/`; before release, the owner must review its 26
+candidate-affecting Critical/High records and either authorize remediation or explicitly accept the
+documented residual risk.

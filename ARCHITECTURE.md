@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document describes the **target architecture** and the boundaries Phase 0 establishes. Only the minimal Python package-health baseline exists today. No box in the target architecture should be interpreted as implemented unless `PROJECT_STATUS.md` says so.
+This document defines the frozen **target architecture** and its layer boundaries. Phases 0–10 have implemented an accepted subset that includes deterministic company and specialist intelligence foundations, bounded planning/workflows, verification/synthesis/reporting, REST `/v1` aliases, a selected in-process MCP facade, and local production-hardening evidence. The conceptual diagram still contains deferred target-state components; no box should be interpreted as implemented unless `PROJECT_STATUS.md` and the implemented-versus-deferred documentation say so.
 
 The supplied conceptual diagram is preserved at [docs/architecture/agentic-financial-intelligence-platform.png](docs/architecture/agentic-financial-intelligence-platform.png). The image and this document together are the **Master Architecture**. Written decisions and explicit phase gates take precedence where visual shorthand is ambiguous. Once Phase 0 Prompt 3 is approved, changes to the Master Architecture require owner approval and a new or superseding ADR.
 

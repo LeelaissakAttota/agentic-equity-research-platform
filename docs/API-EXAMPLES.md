@@ -21,7 +21,7 @@ This document captures the validated deterministic demo path for the project. Al
 {
   "status": "ok",
   "service": "agentic-financial-intelligence",
-  "version": "0.1.0"
+  "version": "1.0.0"
 }
 ```
 
@@ -39,7 +39,7 @@ Explanation: Confirms the application process is live.
 {
   "status": "ready",
   "service": "agentic-financial-intelligence",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "checks": [
     { "name": "application", "ready": true, "detail": "application foundation loaded" },
     { "name": "configuration", "ready": true, "detail": "development_configuration_validated" }
@@ -60,7 +60,7 @@ Explanation: Confirms the app and configuration are ready for the validated loca
 ```json
 {
   "service": "agentic-financial-intelligence",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "environment": "development"
 }
 ```
@@ -282,7 +282,7 @@ Explanation: Demonstrates the bounded execution model. The partial status is a v
 
 - Method: POST
 - Endpoint: `/research/synthesis`
-- Sample request: see [examples/sample_research_request.json](../examples/sample_research_request.json) and the Apple synthesis sample in the same examples folder.
+- Sample request: see the current fixture-labelled [examples/sample_research_request.json](../examples/sample_research_request.json).
 - Expected status: `200`
 - Example response: see [examples/sample_research_response.json](../examples/sample_research_response.json)
 

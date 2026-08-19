@@ -2,11 +2,11 @@
 
 Production-oriented, evidence-first equity research infrastructure for publicly listed companies in India and the United States.
 
-> **Current status:** Phases 0–10 are complete and released. Phase 10 Prompts 1–4 are owner approved. Versioned REST, selected MCP, deterministic evaluations, bounded local reliability/load, threat/operations, rollback, local deployment, and supply-chain evidence (local SBOM and Trivy container scan) all pass. Production auth/rate decisions remain deployment-dependent. Phase 11 is locked and undefined.
+> **Current status:** Phases 0–10 are complete and the repository is preparing the `v1.0.0` release candidate. Runtime/package/OpenAPI metadata and the local Compose image use `1.0.0`; the Git tag and GitHub Release do not exist yet. Versioned REST, selected MCP, deterministic evaluations, bounded local reliability/load, threat/operations, rollback, and local deployment evidence pass. Exact-candidate SBOM/vulnerability evidence is retained, but 26 candidate-affecting Critical/High findings require owner review before release. Production auth/rate decisions remain deployment-dependent. Phase 11 is locked and undefined.
 
 ## Vision
 
-The completed platform will turn conversational research requests into traceable research runs. It will resolve companies, plan and monitor specialist work, collect source evidence, verify important claims, preserve contradictions, synthesize findings, support follow-up questions, and produce multilingual answers and professional Microsoft Word reports.
+The implemented platform turns supported research requests into traceable, bounded research runs. It resolves companies, plans and executes specialist work, preserves evidence and contradictions, verifies supplied typed claims, synthesizes qualified findings, and produces deterministic JSON, Markdown, and minimal Microsoft Word reports. Conversational follow-up and evaluated multilingual narrative remain deferred.
 
 ## Why this project exists
 
@@ -16,7 +16,7 @@ It is intended as a production-oriented AI engineering portfolio project demonst
 
 ## What makes it agentic and different
 
-The planned system will understand intent, resolve company identity, build a dependency-aware Research Plan, select only necessary specialist capabilities, execute independent tasks in parallel where safe, verify coverage and contradictions, and request bounded targeted re-research before synthesis. Major planned reasoning capabilities cover market, financial, filing, news/events, industry/competitors, regulatory developments, risk, verification/critic and synthesis.
+The implemented system resolves company identity, builds a dependency-aware Research Plan, selects only necessary specialist capabilities, executes them sequentially within explicit budgets, and preserves verification, confidence, conflict, and critic-recommendation state before synthesis. Market, financial/filing, news/events, industry/competitor, and regulatory capabilities are implemented primarily through deterministic fixture-backed paths. A dedicated Risk Intelligence capability and autonomous targeted re-research remain deferred.
 
 Not every capability is an agent. Calculations, ticker/date/number validation, parsing, retrieval, caching, persistence, charts and report formatting remain deterministic software. Models interpret evidence; they do not become the evidence.
 
@@ -27,13 +27,12 @@ Not every capability is an agent. Calculations, ticker/date/number validation, p
 
 Company Identity is provider-neutral and accounts for exchange, country, currency, share class, aliases and listing history; ticker alone is not treated as globally unique.
 
-## Planned evidence and reliability loop
+## Evidence and reliability loop
 
 ```text
 request -> company resolution -> research plan -> bounded tasks
-        -> sources and evidence -> verification -> critic
-        -> targeted re-research when needed -> findings -> synthesis
-        -> English/Telugu answer, charts/tables and future DOCX report
+        -> sources and evidence -> verification -> critic recommendations
+        -> qualified findings -> synthesis -> JSON/Markdown/minimal DOCX
 ```
 
 Each substantial execution will use a globally unique Research Run ID so plans, tasks, sources, evidence, model/tool calls, verification, conflicts, metrics, findings and artifacts remain traceable. Confidence is a transparent quality/coverage signal, not truth or investment advice.
@@ -46,7 +45,7 @@ The platform is designed around these constraints:
 - deterministic software performs calculations, validation, storage, and formatting;
 - India (NSE/BSE) and the United States (NASDAQ/NYSE) are first-class markets;
 - research remains separate from trade execution;
-- REST is the first integration surface, with MCP planned later;
+- REST is the primary integration surface; selected MCP is an in-process read-only/offline facade;
 - the service remains independently deployable from JARVIS or any trading system.
 
 ## Free-model and token-efficiency strategy
@@ -55,16 +54,16 @@ OpenRouter is the planned model gateway, with `ALLOW_PAID_MODELS=false`, configu
 
 ## Planned delivery and interoperability
 
-REST is the first programmatic interface. Streamlit is the planned initial portfolio UI; selected MCP capabilities and optional JARVIS interoperability come later. The primary generated report artifact will be professional Microsoft Word `.docx`. Research language is separated from presentation language, initially English and Telugu, so translation cannot change canonical numbers, currencies, dates, company identity or citations.
+REST is the primary programmatic interface. The selected MCP facade exposes exactly two in-process read-only/offline capabilities. Streamlit and optional JARVIS interoperability remain future work. Deterministic JSON, Markdown, and minimal in-memory/base64 `.docx` artifacts are implemented; advanced templates, charts, artifact persistence, and evaluated narrative translation remain deferred. Language preferences are separated from canonical facts so later presentation work cannot change numbers, currencies, dates, company identity, or citations.
 
 The platform supplies structured intelligence only. Broker/MT5 orders, trading credentials, position management and trading risk controls belong to a separate trading system.
 
 ## Implemented versus planned
 
-| Implemented through Phase 10 Prompt 3A | Planned/required before Phase 10 closure |
+| Implemented in the v1.0.0 release candidate | Deferred/limited after the completed Phase 0–10 roadmap |
 |---|---|
-| Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Live market/filing providers and broader research capabilities |
-| Typed settings, fail-closed production host/header/body/correlation policy, safe telemetry, legacy REST plus selected `/v1` aliases, and minimal read-only/offline MCP facade | Approved dependency/container vulnerability scan and SBOM evidence; target-deployment auth/rate decisions remain deferred |
+| Governance, Master Architecture, ADRs, phase gates and source/evidence/model/security contracts | Broader live market/filing/qualitative providers and research coverage |
+| Typed settings, fail-closed production host/header/body/correlation policy, safe telemetry, legacy REST plus selected `/v1` aliases, and minimal read-only/offline MCP facade | Owner disposition of exact-candidate Critical/High findings remains the separate v1.0.0 supply-chain release blocker; target-deployment auth/rate decisions remain deferred |
 | Company resolution; market, financial, news/event, industry, and regulatory foundations; deterministic research planning/execution and governed workflows | Broader live provider coverage and production-grade durable persistence |
 | Structured in-memory research history/watchlists; deterministic verification/synthesis/reporting; bounded offline production evaluations; local reliability/load, threat, SLO/runbook, deployment, and rollback evidence | Follow-up conversation, evaluated English/Telugu narrative rendering, charts, Streamlit, advanced report templates, and durable artifact storage |
 
@@ -140,7 +139,7 @@ Phase 10 Prompt 1 production settings:
 - Production request logs contain correlation ID, route template, method, status category/code, and duration only. Bodies, query values, exception messages, stack traces, credentials, and secrets are not emitted.
 - Authentication and rate limiting are deferred until a target deployment and enforcement policy are owner-approved.
 
-Phase 10 Prompt 2 hardening rejects duplicate/ambiguous Host, Content-Length, and correlation headers; malformed host ports; excessive chunk counts; secret-bearing HTTP exception details; and unbounded watchlist/memory collection requests. Prompt 3 freezes these contracts and additionally fails closed on Host outer whitespace/control, extreme numeric Host/Content-Length values, and whitespace/control correlation IDs. Prompt 3A adds the approved `/v1` aliases, a static two-capability MCP facade, offline evaluations, bounded local reliability/load evidence, threat/operations guidance, and local deployment/rollback evidence. See [the Prompt 3A blocker matrix](PHASE_10_BLOCKING_GAPS_MATRIX.md); supply-chain scan/SBOM evidence remains blocking.
+Phase 10 Prompt 2 hardening rejects duplicate/ambiguous Host, Content-Length, and correlation headers; malformed host ports; excessive chunk counts; secret-bearing HTTP exception details; and unbounded watchlist/memory collection requests. Prompt 3 freezes these contracts and additionally fails closed on Host outer whitespace/control, extreme numeric Host/Content-Length values, and whitespace/control correlation IDs. Prompt 3A added the approved `/v1` aliases, a static two-capability MCP facade, offline evaluations, bounded local reliability/load evidence, threat/operations guidance, and local deployment/rollback evidence. Prompt 3C historically closed the Phase 10 supply-chain gate with local SBOM/Trivy evidence. Fresh exact-candidate evidence is retained under `release_evidence/v1.0.0/`; owner disposition of its 26 candidate-affecting Critical/High findings remains required before `v1.0.0` publication.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [PROJECT_RULES.md](PROJECT_RULES.md), and [GIT_WORKFLOW.md](GIT_WORKFLOW.md) before changing the repository.
 
