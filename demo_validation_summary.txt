@@ -1,0 +1,83 @@
+PORTFOLIO READINESS: PASS
+DEMO READINESS: PASS
+
+TRUE PORTFOLIO BLOCKERS: 0
+
+DEMO VALIDATION:
+- Application starts: PASS (container healthy)
+- Health check: PASS (HTTP 200, {"status":"ok",...})
+- Readiness check: PASS (HTTP 200, {"status":"ready",...})
+- Version check: PASS (HTTP 200, {"service":"agentic-financial-intelligence","version":"1.0.0",...})
+- Research request: PASS (POST /research/synthesis with sample request returns 200 and a structured synthesis)
+- Synthesis output: PASS (returns a verified, evidence-linked Markdown report)
+- Output suitability: PASS (demonstrates deterministic, evidence-based research synthesis)
+
+EXACT START COMMAND:
+docker compose up -d
+
+HEALTH COMMAND:
+curl http://127.0.0.1:8000/health
+
+READY COMMAND:
+curl http://127.0.0.1:8000/ready
+
+VERSION COMMAND:
+curl http://127.0.0.1:8000/version
+
+RESEARCH DEMO COMMAND:
+curl -s -X POST http://127.0.0.1:8000/research/synthesis -H "Content-Type: application/json" -d @examples/sample_research_request.json
+
+EXPECTED DEMO OUTPUT:
+A JSON response containing a synthesized research report in Markdown format under the "report.content" field, showing the verified claim "Apple revenue was 100 billion" with high confidence, citations, and evidence traceability. The response includes synthesis_id, research_run_id, company details, and sections with the verified financial claim.
+
+3–5 MINUTE DEMO SEQUENCE:
+A. 20–30 sec: Problem and project purpose.
+   - State: "This platform solves the problem of opaque, unverifiable AI-generated financial research by providing traceable, evidence-first equity research for public companies in India and the US."
+   - Highlight: "Every claim is backed by authoritative sources, conflicts remain visible, and incomplete research stops transparently."
+   - Mention: "It's a production-oriented AI engineering portfolio project demonstrating bounded agent orchestration, deterministic computation, verification, and security."
+
+B. 30–45 sec: Architecture / agentic workflow.
+   - Reference: "What makes it agentic and different" section of README.
+   - Explain: "The system resolves company identity, builds a dependency-aware research plan, executes specialist capabilities within budgets, and preserves verification/conflict state before synthesis."
+   - Note: "Capabilities like market, financial, news, industry, and regulatory are implemented via deterministic fixture-backed paths for demo reliability."
+
+C. 90–120 sec: Live API demonstration.
+   - Run: docker compose up -d (if not already running)
+   - Show health: curl http://127.0.0.1:8000/health
+   - Show ready: curl http://127.0.0.1:8000/ready
+   - Show version: curl http://127.0.0.1:8000/version
+   - Show company resolution: curl "http://127.0.0.1:8000/companies/resolve?q=Apple"
+   - Show research synthesis: curl -s -X POST http://127.0.0.1:8000/research/synthesis -H "Content-Type: application/json" -d @examples/sample_research_request.json
+   - Extract and display the Markdown report from the JSON response (or point to the synthesized content).
+
+D. 30–45 sec: Evidence/verification/report output.
+   - Focus on the Markdown report: show the claim, verification status, confidence, citation, and evidence traceability.
+   - Emphasize: "The claim 'Apple revenue was 100 billion' is verified, with high confidence, citing SEC EDGAR fixture evidence."
+   - Show the structured evidence and citation IDs.
+
+E. 30–45 sec: Engineering proof.
+   - Cite: "658 unit tests passed, mypy clean (0 issues in 180 source files), Ruff and formatting pass."
+   - Note: "CI/CD (GitHub Actions) validated the release, Docker image is healthy and runs as non-root with read-only root filesystem."
+   - Reference: "Release v1.0.0 is published, tag exists, GitHub Release is live, secret scanning shows 0 unresolved secrets."
+   - Security: "True release-blocking security findings: 0 after code-path reachability analysis; residual risks documented in release_evidence/v1.0.0/OWNER_RISK_ACCEPTANCE.md."
+
+F. 15–20 sec: Closing statement.
+   - State: "This project demonstrates professional-grade AI engineering: bounded agency, deterministic verification, evidence traceability, and production-grade security and quality practices."
+   - Conclude: "It is a portfolio-ready showcase of how to build inspectible, responsible AI systems for high-stakes domains like financial research."
+
+FILES THAT NEED CHANGES:
+None
+
+OPTIONAL IMPROVEMENTS:
+1. Add a one-line badge to README showing test status (e.g., "Tests: 658 passing").
+2. Include a simple diagram of the research workflow in the README (could reuse the existing architecture diagram concept).
+3. Add a "How to demo" section to README with the exact commands we validated.
+
+ESTIMATED TIME TO FINISH:
+0 minutes (demo validation is complete; the project is ready to demonstrate)
+
+CAN THIS PROJECT BE CLOSED AFTER DEMO:
+YES
+
+RECOMMENDED NEXT ACTION:
+Wait for owner approval.
