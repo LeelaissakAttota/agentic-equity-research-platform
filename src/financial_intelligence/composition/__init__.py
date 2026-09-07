@@ -122,7 +122,7 @@ class AppContainer:
 
 def _sec_user_agent() -> str:
     return (
-        "agentic-financial-intelligence/0.1 "
+        "agentic-financial-intelligence/1.0 "
         "(research; contact=local-dev; +https://github.com/"
         "LeelaissakAttota/agentic-equity-research-platform)"
     )

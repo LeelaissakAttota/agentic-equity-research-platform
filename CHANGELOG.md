@@ -2,11 +2,11 @@
 
 All notable changes are documented here. Release versions follow Semantic Versioning.
 
-## [1.0.0] - Unreleased
+## [1.0.0] - 2026-08-19
 
 ### Final release metadata and documentation alignment
 
-- Aligned the authoritative package/runtime/OpenAPI version to `1.0.0`; the future Git tag and GitHub Release name remain `v1.0.0` and have not been created.
+- Aligned the authoritative package/runtime/OpenAPI version to `1.0.0`; Git tag `v1.0.0` was created and pushed to origin on 2026-08-19.
 - Aligned the local Compose image reference to `agentic-financial-intelligence:1.0.0` without publishing an image.
 - Replaced the obsolete planning-shaped synthesis example with a current, schema-valid, fixture-labelled verified-claim request.
 - Reconciled current README, phase/status, architecture, development, API, security/supply-chain, and release-checklist documentation while preserving historical phase reports as historical evidence.

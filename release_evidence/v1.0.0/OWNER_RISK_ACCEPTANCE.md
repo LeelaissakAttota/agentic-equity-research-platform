@@ -8,10 +8,35 @@
 - `sha256:a116514e19457bcb7af7efe9c3dd0b9b71e85b317694e7882a1c52aa15a78134`
 
 ## 3. Trivy Severity Totals (from `trivy-findings-classification.csv`)
-- Total Critical: 2
-- Total High: 10
-- Total Medium/Low: 26 (not release-gating)
-- Findings requiring review (NEEDS REVIEW): 12 (2 Critical, 10 High)
+
+All counts are derived from the authoritative `trivy-findings-classification.csv` (215 data rows,
+image `sha256:b05d7725d17df2da7b94f8b73afc0aa9d6bcc384a227b48a1d031640104c3b0f`, Trivy 0.73.0).
+
+**Raw scan totals (all severities):**
+- Total Critical: 6
+- Total High: 22
+- Total Medium: 79
+- Total Low: 97
+- Total Unknown: 11
+- Grand total: 215
+
+**Disposition before applicability review (NEEDS REVIEW):**
+- Critical requiring review: 5
+- High requiring review: 21
+- Total NEEDS REVIEW: 26
+
+**NOT APPLICABLE findings (2 — excluded from owner review):**
+- 1 Critical: `CVE-2026-8376` (perl-base) — advisory is specific to 32-bit builds; candidate is amd64
+- 1 High: `CVE-2025-47273` (setuptools 70.3.0) — sourced from BuildKit third-party SBOM metadata;
+  setuptools is absent from the final image filesystem
+
+**Remaining findings requiring owner review after NOT APPLICABLE exclusions:**
+- Critical: 4
+- High: 20
+- Total: 24
+
+**Not release-gating (ACCEPT):**
+- 187 Medium/Low/Unknown residual records
 
 ## 4. Critical/High Findings Remaining Present After Review
 - **Critical (1)**: CVE-2023-45853 – zlib1g
