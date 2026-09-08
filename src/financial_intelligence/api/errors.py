@@ -32,6 +32,10 @@ _SAFE_HTTP_MESSAGES = {
 }
 
 
+class AuthenticationError(Exception):
+    """Raised by authentication dependencies to produce a safe HTTP 401 response."""
+
+
 class ApiErrorBody(BaseModel):
     """Stable client-facing error payload."""
 
@@ -86,6 +90,19 @@ def build_error_response(
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register validation, HTTP, and unexpected-error handlers."""
+
+    @app.exception_handler(AuthenticationError)
+    async def authentication_exception_handler(
+        request: Request,
+        exc: AuthenticationError,
+    ) -> JSONResponse:
+        correlation_id = _correlation_id_from_request(request)
+        return build_error_response(
+            code="authentication_required",
+            message="Authentication required",
+            correlation_id=correlation_id,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(

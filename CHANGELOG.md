@@ -4,6 +4,20 @@ All notable changes are documented here. Release versions follow Semantic Versio
 
 ## [1.0.0] - 2026-08-19
 
+### Phase 11.2 — API-key authentication foundation
+
+- Added `ApiKeyStorePort` protocol to `application/ports.py`.
+- Added `InMemoryApiKeyStore` adapter in `infrastructure/auth/` using `secrets.compare_digest` for constant-time key comparison.
+- Added `require_api_key` FastAPI dependency in `security/auth.py`; enforced in production/staging, bypassed in development/test.
+- Added `AuthenticationError` exception class and handler to `api/errors.py`; 401 responses use the standard error envelope with code `authentication_required`.
+- Applied `require_api_key` to all non-health domain routers via `include_router(dependencies=[...])` in `api/app.py`.
+- Health, readiness, and version endpoints (`/health`, `/ready`, `/version`, `/v1/*`) remain public.
+- Added `AUTH_ENABLED` and `API_KEYS` (SecretStr) settings fields; production/staging fail-closed if `AUTH_ENABLED=false`.
+- Extended `_SECRET_FIELD_NAMES` so `api_keys` never appears in `safe_log_context()`.
+- Added 47 authentication tests in `tests/unit/test_auth.py` covering store, settings, public endpoints, protected endpoints (production and staging), auth bypass in test/development, and security invariants.
+- Updated `.env.example`, `DECISIONS.md`, `docs/security/THREAT_MODEL.md`, `docs/operations/RUNBOOK.md`, `docs/API-EXAMPLES.md`.
+- No new external dependencies; no PostgreSQL, Redis, JWT, OAuth, or rate limiting.
+
 ### Final release metadata and documentation alignment
 
 - Aligned the authoritative package/runtime/OpenAPI version to `1.0.0`; Git tag `v1.0.0` was created and pushed to origin on 2026-08-19.

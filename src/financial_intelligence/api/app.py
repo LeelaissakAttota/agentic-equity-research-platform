@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
 from financial_intelligence.api.errors import register_exception_handlers
 from financial_intelligence.api.middleware import CorrelationIdMiddleware, RequestSafetyMiddleware
@@ -29,6 +29,7 @@ from financial_intelligence.api.versioning import (
 from financial_intelligence.composition import AppContainer, build_container
 from financial_intelligence.config.settings import Settings
 from financial_intelligence.observability.logging import configure_logging, get_logger
+from financial_intelligence.security.auth import require_api_key
 from financial_intelligence.security.headers import SecurityHeadersMiddleware
 
 
@@ -71,19 +72,23 @@ def create_app(
         enforce_allowed_hosts=resolved_container.settings.app_env == "production",
     )
     register_exception_handlers(application)
+    # Public endpoints — no authentication dependency.
     application.include_router(health.router)
-    application.include_router(companies.router)
-    application.include_router(market.router)
-    application.include_router(financials.router)
-    application.include_router(news.router)
-    application.include_router(industry.router)
-    application.include_router(regulatory.router)
-    application.include_router(research.router)
-    application.include_router(synthesis.router)
-    application.include_router(workflows.router)
-    application.include_router(watchlists.router)
+    # Protected domain endpoints — require_api_key enforced in production/staging.
+    _auth = [Depends(require_api_key)]
+    application.include_router(companies.router, dependencies=_auth)
+    application.include_router(market.router, dependencies=_auth)
+    application.include_router(financials.router, dependencies=_auth)
+    application.include_router(news.router, dependencies=_auth)
+    application.include_router(industry.router, dependencies=_auth)
+    application.include_router(regulatory.router, dependencies=_auth)
+    application.include_router(research.router, dependencies=_auth)
+    application.include_router(synthesis.router, dependencies=_auth)
+    application.include_router(workflows.router, dependencies=_auth)
+    application.include_router(watchlists.router, dependencies=_auth)
+    # Versioned aliases — health stays public; companies and synthesis are protected.
     application.include_router(health.router, prefix=VERSIONED_API_PREFIX)
-    application.include_router(companies.router, prefix=VERSIONED_API_PREFIX)
-    application.include_router(synthesis.router, prefix=VERSIONED_API_PREFIX)
+    application.include_router(companies.router, prefix=VERSIONED_API_PREFIX, dependencies=_auth)
+    application.include_router(synthesis.router, prefix=VERSIONED_API_PREFIX, dependencies=_auth)
     install_openapi_version_policy(application)
     return application

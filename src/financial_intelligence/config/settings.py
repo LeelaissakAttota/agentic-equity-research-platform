@@ -24,6 +24,7 @@ _SECRET_FIELD_NAMES = frozenset(
         "redis_url",
         "alpha_vantage_api_key",
         "finnhub_api_key",
+        "api_keys",
     }
 )
 
@@ -62,6 +63,15 @@ class Settings(BaseSettings):
     primary_free_model: str = Field(default="", alias="PRIMARY_FREE_MODEL")
     fallback_free_model_1: str = Field(default="", alias="FALLBACK_FREE_MODEL_1")
     fallback_free_model_2: str = Field(default="", alias="FALLBACK_FREE_MODEL_2")
+
+    # Phase 11.2 — API-key authentication.
+    # AUTH_ENABLED controls whether inbound requests must supply a valid Bearer key.
+    # In production and staging, AUTH_ENABLED=false is rejected at startup (fail-closed).
+    # In development and test, AUTH_ENABLED=false is permitted for local workflow.
+    # API_KEYS is a comma-separated list of opaque secret Bearer keys.
+    # Keys are stored in process memory only; persistent storage belongs to a later phase.
+    auth_enabled: bool = Field(default=True, alias="AUTH_ENABLED")
+    api_keys: SecretStr = Field(default=SecretStr(""), alias="API_KEYS")
 
     database_url: SecretStr = Field(default=SecretStr(""), alias="DATABASE_URL")
     redis_url: SecretStr = Field(default=SecretStr(""), alias="REDIS_URL")
@@ -200,12 +210,18 @@ class Settings(BaseSettings):
             raise ValueError(msg)
 
         allowed_hosts = self.allowed_host_values()
-        if self.app_env == "production":
+        if self.app_env in ("production", "staging"):
             if self.log_level == "DEBUG":
                 msg = "LOG_LEVEL=DEBUG is rejected in production"
                 raise ValueError(msg)
             if not allowed_hosts or "*" in allowed_hosts:
                 msg = "production ALLOWED_HOSTS must be an explicit non-wildcard allowlist"
+                raise ValueError(msg)
+            if not self.auth_enabled:
+                msg = (
+                    "AUTH_ENABLED=false is rejected in production/staging; "
+                    "authentication must be enabled for public-facing deployment"
+                )
                 raise ValueError(msg)
         if self.market_data_live_enabled and self.market_data_primary_provider == "none":
             msg = "live market data requires an enabled primary provider"
@@ -245,6 +261,7 @@ class Settings(BaseSettings):
             "redis_url": self.redis_url.get_secret_value(),
             "alpha_vantage_api_key": self.alpha_vantage_api_key.get_secret_value(),
             "finnhub_api_key": self.finnhub_api_key.get_secret_value(),
+            "api_keys": self.api_keys.get_secret_value(),
         }
 
     def safe_log_context(self) -> dict[str, Any]:
@@ -279,6 +296,8 @@ class Settings(BaseSettings):
             "news_cache_ttl_seconds": self.news_cache_ttl_seconds,
             "industry_cache_ttl_seconds": self.industry_cache_ttl_seconds,
             "regulatory_cache_ttl_seconds": self.regulatory_cache_ttl_seconds,
+            "auth_enabled": self.auth_enabled,
+            "api_keys_configured": bool(self.api_keys.get_secret_value()),
             "database_configured": bool(self.database_url.get_secret_value()),
             "redis_configured": bool(self.redis_url.get_secret_value()),
             "openrouter_key_configured": bool(self.openrouter_api_key.get_secret_value()),

@@ -492,3 +492,25 @@ allowlisted adapters and tests. The MCP facade is not remote exposure, public au
 claim of full MCP protocol interoperability. Prompt 3A must separately supply evaluation,
 reliability, security, operations, recovery, and deployment evidence before release readiness can
 be re-audited.
+
+## ADR-057 — API-key Bearer authentication (Phase 11.2)
+
+**Decision:** Use opaque API-key Bearer tokens for Phase 11.2 authentication. Clients supply
+`Authorization: Bearer <KEY>`. The server validates with `secrets.compare_digest` (constant-time).
+Authentication is enforced in `production` and `staging`; bypassed in `development` and `test`.
+In production/staging, `AUTH_ENABLED=false` is rejected at startup (fail-closed).
+
+**Rationale:** API keys are the simplest correct mechanism for a service-to-service or developer API
+without external identity providers. JWT adds complexity without benefit at this stage (no user
+sessions, no token expiry, no third-party issuers). OAuth requires an authorization server. API
+keys are revocable, rotatable by environment restart, and fully testable with the existing stack.
+
+**Consequences:**
+- `ApiKeyStorePort` added to `application/ports.py`; `InMemoryApiKeyStore` in `infrastructure/auth/`.
+- Keys are stored in process memory only; restart clears them.
+- Persistent key storage with expiry, creation, and revocation belongs to a later persistence phase (PostgreSQL adapter for `ApiKeyStorePort`).
+- All non-health REST endpoints protected by `require_api_key` FastAPI dependency.
+- Health, readiness, and version endpoints remain public (required for container orchestration probes).
+- `api_keys` added to `_SECRET_FIELD_NAMES`; never appears in `safe_log_context()` or logs.
+- No new external dependency required; uses Python stdlib `secrets` and existing FastAPI/Pydantic.
+- In-memory key storage limitation is documented explicitly; hashing is not applied in the in-memory store (process-local; appropriate for Phase 11.2; hash-before-store belongs to the PostgreSQL adapter phase).

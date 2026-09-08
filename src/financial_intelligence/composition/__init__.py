@@ -26,6 +26,7 @@ from financial_intelligence.application.market_freshness import MarketFreshnessP
 from financial_intelligence.application.market_snapshot import GetMarketSnapshot
 from financial_intelligence.application.news_event_snapshot import GetNewsEventSnapshot
 from financial_intelligence.application.ports import (
+    ApiKeyStorePort,
     CompanyCatalogPort,
     FinancialDataPort,
     IndustryContextPort,
@@ -47,6 +48,7 @@ from financial_intelligence.config.settings import Settings
 from financial_intelligence.domain.orchestration import ResearchExecutionBudget
 from financial_intelligence.domain.synthesis import DeterministicSynthesisAssembler
 from financial_intelligence.domain.verification.engine import VerificationEngine
+from financial_intelligence.infrastructure.auth import InMemoryApiKeyStore
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
 from financial_intelligence.infrastructure.financial import (
     CachingFinancialDataAdapter,
@@ -118,6 +120,7 @@ class AppContainer:
     generate_research_synthesis: GenerateResearchSynthesis
     research_report_generator: ResearchReportGeneratorPort
     selected_mcp: SelectedMcpFacade
+    api_key_store: ApiKeyStorePort
 
 
 def _sec_user_agent() -> str:
@@ -355,6 +358,10 @@ def build_container(
         resolve_company=resolve_company,
     )
 
+    api_key_store: ApiKeyStorePort = InMemoryApiKeyStore.from_csv(
+        resolved.api_keys.get_secret_value()
+    )
+
     return AppContainer(
         settings=resolved,
         readiness=readiness,
@@ -388,4 +395,5 @@ def build_container(
         generate_research_synthesis=generate_research_synthesis,
         research_report_generator=research_report_generator,
         selected_mcp=selected_mcp,
+        api_key_store=api_key_store,
     )

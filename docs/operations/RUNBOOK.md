@@ -105,3 +105,36 @@ Restart/rollback loses in-memory workflows, research memory, watchlists, notific
 unpersisted report artifacts. There is no database backup/restore contract because no durable store
 is implemented. Never claim recovery of that state. Durable adapters would require migrations,
 backup/restore tests, RPO/RTO, and a new runbook revision.
+
+## API-key authentication (Phase 11.2)
+
+All non-health endpoints require an `Authorization: Bearer <KEY>` header in `production` and
+`staging` environments. Health, readiness, and version endpoints remain public.
+
+### Configuration
+
+```
+AUTH_ENABLED=true          # must be true in production/staging (fail-closed)
+API_KEYS=key1,key2         # comma-separated opaque Bearer tokens (SecretStr)
+```
+
+- `AUTH_ENABLED=false` in `production` or `staging` causes startup failure.
+- `AUTH_ENABLED=false` in `development` or `test` is allowed (local workflow).
+- API keys are stored in process memory only; restart clears them.
+- Persistent key storage (create/revoke/rotate via API) belongs to a future persistence phase.
+
+### Calling a protected endpoint
+
+```bash
+curl -H "Authorization: Bearer <YOUR_KEY>" http://localhost:8000/companies/resolve?q=Apple
+```
+
+### Key rotation
+
+To rotate a key:
+
+1. Add the new key to `API_KEYS` (comma-separated) alongside the old key.
+2. Deploy and verify the new key works.
+3. Remove the old key from `API_KEYS` and redeploy.
+
+No in-flight requests using the old key will fail during the overlap window.

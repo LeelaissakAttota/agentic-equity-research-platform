@@ -34,6 +34,27 @@ from financial_intelligence.domain.workflow import (
 
 
 @runtime_checkable
+class ApiKeyStorePort(Protocol):
+    """Authentication boundary: validate inbound API keys.
+
+    Phase 11.2 uses an in-memory adapter sourced from application settings.
+    Persistent key storage (create/revoke/rotate via API) belongs to a later
+    persistence phase when PostgreSQL adapters are introduced.
+    """
+
+    def is_valid(self, presented_key: str) -> bool:
+        """Return True only when ``presented_key`` matches a configured key.
+
+        Implementations MUST use constant-time comparison (``secrets.compare_digest``)
+        and MUST return False for empty credentials without raising an exception.
+        """
+
+    @property
+    def has_keys(self) -> bool:
+        """Return True when at least one key is configured."""
+
+
+@runtime_checkable
 class PersistencePort(Protocol):
     """Future durable persistence boundary (PostgreSQL in later phases)."""
 

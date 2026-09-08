@@ -1,6 +1,18 @@
 # API Examples
 
-This document captures the validated deterministic demo path for the project. All examples below use the project’s supported Apple fixture-backed flow and are intended for demonstration, not claims of live market data.
+This document captures the validated deterministic demo path for the project. All examples below use the project's supported Apple fixture-backed flow and are intended for demonstration, not claims of live market data.
+
+## Authentication (Phase 11.2)
+
+All non-health endpoints require an API key in the `Authorization` header:
+
+```
+Authorization: Bearer <YOUR_API_KEY>
+```
+
+Public endpoints that do **not** require authentication: `/health`, `/ready`, `/version`, `/v1/health`, `/v1/ready`, `/v1/version`.
+
+In `development` and `test` environments, authentication is bypassed. In `production` and `staging`, a missing or invalid key returns HTTP 401 with a generic message — no information about whether the key was missing or wrong is revealed.
 
 ## Important API notes
 
