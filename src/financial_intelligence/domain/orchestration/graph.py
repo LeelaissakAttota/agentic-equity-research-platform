@@ -146,12 +146,17 @@ def apply_failure_propagation(tasks: Sequence[ResearchTask]) -> tuple[ResearchTa
             for dep in task.dependencies:
                 parent = by_id[dep.as_text()]
                 if parent.status in {TaskStatus.FAILED, TaskStatus.BLOCKED, TaskStatus.SKIPPED}:
-                    if task.required and task.status is not TaskStatus.BLOCKED:
+                    # `task` reaches this point only via the loop's own continue-guard
+                    # above, which already excludes BLOCKED/SKIPPED (and every other
+                    # terminal status) — so task.status here is always PENDING or
+                    # READY, never BLOCKED or SKIPPED already. The prior explicit
+                    # `task.status is not ...` guards were therefore always true;
+                    # removed as dead comparisons (mypy: comparison-overlap).
+                    if task.required:
                         by_id[task.task_id.as_text()] = task.with_status(TaskStatus.BLOCKED)
-                        changed = True
-                    elif not task.required and task.status is not TaskStatus.SKIPPED:
+                    else:
                         by_id[task.task_id.as_text()] = task.with_status(TaskStatus.SKIPPED)
-                        changed = True
+                    changed = True
                     break
     return tuple(sorted(by_id.values(), key=lambda t: (t.priority, t.task_id.as_text())))
 

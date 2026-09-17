@@ -138,7 +138,7 @@ class VerificationEngine:
             raise ValueError("critic max_attempts must be between 1 and 10")
         if not 0 <= attempts_used <= max_attempts:
             raise ValueError("critic attempts_used is outside the budget")
-        if result.is_verified:
+        if result.is_definitively_verified:
             return CriticAssessment(
                 claim_id=result.claim_id,
                 status=CriticAssessmentStatus.SUFFICIENT_EVIDENCE,
@@ -346,12 +346,30 @@ class VerificationEngine:
         status: VerificationStatus,
     ) -> tuple[CriticRequest, ...]:
         """Generate bounded targeted re-research requests."""
-        if status in {VerificationStatus.VERIFIED, VerificationStatus.PARTIALLY_VERIFIED}:
+        if status is VerificationStatus.VERIFIED:
             return ()
 
         requests = []
 
-        if status == VerificationStatus.UNVERIFIABLE:
+        if status == VerificationStatus.PARTIALLY_VERIFIED:
+            # Definitive verification was not reached (see
+            # VerificationResult.is_definitively_verified): the critic loop
+            # must not treat partial evidence as a stop condition, so a
+            # request is always generated here rather than returning ().
+            capability = self._claim_type_to_capability(claim.claim_type)
+            requests.append(
+                CriticRequest.new(
+                    claim_id=claim.claim_id.as_text(),
+                    reason=(
+                        f"Evidence only partially supports {claim.claim_type.value} claim; "
+                        f"seek stronger or additional corroboration"
+                    ),
+                    capability=capability,
+                    query=f"Find stronger corroborating evidence for: {claim.text}",
+                )
+            )
+
+        elif status == VerificationStatus.UNVERIFIABLE:
             # Suggest gathering more evidence
             capability = self._claim_type_to_capability(claim.claim_type)
             requests.append(

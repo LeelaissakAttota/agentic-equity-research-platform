@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from enum import Enum
 from urllib.parse import urlparse
 
 from financial_intelligence.domain.data_origin import DataOrigin
@@ -12,6 +13,106 @@ from financial_intelligence.domain.sources import SourceAuthorityTier
 from financial_intelligence.domain.verification.claim import Claim, ClaimType
 
 AuthorityTier = SourceAuthorityTier
+
+
+class _Polarity(Enum):
+    """Deterministic, best-effort polarity signal between a claim and a snippet."""
+
+    CLEAR = "clear"  # no negation/hedge marker detected on either side
+    CONFLICT = "conflict"  # exactly one side carries a negation marker
+    AMBIGUOUS = "ambiguous"  # both sides negate, or a hedge marker was found
+
+
+class _MatchOutcome(Enum):
+    """Result of comparing a claim's expectation against one piece of evidence."""
+
+    SUPPORTING = "supporting"
+    CONTRADICTING = "contradicting"
+    NEUTRAL = "neutral"
+
+
+# Fixed, explicit negation/hedge marker sets. This is NOT natural-language
+# understanding: it is a bounded, testable heuristic that only recognizes a
+# specific set of lexical markers. It deliberately fails toward AMBIGUOUS/CONFLICT
+# rather than CLEAR whenever polarity cannot be confidently established, so that
+# keyword-overlap evidence alone can never assert an agreement it has not confirmed.
+_NEGATION_MARKERS = frozenset(
+    {"not", "never", "no", "cannot", "neither", "nor", "denies", "denied", "false", "incorrect"}
+)
+_HEDGE_MARKERS = frozenset(
+    {
+        "may",
+        "might",
+        "could",
+        "allegedly",
+        "reportedly",
+        "possibly",
+        "rumored",
+        "unconfirmed",
+        "purportedly",
+        "supposedly",
+        "reputedly",
+    }
+)
+_TOKEN_STRIP_CHARS = ".,;:!?\"'()[]{}"
+
+
+def _tokenize(text: str) -> list[str]:
+    return [token.strip(_TOKEN_STRIP_CHARS) for token in text.lower().split()]
+
+
+def _negation_count(tokens: list[str]) -> int:
+    return sum(1 for token in tokens if token in _NEGATION_MARKERS or token.endswith("n't"))
+
+
+def _hedge_count(tokens: list[str]) -> int:
+    return sum(1 for token in tokens if token in _HEDGE_MARKERS)
+
+
+def _assess_polarity(claim_text: str, snippet: str) -> _Polarity:
+    """Best-effort, deterministic polarity check for prose (non-numeric) claims.
+
+    This has no semantic/NLU capability: it only counts a fixed set of explicit
+    negation and hedge markers. Double negation, scope ambiguity, paraphrase, and
+    sarcasm are known-unhandled (see F01_F02_REMEDIATION_DESIGN.md, section B.7) --
+    such cases are intentionally routed to AMBIGUOUS rather than guessed at.
+    """
+    claim_tokens = _tokenize(claim_text)
+    snippet_tokens = _tokenize(snippet)
+    claim_negations = _negation_count(claim_tokens)
+    snippet_negations = _negation_count(snippet_tokens)
+    if claim_negations > 0 and snippet_negations > 0:
+        # Both sides negate; parity (e.g. double negation) is not reliably resolvable.
+        return _Polarity.AMBIGUOUS
+    if claim_negations != snippet_negations:
+        # Exactly one side negates the shared assertion.
+        return _Polarity.CONFLICT
+    if _hedge_count(claim_tokens) > 0 or _hedge_count(snippet_tokens) > 0:
+        return _Polarity.AMBIGUOUS
+    return _Polarity.CLEAR
+
+
+def _coerce_finite_decimal(value: object) -> Decimal | None:
+    """Parse a claim/evidence value into a finite Decimal, or None if not possible.
+
+    Returns None for anything that is not a finite number: unparsable strings,
+    NaN, +/-Infinity, or non-numeric types (e.g. datetime). This is the single
+    normalization point numeric claim/evidence values pass through before being
+    compared -- see F01_F02_REMEDIATION_DESIGN.md section A.5.
+    """
+    if isinstance(value, Decimal):
+        candidate = value
+    elif isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            candidate = Decimal(text)
+        except InvalidOperation:
+            return None
+    else:
+        return None
+    return candidate if candidate.is_finite() else None
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,11 +275,13 @@ class EvidenceBundle:
 
         for ref in evidence_refs:
             if ref.supports_claim(claim.text, claim.claim_type):
-                # Check if the value matches (and unit, currency, period if applicable)
-                if cls._values_match(claim, ref):
+                outcome = cls._evaluate_match(claim, ref)
+                if outcome is _MatchOutcome.SUPPORTING:
                     supporting.append(ref)
-                else:
+                elif outcome is _MatchOutcome.CONTRADICTING:
                     contradicting.append(ref)
+                else:
+                    neutral.append(ref)
             else:
                 neutral.append(ref)
 
@@ -193,49 +296,75 @@ class EvidenceBundle:
         )
 
     @staticmethod
-    def _values_match(claim: Claim, evidence_ref: EvidenceRef) -> bool:
-        """Check if evidence explicitly supports the claim by matching values."""
-        # If expected_value is None, we only match for non-numeric claims (text already matched)
-        if claim.expected_value is None:
-            # For non-numeric claims, we rely on text matching only
-            return claim.claim_type != ClaimType.NUMERIC
+    def _evaluate_match(claim: Claim, evidence_ref: EvidenceRef) -> _MatchOutcome:
+        """Decide whether evidence explicitly supports, contradicts, or is inconclusive.
 
+        Structured (typed) values are compared numerically/exactly -- never as text
+        (see F01_F02_REMEDIATION_DESIGN.md section A.5). Prose claims with no
+        expected value can only reach SUPPORTING when no negation/hedge signal was
+        found on either side (see `_assess_polarity`); a detected polarity mismatch
+        or ambiguity is routed to CONTRADICTING/NEUTRAL and can never resolve to
+        VERIFIED through this path (section B.6/B.8).
+        """
+        if claim.expected_value is None:
+            if claim.claim_type == ClaimType.NUMERIC:
+                # A numeric claim with no expected value cannot be confirmed by text.
+                return _MatchOutcome.CONTRADICTING
+            polarity = _assess_polarity(claim.text, evidence_ref.raw_snippet)
+            if polarity is _Polarity.CONFLICT:
+                return _MatchOutcome.CONTRADICTING
+            if polarity is _Polarity.AMBIGUOUS:
+                return _MatchOutcome.NEUTRAL
+            return _MatchOutcome.SUPPORTING
+
+        if claim.claim_type == ClaimType.NUMERIC:
+            expected_num = _coerce_finite_decimal(claim.expected_value)
+            extracted_num = _coerce_finite_decimal(evidence_ref.extracted_value)
+            if expected_num is None or extracted_num is None or expected_num != extracted_num:
+                return _MatchOutcome.CONTRADICTING
+            return (
+                _MatchOutcome.SUPPORTING
+                if EvidenceBundle._context_matches(claim, evidence_ref)
+                else _MatchOutcome.CONTRADICTING
+            )
+
+        # Non-numeric claim types with an explicit expected value (e.g. DATE): preserve
+        # the original bounded finiteness guard and string-normalized comparison.
         if isinstance(claim.expected_value, Decimal) and not claim.expected_value.is_finite():
-            return False
+            return _MatchOutcome.CONTRADICTING
         if (
             isinstance(evidence_ref.extracted_value, Decimal)
             and not evidence_ref.extracted_value.is_finite()
         ):
-            return False
-
-        # Only check for explicit support when we have extracted values to compare
+            return _MatchOutcome.CONTRADICTING
         comparable_types = (str, int, float, Decimal, datetime)
         if (
             evidence_ref.extracted_value is not None
             and isinstance(evidence_ref.extracted_value, comparable_types)
             and isinstance(claim.expected_value, comparable_types)
         ):
-            # Normalize for comparison
             ev_val = str(evidence_ref.extracted_value).strip().lower()
             exp_val = str(claim.expected_value).strip().lower()
+            if ev_val == exp_val and EvidenceBundle._context_matches(claim, evidence_ref):
+                return _MatchOutcome.SUPPORTING
+        return _MatchOutcome.CONTRADICTING
 
-            # If values match, check units, currency, and period
-            if ev_val == exp_val:
-                unit_ok = not claim.expected_unit or (
-                    evidence_ref.extracted_unit is not None
-                    and claim.expected_unit.lower() == evidence_ref.extracted_unit.lower()
-                )
-                currency_ok = not claim.expected_currency or (
-                    evidence_ref.extracted_currency is not None
-                    and claim.expected_currency.lower() == evidence_ref.extracted_currency.lower()
-                )
-                period_ok = not claim.expected_period or (
-                    evidence_ref.extracted_period is not None
-                    and claim.expected_period == evidence_ref.extracted_period
-                )
-                return unit_ok and currency_ok and period_ok
-
-        return False
+    @staticmethod
+    def _context_matches(claim: Claim, evidence_ref: EvidenceRef) -> bool:
+        """Check unit/currency/period agreement once a value match is confirmed."""
+        unit_ok = not claim.expected_unit or (
+            evidence_ref.extracted_unit is not None
+            and claim.expected_unit.lower() == evidence_ref.extracted_unit.lower()
+        )
+        currency_ok = not claim.expected_currency or (
+            evidence_ref.extracted_currency is not None
+            and claim.expected_currency.lower() == evidence_ref.extracted_currency.lower()
+        )
+        period_ok = not claim.expected_period or (
+            evidence_ref.extracted_period is not None
+            and claim.expected_period == evidence_ref.extracted_period
+        )
+        return unit_ok and currency_ok and period_ok
 
     def to_dict(self) -> dict[str, object]:
         return {

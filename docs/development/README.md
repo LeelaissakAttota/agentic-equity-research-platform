@@ -79,4 +79,6 @@ docker compose up
 $env:API_HOST_PORT=18080; docker compose up
 ```
 
+The Compose API is intentionally bound to `127.0.0.1` only (loopback), matching how every example in this document and in `docs/API-EXAMPLES.md` reaches it. It is not intended to be reachable from your LAN or the public internet: `APP_ENV=development` in this file bypasses both API-key authentication and `ALLOWED_HOSTS` enforcement, so there is no active control protecting the port beyond the network binding itself.
+
 Store reviewed phase audit records and reproducible troubleshooting notes here. Do not store secrets, machine-specific credentials, copied production data, or unreviewed scratch output.

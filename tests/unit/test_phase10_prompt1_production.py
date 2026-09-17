@@ -32,6 +32,21 @@ def _production_settings(**overrides: object) -> Settings:
         "APP_ENV": "production",
         "LOG_LEVEL": "INFO",
         "ALLOWED_HOSTS": "api.example.com,127.0.0.1",
+        # F09: a configured key keeps /ready "ready" so this file's tests
+        # (about host-allowlist enforcement, not authentication readiness)
+        # are unaffected by the F09 authentication readiness check.
+        "API_KEYS": "phase10-prompt1-test-key",
+    }
+    values.update(overrides)
+    return _settings(**values)
+
+
+def _staging_settings(**overrides: object) -> Settings:
+    values: dict[str, object] = {
+        "APP_ENV": "staging",
+        "LOG_LEVEL": "INFO",
+        "ALLOWED_HOSTS": "staging.example.com,127.0.0.1",
+        "API_KEYS": "phase10-prompt1-staging-key",
     }
     values.update(overrides)
     return _settings(**values)
@@ -119,6 +134,82 @@ def test_production_allowed_host_preserves_health_ready_version_distinction() ->
         "detail": "production_configuration_validated",
     }
     assert version.json()["environment"] == "production"
+
+
+# ---------------------------------------------------------------------------
+# F10 — staging must enforce its validated host allowlist, matching
+# production. Before the fix, RequestSafetyMiddleware's enforcement was
+# gated on `app_env == "production"` (exact match), so a staging deployment
+# with a real, non-wildcard ALLOWED_HOSTS (which Settings itself requires
+# for staging, identical to production) silently accepted every Host header.
+# development/test are intentionally unenforced and must remain so.
+# ---------------------------------------------------------------------------
+
+
+def test_staging_host_allowlist_rejects_untrusted_host_with_safe_error() -> None:
+    """The critical F10 regression: staging must reject a spoofed Host,
+    with the identical response contract production already uses."""
+    with TestClient(create_app(settings=_staging_settings())) as client:
+        response = client.get(
+            "/health",
+            headers={"host": "evil.example", "X-Correlation-ID": "staging-host-reject-1"},
+        )
+
+    assert response.status_code == 400
+    assert response.headers["X-Correlation-ID"] == "staging-host-reject-1"
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.json() == {
+        "error": {
+            "code": "invalid_host",
+            "message": "Request host is not allowed",
+            "correlation_id": "staging-host-reject-1",
+            "details": [],
+        }
+    }
+
+
+def test_staging_allowed_host_is_accepted() -> None:
+    with TestClient(create_app(settings=_staging_settings())) as client:
+        response = client.get(
+            "/health",
+            headers={"host": "staging.example.com", "X-Correlation-ID": "staging-host-ok-1"},
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+        "service": "agentic-financial-intelligence",
+        "version": response.json()["version"],
+    }
+
+
+def test_production_allowed_host_is_still_accepted() -> None:
+    """Non-regression: the fix must not change production's existing accept path."""
+    with TestClient(create_app(settings=_production_settings())) as client:
+        response = client.get(
+            "/health",
+            headers={"host": "api.example.com", "X-Correlation-ID": "prod-host-ok-1"},
+        )
+
+    assert response.status_code == 200
+
+
+def test_development_spoofed_host_remains_accepted() -> None:
+    """Non-regression: development is intentionally unenforced (Settings does
+    not require a strict allowlist there); this must not change."""
+    settings = Settings(_env_file=None, APP_ENV="development", ALLOWED_HOSTS="*")
+    with TestClient(create_app(settings=settings)) as client:
+        response = client.get("/health", headers={"host": "evil.example"})
+
+    assert response.status_code == 200
+
+
+def test_test_env_spoofed_host_remains_accepted() -> None:
+    """Non-regression: the test environment is intentionally unenforced."""
+    with TestClient(create_app(settings=_settings())) as client:
+        response = client.get("/health", headers={"host": "evil.example"})
+
+    assert response.status_code == 200
 
 
 def test_oversized_body_fails_before_route_processing_and_retains_correlation() -> None:

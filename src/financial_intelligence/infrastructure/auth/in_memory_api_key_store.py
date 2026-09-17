@@ -53,8 +53,15 @@ class InMemoryApiKeyStore:
         Uses ``secrets.compare_digest`` for every comparison.
         Returns False immediately (without comparing) if the presented key or
         the store is empty, to avoid leaking information about store contents.
+
+        ``secrets.compare_digest`` raises ``TypeError`` for ``str`` arguments
+        containing non-ASCII characters (see F08). Configured keys are always
+        ASCII (sourced from application configuration), so a non-ASCII
+        presented key can never match one; it is rejected here before ever
+        reaching ``compare_digest``, keeping this method's contract "returns
+        False for any non-matching input, never raises."
         """
-        if not presented_key or not self._keys:
+        if not presented_key or not self._keys or not presented_key.isascii():
             return False
         return any(secrets.compare_digest(presented_key, stored) for stored in self._keys)
 

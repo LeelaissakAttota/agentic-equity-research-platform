@@ -144,6 +144,28 @@ class GraphAndTaskLifecycleTests(TestCase):
         self.assertEqual(by_id[b.task_id.as_text()].status, TaskStatus.BLOCKED)
         self.assertEqual(len(ready_tasks((a_fail, b))), 0)
 
+    def test_failure_propagation_skips_optional_dependents(self) -> None:
+        # Mirrors test_transitions_and_failure_propagation but for an OPTIONAL
+        # dependent, which must become SKIPPED rather than BLOCKED. Regression
+        # coverage for the mypy dead-comparison cleanup in graph.py's
+        # apply_failure_propagation: proves the required/not-required branch
+        # split still selects the correct terminal status for each case.
+        a = _task(task_id="e1111111-1111-4111-8111-111111111201", priority=10)
+        b = _task(
+            task_id="e1111111-1111-4111-8111-111111111202",
+            task_type=TaskType.FINANCIAL_INTELLIGENCE,
+            deps=(a.task_id,),
+            priority=20,
+            required=False,
+        )
+        a_ready = a.with_status(TaskStatus.READY)
+        a_run = a_ready.with_status(TaskStatus.RUNNING, at=_clock())
+        a_fail = a_run.with_status(TaskStatus.FAILED, at=_clock())
+        propagated = apply_failure_propagation((a_fail, b))
+        by_id = {t.task_id.as_text(): t for t in propagated}
+        self.assertEqual(by_id[b.task_id.as_text()].status, TaskStatus.SKIPPED)
+        self.assertEqual(len(ready_tasks((a_fail, b))), 0)
+
     def test_budget_enforcement(self) -> None:
         budget = ResearchExecutionBudget(max_tasks=1)
         tasks = (

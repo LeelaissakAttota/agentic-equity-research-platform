@@ -214,6 +214,20 @@ class VerificationResult:
         return self.status in {VerificationStatus.VERIFIED, VerificationStatus.PARTIALLY_VERIFIED}
 
     @property
+    def is_definitively_verified(self) -> bool:
+        """True only when the status itself represents definitive verification.
+
+        Unlike `is_verified` (kept unchanged for backward compatibility), this
+        does NOT include PARTIALLY_VERIFIED, CONTRADICTED, CONFLICTING, STALE,
+        or UNVERIFIABLE. Resource/orchestration decisions that must not stop on
+        merely partial evidence (see VerificationEngine.assess_critic) should
+        use this accessor rather than `is_verified`. See
+        F02_VERIFICATION_SEMANTICS_REVIEW.md section 6 for why the two must not
+        be conflated.
+        """
+        return self.status is VerificationStatus.VERIFIED
+
+    @property
     def has_contradictions(self) -> bool:
         return len(self.contradictions) > 0
 

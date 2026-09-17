@@ -108,8 +108,10 @@ def test_health_ready_version_freeze_under_explicit_production_host() -> None:
 
     assert all(response.status_code == 200 for response in responses.values())
     assert "checks" not in responses["/health"].json()
+    # F09: "authentication" was added alongside the pre-existing checks.
     assert {item["name"] for item in responses["/ready"].json()["checks"]} == {
         "application",
+        "authentication",
         "configuration",
     }
     assert set(responses["/version"].json()) == {"service", "version", "environment"}

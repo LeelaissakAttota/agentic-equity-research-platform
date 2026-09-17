@@ -32,6 +32,12 @@ from financial_intelligence.observability.logging import configure_logging, get_
 from financial_intelligence.security.auth import require_api_key
 from financial_intelligence.security.headers import SecurityHeadersMiddleware
 
+# F10: environments in which Settings requires (and validates at startup) an
+# explicit, non-wildcard ALLOWED_HOSTS (config/settings.py's model_validator
+# uses this identical pair). Host-allowlist enforcement must match that same
+# set, or a hardened-looking staging configuration silently goes unenforced.
+_HOST_ENFORCEMENT_ENVIRONMENTS = frozenset({"production", "staging"})
+
 
 def create_app(
     settings: Settings | None = None,
@@ -69,7 +75,7 @@ def create_app(
         RequestSafetyMiddleware,
         max_body_bytes=resolved_container.settings.api_max_request_body_bytes,
         allowed_hosts=resolved_container.settings.allowed_host_values(),
-        enforce_allowed_hosts=resolved_container.settings.app_env == "production",
+        enforce_allowed_hosts=resolved_container.settings.app_env in _HOST_ENFORCEMENT_ENVIRONMENTS,
     )
     register_exception_handlers(application)
     # Public endpoints — no authentication dependency.

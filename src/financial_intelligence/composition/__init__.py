@@ -83,6 +83,14 @@ from financial_intelligence.infrastructure.reporting import DeterministicResearc
 from financial_intelligence.infrastructure.watchlist import InMemoryWatchlistStore
 from financial_intelligence.infrastructure.workflow import InMemoryResearchWorkflowStore
 
+# Environments in which `require_api_key` (security/auth.py) enforces
+# authentication rather than bypassing it. Duplicated here (not imported)
+# because `security.auth` imports `AppContainer` from this module, so a
+# top-level import back into `security.auth` would be circular. Mirrors that
+# module's `_ENFORCED_ENVIRONMENTS` and `Settings`'s own validator condition
+# (config/settings.py) exactly; keep all three in sync if this ever changes.
+_AUTH_ENFORCED_ENVIRONMENTS = frozenset({"production", "staging"})
+
 
 @dataclass(slots=True)
 class AppContainer:
@@ -360,6 +368,43 @@ def build_container(
 
     api_key_store: ApiKeyStorePort = InMemoryApiKeyStore.from_csv(
         resolved.api_keys.get_secret_value()
+    )
+
+    # F09: authentication readiness. When auth is enforced (production/staging),
+    # a configuration with zero usable keys makes every protected endpoint
+    # permanently unauthenticatable; /ready must surface that instead of
+    # reporting unconditional success. When auth is bypassed (development/test),
+    # this check is a deliberate no-op, matching require_api_key's own bypass so
+    # readiness never contradicts actual endpoint usability. Uses
+    # api_key_store.has_keys directly (the same authoritative source
+    # require_api_key ultimately relies on) rather than re-parsing API_KEYS, so
+    # there is exactly one place that decides "are there usable keys."
+    #
+    # `resolved.app_env in _AUTH_ENFORCED_ENVIRONMENTS` mirrors
+    # require_api_key's own bypass condition (security/auth.py's
+    # `_ENFORCED_ENVIRONMENTS`) rather than `resolved.auth_enabled` alone:
+    # require_api_key bypasses auth by *environment* in development/test even
+    # if AUTH_ENABLED=true is explicitly set there, so readiness must use the
+    # same predicate or it would report "not ready" for a bypassed-auth
+    # environment that is, in practice, fully usable. `security.auth` cannot
+    # be imported here (it imports `AppContainer` from this module, which
+    # would create a circular import), so this mirrors the identical
+    # `("production", "staging")` condition already used by
+    # `Settings`'s own validator (config/settings.py) rather than inventing a
+    # new one.
+    readiness.register(
+        "authentication",
+        lambda: ReadinessCheckResult(
+            name="authentication",
+            ready=(resolved.app_env not in _AUTH_ENFORCED_ENVIRONMENTS) or api_key_store.has_keys,
+            detail=(
+                "authentication_not_enforced_in_this_environment"
+                if resolved.app_env not in _AUTH_ENFORCED_ENVIRONMENTS
+                else "usable_api_keys_configured"
+                if api_key_store.has_keys
+                else "auth_enabled_but_no_usable_api_keys_configured"
+            ),
+        ),
     )
 
     return AppContainer(

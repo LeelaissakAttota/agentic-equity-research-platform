@@ -290,7 +290,27 @@ class VerificationEngineTests(TestCase):
         self.assertEqual(len(result.critic_requests), 1)
         self.assertEqual(result.critic_requests[0].suggested_capability, "financials")
 
-    def test_no_critic_requests_for_verified_or_partial(self) -> None:
+    def test_no_critic_requests_for_verified(self) -> None:
+        claim = self._claim(
+            claim_type=ClaimType.FACTUAL,
+            text="The company filed its annual report",
+        )
+        evidence = self._evidence(
+            claim_type=ClaimType.FACTUAL,
+            snippet=claim.text,
+            authority_tier=AuthorityTier.TIER_4_GENERAL_WEB,
+        )
+
+        _, verified = self._verify(claim, evidence)
+
+        self.assertEqual(verified.status, VerificationStatus.VERIFIED)
+        self.assertEqual(verified.critic_requests, ())
+
+    def test_critic_request_generated_for_partially_verified(self) -> None:
+        """F02 semantics cleanup: PARTIALLY_VERIFIED is not definitive
+        verification (VerificationResult.is_definitively_verified is False for
+        it), so the critic loop must not stop researching -- it needs a
+        critic_request to act on, unlike a fully VERIFIED result."""
         claim = self._claim(
             claim_type=ClaimType.FACTUAL,
             text="The company filed its annual report",
@@ -305,13 +325,11 @@ class VerificationEngineTests(TestCase):
             min_confidence_for_partially_verified=Decimal("0.4"),
         )
 
-        _, verified = self._verify(claim, evidence)
         _, partial = self._verify(claim, evidence, engine=strict_engine)
 
-        self.assertEqual(verified.status, VerificationStatus.VERIFIED)
         self.assertEqual(partial.status, VerificationStatus.PARTIALLY_VERIFIED)
-        self.assertEqual(verified.critic_requests, ())
-        self.assertEqual(partial.critic_requests, ())
+        self.assertEqual(len(partial.critic_requests), 1)
+        self.assertFalse(partial.is_definitively_verified)
 
     def test_superficial_keyword_overlap_does_not_support_claim(self) -> None:
         claim = self._claim(

@@ -104,6 +104,33 @@ class IndiaFilingFoundationTests(TestCase):
         assert package.income_statement is not None
         self.assertIsNotNone(package.income_statement.get(FinancialConcept.REVENUE))
 
+    def test_fixture_parser_leaves_filed_at_none_without_source_date(self) -> None:
+        # F05 regression: the India fixture payload shape carries no authoritative
+        # filing/disclosure date field, so filed_at/published_at must stay None
+        # rather than being fabricated from period_end.
+        payload = {
+            "data_origin": "fixture",
+            "authority": "nse",
+            "currency": "INR",
+            "fiscal_year": 2024,
+            "period_start": "2023-04-01",
+            "period_end": "2024-03-31",
+            "accession_or_reference": "RELIANCE-FY2024-FIXTURE",
+            "rows": [
+                {"label": "Revenue from Operations", "value": "900000", "scale": 1000000},
+                {"label": "Net Profit", "value": "50000", "scale": 1000000},
+            ],
+        }
+        package = parse_india_results_fixture(
+            payload,
+            company_id=RELIANCE_ID,
+            clock=datetime(2026, 8, 8, tzinfo=UTC),
+        )
+        assert package is not None and package.filing is not None
+        self.assertIsNone(package.filing.filed_at)
+        self.assertIsNone(package.filing.published_at)
+        self.assertNotEqual(package.filing.filed_at, package.reporting_period.period_end)
+
 
 class FilingPipelineTests(TestCase):
     def test_pipeline_separates_raw_facts_from_metrics(self) -> None:
@@ -120,6 +147,19 @@ class FilingPipelineTests(TestCase):
         assert result.metrics_result is not None
         for metric in result.metrics_result.metrics:
             self.assertEqual(metric.to_dict()["kind"], "derived_metric")
+
+    def test_reference_fixtures_do_not_fabricate_filed_at(self) -> None:
+        # F05 regression: these are REFERENCE/DEMO packages with no authoritative
+        # SEC/exchange filing date behind them, so filed_at/published_at must be
+        # None -- never the fiscal period_end presented as a real filing date.
+        packages = build_reference_financial_packages()
+        apple = packages[APPLE_ID.as_text()]
+        reliance = packages[RELIANCE_ID.as_text()]
+        for package in (apple, reliance):
+            assert package.filing is not None
+            self.assertIsNone(package.filing.filed_at)
+            self.assertIsNone(package.filing.published_at)
+            self.assertNotEqual(package.filing.filed_at, package.reporting_period.period_end)
 
 
 class CacheFallbackHardeningTests(TestCase):

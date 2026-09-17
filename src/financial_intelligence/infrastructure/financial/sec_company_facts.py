@@ -147,12 +147,18 @@ class SecCompanyFactsFinancialDataAdapter:
         currency = CurrencyCode("USD")
         fact_rows: list[FinancialFact] = []
         seen_concepts: set[FinancialConcept] = set()
+        # Authoritative SEC 'filed' (acceptance) date per fact, keyed by fact identity —
+        # never inferred from period_end. See _parse_filed_date / _select_fy_row.
+        filed_dates: dict[int, date | None] = {}
+        # Authoritative SEC accession number ('accn') per fact, keyed by fact identity —
+        # the filing-specific identifier, never the company-level CIK. See F12.
+        accession_numbers: dict[int, str | None] = {}
 
         # Prefer first successful alias per concept — avoid false conflicts from synonyms.
         for tag, default_concept in _DURATION_TAGS:
             if default_concept in seen_concepts:
                 continue
-            fact = self._extract_fact(
+            extracted = self._extract_fact(
                 us_gaap=us_gaap,
                 tag=tag,
                 default_concept=default_concept,
@@ -164,14 +170,17 @@ class SecCompanyFactsFinancialDataAdapter:
                 currency=currency,
                 require_start=True,
             )
-            if fact is not None:
+            if extracted is not None:
+                fact, filed_at, accession_number = extracted
                 fact_rows.append(fact)
+                filed_dates[id(fact)] = filed_at
+                accession_numbers[id(fact)] = accession_number
                 seen_concepts.add(fact.concept)
 
         for tag, default_concept in _INSTANT_TAGS:
             if default_concept in seen_concepts:
                 continue
-            fact = self._extract_fact(
+            extracted = self._extract_fact(
                 us_gaap=us_gaap,
                 tag=tag,
                 default_concept=default_concept,
@@ -183,8 +192,11 @@ class SecCompanyFactsFinancialDataAdapter:
                 currency=currency,
                 require_start=False,
             )
-            if fact is not None:
+            if extracted is not None:
+                fact, filed_at, accession_number = extracted
                 fact_rows.append(fact)
+                filed_dates[id(fact)] = filed_at
+                accession_numbers[id(fact)] = accession_number
                 seen_concepts.add(fact.concept)
 
         if not fact_rows:
@@ -200,6 +212,24 @@ class SecCompanyFactsFinancialDataAdapter:
             (f.period for f in duration_facts),
             key=lambda p: p.selection_key(),
         )
+        # Authoritative SEC filing date and accession number for the selected period —
+        # both drawn from the SAME fact (the one carrying the latest 'filed' value among
+        # facts reporting that period), so filed_at and accession_or_reference always
+        # describe one underlying filing, never mixed across facts. None when the source
+        # provides no parseable value; filed_at never falls back to period_end and
+        # accession_or_reference never falls back to the company CIK (see F12).
+        period_facts = [f for f in duration_facts if f.period == reporting_period]
+        dated_period_facts: list[tuple[date, FinancialFact]] = [
+            (dated, f)
+            for f in period_facts
+            if (dated := filed_dates.get(id(f))) is not None
+        ]
+        filing_filed_at: date | None = None
+        filing_accession_number: str | None = None
+        if dated_period_facts:
+            _, selected_fact = max(dated_period_facts, key=lambda pair: pair[0])
+            filing_filed_at = filed_dates.get(id(selected_fact))
+            filing_accession_number = accession_numbers.get(id(selected_fact))
         # Keep only facts whose fiscal year matches the selected package period.
         aligned = [
             f
@@ -260,8 +290,6 @@ class SecCompanyFactsFinancialDataAdapter:
             if f.concept in balance_concepts
         )
 
-        accession = payload.get("cik")
-        accession_text = str(accession).strip() if accession is not None else None
         filing = FilingMetadata(
             filing_id=filing_id,
             company_id=company_id,
@@ -269,10 +297,13 @@ class SecCompanyFactsFinancialDataAdapter:
             reporting_period=reporting_period,
             source_id=source_id,
             authority_tier=SourceAuthorityTier.TIER_1_AUTHORITATIVE,
-            filed_at=reporting_period.period_end,
-            published_at=reporting_period.period_end,
+            filed_at=filing_filed_at,
+            published_at=filing_filed_at,
             retrieved_at=retrieved_at,
-            accession_or_reference=accession_text or cik,
+            # The filing-specific SEC accession number (e.g. "0000320193-24-000123"),
+            # never the company-level CIK — a CIK cannot identify one specific filing.
+            # None (not the CIK) when the source provides no parseable accession (F12).
+            accession_or_reference=filing_accession_number,
             source_url=f"{_SEC_COMPANYFACTS_BASE}CIK{cik}.json",
             provider_name=self.provider_name,
         )
@@ -319,7 +350,7 @@ class SecCompanyFactsFinancialDataAdapter:
         retrieved_at: datetime,
         currency: CurrencyCode,
         require_start: bool,
-    ) -> FinancialFact | None:
+    ) -> tuple[FinancialFact, date | None, str | None] | None:
         mapped = map_us_gaap(tag) or default_concept
         entry = us_gaap.get(tag)
         if not isinstance(entry, dict):
@@ -374,7 +405,7 @@ class SecCompanyFactsFinancialDataAdapter:
                 as_of=period_end,
                 label=f"BS{fy}",
             )
-        return build_fact(
+        fact = build_fact(
             company_id=company_id,
             concept=mapped,
             period=period,
@@ -388,6 +419,41 @@ class SecCompanyFactsFinancialDataAdapter:
             filing_id=filing_id,
             provider_concept=tag,
         )
+        return (
+            fact,
+            self._parse_filed_date(fy_row.get("filed")),
+            self._parse_accession(fy_row.get("accn")),
+        )
+
+    @staticmethod
+    def _parse_filed_date(raw: object) -> date | None:
+        """Parse the SEC XBRL 'filed' (acceptance) date.
+
+        Never falls back to period_end or any other field — a missing or
+        malformed value must surface as None, not a fabricated date.
+        """
+
+        if not isinstance(raw, str):
+            return None
+        try:
+            return date.fromisoformat(raw)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _parse_accession(raw: object) -> str | None:
+        """Parse the SEC XBRL 'accn' (accession number) for this specific filing.
+
+        This is the filing-level identifier (e.g. "0000320193-24-000123"), distinct
+        from the company-level CIK. Never falls back to the CIK or any other field —
+        a missing or malformed value must surface as None, not a fabricated or
+        borrowed identifier (F12).
+        """
+
+        if not isinstance(raw, str):
+            return None
+        cleaned = raw.strip()
+        return cleaned or None
 
     @staticmethod
     def _select_fy_row(

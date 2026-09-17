@@ -29,6 +29,14 @@ from financial_intelligence.domain.orchestration import (
     TaskResultStatus,
     TaskType,
 )
+from financial_intelligence.observability.logging import get_logger
+
+logger = get_logger("financial_intelligence.infrastructure.orchestration.capability_executor")
+
+# Fixed, safe, bounded client-facing message for an unexpected capability
+# failure (F04). The real exception's type and message are logged server-side
+# only (see execute_task) -- never interpolated into a client-facing field.
+_SAFE_CAPABILITY_FAILURE_MESSAGE = "capability execution failed unexpectedly"
 
 
 class Phase6CapabilityExecutor:
@@ -61,10 +69,23 @@ class Phase6CapabilityExecutor:
         try:
             return self._dispatch(task, company=company, company_query=company_query)
         except Exception as exc:
+            # F04: the exception's type and message may contain internal
+            # implementation details (paths, hostnames, provider internals)
+            # and must never reach the client. Log them here, server-side
+            # only, for diagnostics; return a fixed, safe, bounded message.
+            logger.error(
+                "capability_execution_failed",
+                extra={
+                    "task_id": task.task_id.as_text(),
+                    "capability_id": task.capability_id,
+                    "error_type": exc.__class__.__name__,
+                    "error_detail": str(exc),
+                },
+            )
             return TaskExecutionResult(
                 task_id=task.task_id,
                 status=TaskResultStatus.FAILED,
-                message=f"capability executor exception: {exc.__class__.__name__}: {exc}",
+                message=_SAFE_CAPABILITY_FAILURE_MESSAGE,
                 retryable=True,
                 error_code="executor_exception",
             )

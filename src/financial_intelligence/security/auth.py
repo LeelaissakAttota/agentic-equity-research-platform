@@ -15,10 +15,10 @@ distinguishing missing credentials from invalid ones.
 
 from __future__ import annotations
 
-from typing import cast
+from typing import Annotated, cast
 
-from fastapi import Request
-from fastapi.security.utils import get_authorization_scheme_param
+from fastapi import Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from financial_intelligence.api.errors import AuthenticationError
 from financial_intelligence.composition import AppContainer
@@ -30,6 +30,22 @@ logger = get_logger("financial_intelligence.security.auth")
 # Development and test bypass auth so the local workflow and existing test
 # suite continue to work without reconfiguration.
 _ENFORCED_ENVIRONMENTS = frozenset({"production", "staging"})
+
+# F11: a native FastAPI security scheme, declared as a dependency parameter
+# below, so FastAPI's OpenAPI generator can discover and describe this
+# route's Bearer-authentication requirement (components.securitySchemes and
+# each protected operation's `security` list). `auto_error=False` is
+# deliberate: it makes this scheme parse the header and hand back `None` on
+# any absence/malformed/wrong-scheme header instead of raising its own
+# HTTPException, so the existing application-level logic below remains the
+# single place that decides the final authentication outcome and error
+# response -- this scheme only supplies OpenAPI metadata plus the parsed
+# credential, it does not change what counts as authenticated.
+_bearer_scheme = HTTPBearer(
+    scheme_name="ApiKeyBearer",
+    description="Opaque API key issued to the caller, presented as a Bearer token.",
+    auto_error=False,
+)
 
 
 def _get_container(request: Request) -> AppContainer:
@@ -63,7 +79,10 @@ def _reject_401(request: Request) -> None:
     raise AuthenticationError()
 
 
-async def require_api_key(request: Request) -> None:
+async def require_api_key(
+    request: Request,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)],
+) -> None:
     """FastAPI dependency that enforces API-key authentication.
 
     Inject with ``dependencies=[Depends(require_api_key)]`` on protected
@@ -78,6 +97,18 @@ async def require_api_key(request: Request) -> None:
 
     The dependency does NOT raise for health/readiness/version routes because
     those routers are registered without this dependency.
+
+    ``credentials`` is supplied by the module-level ``_bearer_scheme``
+    (``HTTPBearer(auto_error=False)``, see F11). It parses the exact same
+    ``scheme, credential = get_authorization_scheme_param(authorization)``
+    logic this dependency used to perform manually -- ``credentials`` is
+    ``None`` whenever the header is missing, has no space-separated scheme,
+    has an empty credential part, or the scheme is not (case-insensitively)
+    "bearer" -- so every rejection reason below is unchanged from before this
+    scheme was introduced. Declaring it as a typed parameter here (rather
+    than reading ``request.headers`` manually) is what makes FastAPI's
+    OpenAPI generator able to discover and describe this authentication
+    requirement.
     """
     container = _get_container(request)
     settings = container.settings
@@ -88,12 +119,9 @@ async def require_api_key(request: Request) -> None:
 
     # In production/staging: authentication is always enforced.
     # (Settings validation already rejects auth_enabled=false in these envs.)
-    authorization: str = request.headers.get("Authorization", "")
-    scheme, credential = get_authorization_scheme_param(authorization)
-
-    if not authorization or scheme.lower() != "bearer" or not credential:
+    if credentials is None or not credentials.credentials:
         _reject_401(request)
         return  # unreachable; _reject_401 raises
 
-    if not container.api_key_store.is_valid(credential):
+    if not container.api_key_store.is_valid(credentials.credentials):
         _reject_401(request)

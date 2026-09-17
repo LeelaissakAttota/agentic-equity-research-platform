@@ -252,6 +252,46 @@ class FinancialDomainHardeningTests(TestCase):
                 source_url="javascript:alert(1)",
             )
 
+    def test_filing_metadata_filed_at_independent_of_period_end(self) -> None:
+        # F05 regression: filed_at is a distinct source-provided fact, not derived
+        # from reporting_period.period_end.
+        period = _fy()
+        filed_at = date(2024, 11, 15)
+        filing = FilingMetadata(
+            filing_id=FilingId.new(),
+            company_id=_company(),
+            form_type=FilingFormType.US_10K,
+            reporting_period=period,
+            source_id=SourceId.new(),
+            authority_tier=SourceAuthorityTier.TIER_1_AUTHORITATIVE,
+            filed_at=filed_at,
+            published_at=filed_at,
+        )
+        self.assertEqual(filing.filed_at, filed_at)
+        self.assertNotEqual(filing.filed_at, period.period_end)
+        serialized = filing.to_dict()
+        self.assertEqual(serialized["filed_at"], filed_at.isoformat())
+        self.assertNotEqual(serialized["filed_at"], period.period_end.isoformat())
+
+    def test_filing_metadata_allows_none_filed_at(self) -> None:
+        # No authoritative filing date must be representable explicitly as None --
+        # not silently defaulted to period_end or any other field.
+        filing = FilingMetadata(
+            filing_id=FilingId.new(),
+            company_id=_company(),
+            form_type=FilingFormType.US_10K,
+            reporting_period=_fy(),
+            source_id=SourceId.new(),
+            authority_tier=SourceAuthorityTier.TIER_1_AUTHORITATIVE,
+            filed_at=None,
+            published_at=None,
+        )
+        self.assertIsNone(filing.filed_at)
+        self.assertIsNone(filing.published_at)
+        serialized = filing.to_dict()
+        self.assertIsNone(serialized["filed_at"])
+        self.assertIsNone(serialized["published_at"])
+
     def test_package_rejects_listing_without_security(self) -> None:
         from financial_intelligence.domain.identity import ListingId
 

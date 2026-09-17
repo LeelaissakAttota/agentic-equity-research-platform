@@ -44,6 +44,7 @@ from financial_intelligence.domain.workflow import (
     WorkflowCheckpoint,
     WorkflowId,
     WorkflowStatus,
+    WorkflowTransitionError,
     is_terminal,
 )
 
@@ -157,7 +158,9 @@ class ManageResearchWorkflow:
                 workflow=workflow,
                 evaluated_at=now,
             )
-        self._store.save_workflow(running)
+        conflict = self._commit_or_conflict(workflow_id, running, now=now)
+        if conflict is not None:
+            return conflict
 
         company_query = CompanyQuery(
             raw_query=running.company_query.raw_query,
@@ -169,7 +172,9 @@ class ManageResearchWorkflow:
         if resolution.company is None or resolution.company.company_id != running.company_id:
             failed = running.with_status(WorkflowStatus.FAILED, at=self._clock())
             failed = replace(failed, execution_message="company identity mismatch on execute")
-            self._store.save_workflow(failed)
+            conflict = self._commit_or_conflict(workflow_id, failed, now=self._clock())
+            if conflict is not None:
+                return conflict
             self._notify(
                 NotificationType.WORKFLOW_FAILED,
                 failed,
@@ -230,8 +235,13 @@ class ManageResearchWorkflow:
         paused = workflow.with_checkpoint(checkpoint, at=now).with_status(
             WorkflowStatus.PAUSED, at=now
         )
+        # Commit the workflow status first: if the store rejects it because the
+        # record has moved on concurrently (e.g. a cancel landed first), the
+        # checkpoint below must not be persisted either (F03).
+        conflict = self._commit_or_conflict(workflow_id, paused, now=now)
+        if conflict is not None:
+            return conflict
         self._store.save_checkpoint(checkpoint)
-        self._store.save_workflow(paused)
         return WorkflowOperationResult(
             status=WorkflowOperationStatus.OK,
             message="workflow paused",
@@ -263,7 +273,9 @@ class ManageResearchWorkflow:
                 evaluated_at=now,
             )
         ready = workflow.with_status(WorkflowStatus.READY, at=now)
-        self._store.save_workflow(ready)
+        conflict = self._commit_or_conflict(workflow_id, ready, now=now)
+        if conflict is not None:
+            return conflict
         return self.execute(workflow_id)
 
     def cancel(self, workflow_id: WorkflowId) -> WorkflowOperationResult:
@@ -294,7 +306,9 @@ class ManageResearchWorkflow:
                 evaluated_at=now,
             )
         cancelled = replace(cancelled, execution_message="workflow cancelled by trusted API")
-        self._store.save_workflow(cancelled)
+        conflict = self._commit_or_conflict(workflow_id, cancelled, now=now)
+        if conflict is not None:
+            return conflict
         self._notify(
             NotificationType.WORKFLOW_CANCELLED,
             cancelled,
@@ -338,7 +352,9 @@ class ManageResearchWorkflow:
             updated = replace(updated, execution_message="approval rejected")
             message = "workflow approval rejected"
             op = WorkflowOperationStatus.REJECTED
-        self._store.save_workflow(updated)
+        conflict = self._commit_or_conflict(query.workflow_id, updated, now=now)
+        if conflict is not None:
+            return conflict
         return WorkflowOperationResult(
             status=op,
             message=message,
@@ -425,8 +441,15 @@ class ManageResearchWorkflow:
             warnings=tuple(warnings),
         )
         updated = updated.with_status(terminal, at=now)
+        # Commit the workflow status first, and only if it is accepted persist
+        # the checkpoint: a stale execution (one whose long-running work
+        # finished after the workflow was cancelled/paused/completed by a
+        # concurrent operation) must not be able to commit either its result or
+        # its checkpoint data (F03: cancellation race).
+        conflict = self._commit_or_conflict(workflow.workflow_id, updated, now=now)
+        if conflict is not None:
+            return conflict
         self._store.save_checkpoint(checkpoint)
-        self._store.save_workflow(updated)
         if notify_type is not None:
             notify_warning = self._notify(notify_type, updated, message=message)
             if notify_warning is not None:
@@ -438,6 +461,33 @@ class ManageResearchWorkflow:
             workflow=updated,
             evaluated_at=now,
         )
+
+    def _commit_or_conflict(
+        self,
+        workflow_id: WorkflowId,
+        workflow: ResearchWorkflow,
+        *,
+        now: datetime,
+    ) -> WorkflowOperationResult | None:
+        """Attempt to persist ``workflow``; return a CONFLICT result instead of
+        raising if the store rejects it because the record has moved on
+        concurrently (e.g. cancelled/paused/completed by another operation
+        while this one was still running -- F03). Returns None on success.
+        """
+        try:
+            self._store.save_workflow(workflow)
+        except WorkflowTransitionError as exc:
+            current = self._store.get_workflow(workflow_id)
+            return WorkflowOperationResult(
+                status=WorkflowOperationStatus.CONFLICT,
+                message=(
+                    "workflow lifecycle changed concurrently; stale execution "
+                    f"result discarded: {exc}"
+                ),
+                workflow=current,
+                evaluated_at=now,
+            )
+        return None
 
     def _persist_memory(
         self, workflow: ResearchWorkflow, *, plan: object, at: datetime

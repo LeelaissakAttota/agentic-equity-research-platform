@@ -35,6 +35,10 @@ def _production_settings(**overrides: object) -> Settings:
         "APP_ENV": "production",
         "LOG_LEVEL": "INFO",
         "ALLOWED_HOSTS": "api.example.com,127.0.0.1",
+        # F09: a configured key keeps /ready "ready" so this file's tests
+        # (about host-allowlist enforcement, not authentication readiness)
+        # are unaffected by the F09 authentication readiness check.
+        "API_KEYS": "phase10-prompt2-test-key",
     }
     values.update(overrides)
     return _settings(**values)
@@ -403,7 +407,12 @@ def test_readiness_exposes_safe_current_checks_only() -> None:
         version = client.get("/version").json()
 
     assert "checks" not in health
-    assert {check["name"] for check in ready["checks"]} == {"application", "configuration"}
+    # F09: "authentication" was added alongside the pre-existing checks.
+    assert {check["name"] for check in ready["checks"]} == {
+        "application",
+        "authentication",
+        "configuration",
+    }
     rendered = json.dumps(ready)
     for forbidden in ("allowed_hosts", "api_max_request_body_bytes", "database_url", "redis_url"):
         assert forbidden not in rendered

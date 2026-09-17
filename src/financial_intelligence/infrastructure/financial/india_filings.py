@@ -194,8 +194,11 @@ def parse_india_results_fixture(
         reporting_period=period,
         source_id=source_id,
         authority_tier=SourceAuthorityTier.TIER_1_AUTHORITATIVE,
-        filed_at=period_end,
-        published_at=period_end,
+        # The fixture payload shape (see module docstring) carries no authoritative
+        # disclosure/filing date field — filed_at/published_at must stay None rather
+        # than borrow period_end as a stand-in filing date.
+        filed_at=None,
+        published_at=None,
         retrieved_at=retrieved_at,
         accession_or_reference=(
             str(payload["accession_or_reference"])

@@ -359,8 +359,11 @@ def _apple_package(*, year: int, prior: CompanyFinancialPackage | None) -> Compa
         reporting_period=period,
         source_id=_APPLE_SOURCE,
         authority_tier=SourceAuthorityTier.TIER_1_AUTHORITATIVE,
-        filed_at=period.period_end,
-        published_at=period.period_end,
+        # This is REFERENCE/DEMO data (see module docstring) with no authoritative
+        # SEC filing/acceptance date behind it — filed_at/published_at must stay
+        # None rather than borrow period_end as a stand-in filing date.
+        filed_at=None,
+        published_at=None,
         retrieved_at=_RETRIEVED,
         accession_or_reference=f"fixture-aapl-10k-{year}",
         provider_name="fixture",
@@ -565,8 +568,11 @@ def _reliance_package(
         reporting_period=period,
         source_id=_RELIANCE_SOURCE,
         authority_tier=SourceAuthorityTier.TIER_1_AUTHORITATIVE,
-        filed_at=period.period_end,
-        published_at=period.period_end,
+        # This is REFERENCE/DEMO data (see module docstring) with no authoritative
+        # filing/disclosure date behind it — filed_at/published_at must stay None
+        # rather than borrow period_end as a stand-in filing date.
+        filed_at=None,
+        published_at=None,
         retrieved_at=_RETRIEVED,
         accession_or_reference=f"fixture-reliance-annual-{year}",
         provider_name="fixture",

@@ -10,8 +10,11 @@ services:
       dockerfile: Dockerfile
     image: agentic-financial-intelligence:1.0.0
     ports:
-      # Host port is configurable because local port 8000 may already be occupied.
-      - "${API_HOST_PORT:-8000}:8000"
+      # Bound to loopback only (F06): APP_ENV=development below bypasses both
+      # API-key authentication and ALLOWED_HOSTS enforcement, so this must not
+      # be reachable from the LAN. Host port is configurable because local
+      # port 8000 may already be occupied.
+      - "127.0.0.1:${API_HOST_PORT:-8000}:8000"
     environment:
       APP_ENV: development
       LOG_LEVEL: INFO

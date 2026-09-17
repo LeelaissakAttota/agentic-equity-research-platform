@@ -9,6 +9,7 @@ from financial_intelligence.domain.workflow import (
     WorkflowCheckpoint,
     WorkflowId,
     WorkflowStatus,
+    assert_transition,
 )
 
 
@@ -44,6 +45,14 @@ class InMemoryResearchWorkflowStore:
                 if existing.plan.plan_id.as_text() != workflow.plan.plan_id.as_text():
                     msg = f"workflow plan_id immutable for {key}"
                     raise WorkflowStoreError(msg)
+                if workflow.status is not existing.status:
+                    # Validate against the record this store CURRENTLY holds, not
+                    # whatever stale in-memory status the caller captured before a
+                    # long-running operation began (F03: cancellation race). This
+                    # is the same transition table `ResearchWorkflow.with_status`
+                    # already enforces -- re-checked here, atomically with the
+                    # write, against the authoritative current record.
+                    assert_transition(existing.status, workflow.status)
                 if workflow.checkpoint_version < existing.checkpoint_version:
                     msg = (
                         f"workflow checkpoint_version regression for {key}: "

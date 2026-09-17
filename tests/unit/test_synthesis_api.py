@@ -467,3 +467,95 @@ def test_openapi_exposes_exactly_one_phase9_synthesis_endpoint() -> None:
     assert "/research/synthesis" in paths
     assert set(paths["/research/synthesis"]) == {"post"}
     assert not any("translation" in path or "docx" in path for path in paths)
+
+
+# -- F01/F02 hardening: prove the fixes are reachable through the real HTTP/Pydantic
+# boundary, not only at the domain layer. See F01_F02_REMEDIATION_DESIGN.md
+# section A.7/A.8 for why a domain-only test cannot prove this on its own: the
+# Pydantic `str | Decimal | datetime | None` union resolves every JSON string to
+# `str`, never to `Decimal`, so only a real HTTP request exercises the exact
+# bypass path.
+
+
+def test_nan_string_over_http_is_not_verified() -> None:
+    """F01: 'NaN' submitted as a JSON string on both sides must not verify."""
+    client = TestClient(create_app())
+    claim = _claim(
+        company_id=APPLE_COMPANY_ID,
+        company_name="Apple",
+        currency="USD",
+        security_id=APPLE_SECURITY_ID,
+        listing_id=APPLE_LISTING_ID,
+        source_id="OFFICIAL",
+        provider="Official fixture",
+        url="https://example.test/nan",
+        value="NaN",
+    )
+    response = client.post(
+        "/research/synthesis",
+        json=_body(q="Apple", country="US", exchange="NASDAQ", ticker="AAPL", claim=claim),
+    )
+    assert response.status_code == 200
+    output_claim = response.json()["sections"][0]["claims"][0]
+    assert output_claim["verification_status"] != "verified"
+
+
+def test_equivalent_numeric_strings_over_http_are_verified() -> None:
+    """F01: '100' vs '100.0' (both JSON strings) must be recognized as equal,
+    not textually different."""
+    client = TestClient(create_app())
+    claim = _claim(
+        company_id=APPLE_COMPANY_ID,
+        company_name="Apple",
+        currency="USD",
+        security_id=APPLE_SECURITY_ID,
+        listing_id=APPLE_LISTING_ID,
+        source_id="OFFICIAL",
+        provider="Official fixture",
+        url="https://example.test/equivalent",
+        value="100",
+    )
+    claim["evidence"][0]["extracted_value"] = "100.0"
+    response = client.post(
+        "/research/synthesis",
+        json=_body(q="Apple", country="US", exchange="NASDAQ", ticker="AAPL", claim=claim),
+    )
+    assert response.status_code == 200
+    output_claim = response.json()["sections"][0]["claims"][0]
+    assert output_claim["verification_status"] == "verified"
+
+
+def test_negated_evidence_over_http_is_not_verified() -> None:
+    """F02: evidence that negates a positive factual claim must not verify, even
+    though it shares almost all keywords with the claim text."""
+    client = TestClient(create_app())
+    claim = _claim(
+        company_id=APPLE_COMPANY_ID,
+        company_name="Apple",
+        currency="USD",
+        security_id=APPLE_SECURITY_ID,
+        listing_id=APPLE_LISTING_ID,
+        source_id="OFFICIAL",
+        provider="Official fixture",
+        url="https://example.test/negated",
+    )
+    claim["claim_type"] = "factual"
+    claim["text"] = "Apple acquired ExampleCorp"
+    claim["expected_value"] = None
+    claim["expected_unit"] = None
+    claim["expected_currency"] = None
+    claim["expected_period"] = None
+    claim["evidence"][0]["claim_type"] = "factual"
+    claim["evidence"][0]["extracted_value"] = None
+    claim["evidence"][0]["extracted_unit"] = None
+    claim["evidence"][0]["extracted_currency"] = None
+    claim["evidence"][0]["extracted_period"] = None
+    claim["evidence"][0]["raw_snippet"] = "Apple did not acquire ExampleCorp"
+    response = client.post(
+        "/research/synthesis",
+        json=_body(q="Apple", country="US", exchange="NASDAQ", ticker="AAPL", claim=claim),
+    )
+    assert response.status_code == 200
+    output_claim = response.json()["sections"][0]["claims"][0]
+    assert output_claim["verification_status"] != "verified"
+    assert output_claim["verification_status"] == "contradicted"

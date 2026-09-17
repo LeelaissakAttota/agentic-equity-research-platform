@@ -455,3 +455,123 @@ class TestSecurityInvariants(TestCase):
                 headers={**self._host_header(), "Authorization": "Bearer "},
             )
         self.assertEqual(r.status_code, 401)
+
+
+# ---------------------------------------------------------------------------
+# F08 — non-ASCII Bearer credential must produce 401, never 500
+# ---------------------------------------------------------------------------
+#
+# `httpx` (which TestClient wraps) ASCII-encodes plain `dict[str, str]`
+# header values client-side and raises `UnicodeEncodeError` before the
+# request is ever sent — it cannot deliver a non-ASCII Authorization header
+# via the ordinary `headers={...}` convenience form. These tests instead
+# supply headers as raw `(bytes, bytes)` pairs, which `httpx` accepts
+# without re-encoding, so the non-ASCII bytes actually reach the
+# application's authentication dependency exactly as a real client
+# (curl, a browser, or a raw socket) would deliver them.
+
+
+class TestNonAsciiBearerToken(TestCase):
+    """F08: a non-ASCII Bearer credential must be rejected with 401, not 500."""
+
+    TEST_KEY = "prod-test-key-f08"
+
+    def setUp(self) -> None:
+        self.app = create_app(settings=_production_settings(api_keys=self.TEST_KEY))
+
+    def _request(self, auth_header_bytes: bytes | None):  # type: ignore[no-untyped-def]
+        headers: list[tuple[bytes, bytes]] = [(b"host", b"example.com")]
+        if auth_header_bytes is not None:
+            headers.append((b"authorization", auth_header_bytes))
+        with TestClient(self.app, raise_server_exceptions=False) as client:
+            return client.get("/companies/resolve?q=Apple", headers=headers)
+
+    def test_ascii_invalid_bearer_returns_401(self) -> None:
+        r = self._request(b"Bearer invalid-token")
+        self.assertEqual(r.status_code, 401)
+
+    def test_ascii_valid_bearer_succeeds(self) -> None:
+        r = self._request(f"Bearer {self.TEST_KEY}".encode("ascii"))
+        self.assertIn(r.status_code, (200, 404, 422))
+
+    def test_non_ascii_accented_bearer_returns_401_not_500(self) -> None:
+        r = self._request("Bearer café".encode())
+        self.assertEqual(r.status_code, 401)
+
+    def test_non_ascii_cjk_bearer_returns_401_not_500(self) -> None:
+        r = self._request("Bearer token-测试".encode())
+        self.assertEqual(r.status_code, 401)
+
+    def test_non_ascii_currency_symbol_bearer_returns_401_not_500(self) -> None:
+        r = self._request("Bearer token-€".encode())
+        self.assertEqual(r.status_code, 401)
+
+    def test_non_ascii_bearer_response_matches_generic_auth_failure_shape(self) -> None:
+        """The non-ASCII path must produce the exact same 401 body as any
+        other authentication failure -- proving it goes through
+        AuthenticationError, not the generic exception handler."""
+        r = self._request("Bearer café".encode())
+        self.assertEqual(r.status_code, 401)
+        payload = r.json()
+        self.assertEqual(payload["error"]["code"], "authentication_required")
+        self.assertEqual(payload["error"]["message"], "Authentication required")
+
+    def test_non_ascii_bearer_does_not_expose_internal_exception_details(self) -> None:
+        r = self._request("Bearer café".encode())
+        body_text = r.text
+        for leaked in (
+            "TypeError",
+            "compare_digest",
+            "Traceback",
+            "non-ASCII characters",
+            "internal_error",
+            "café",
+        ):
+            self.assertNotIn(leaked, body_text)
+
+    def test_malformed_empty_bearer_returns_existing_401(self) -> None:
+        r = self._request(b"Bearer ")
+        self.assertEqual(r.status_code, 401)
+
+    def test_missing_header_returns_existing_401(self) -> None:
+        r = self._request(None)
+        self.assertEqual(r.status_code, 401)
+
+    def test_health_remains_accessible(self) -> None:
+        with TestClient(self.app) as client:
+            r = client.get("/health", headers={"HOST": "example.com"})
+        self.assertEqual(r.status_code, 200)
+
+    def test_ready_remains_accessible(self) -> None:
+        with TestClient(self.app) as client:
+            r = client.get("/ready", headers={"HOST": "example.com"})
+        self.assertEqual(r.status_code, 200)
+
+    def test_version_remains_accessible(self) -> None:
+        with TestClient(self.app) as client:
+            r = client.get("/version", headers={"HOST": "example.com"})
+        self.assertEqual(r.status_code, 200)
+
+
+class TestNonAsciiBearerAtStoreLevel(TestCase):
+    """F08: direct unit coverage of the exact call site that used to raise.
+
+    Complements the end-to-end TestNonAsciiBearerToken tests above by
+    proving, at the unit level and without any HTTP machinery, that
+    InMemoryApiKeyStore.is_valid() never raises for non-ASCII input.
+    """
+
+    def test_non_ascii_presented_key_returns_false_without_raising(self) -> None:
+        store = InMemoryApiKeyStore.from_csv("configured-ascii-key")
+        self.assertFalse(store.is_valid("café"))
+        self.assertFalse(store.is_valid("token-测试"))
+        self.assertFalse(store.is_valid("token-€"))
+
+    def test_non_ascii_presented_key_against_empty_store_returns_false(self) -> None:
+        store = InMemoryApiKeyStore.from_csv("")
+        self.assertFalse(store.is_valid("café"))
+
+    def test_ascii_behavior_unchanged_by_the_guard(self) -> None:
+        store = InMemoryApiKeyStore.from_csv("configured-ascii-key")
+        self.assertTrue(store.is_valid("configured-ascii-key"))
+        self.assertFalse(store.is_valid("wrong-ascii-key"))
