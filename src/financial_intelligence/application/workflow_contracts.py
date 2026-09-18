@@ -7,7 +7,11 @@ from datetime import datetime
 from enum import StrEnum
 
 from financial_intelligence.application.company_resolution import CompanyQuery, ResolutionResult
-from financial_intelligence.domain.orchestration import ResearchObjective
+from financial_intelligence.domain.orchestration import (
+    ResearchObjective,
+    ResearchPlan,
+    ResearchRequest,
+)
 from financial_intelligence.domain.workflow import (
     ApprovalStatus,
     ResearchWorkflow,
@@ -37,6 +41,22 @@ class CreateResearchWorkflowQuery:
     jurisdiction: str | None = None
     time_horizon_days: int | None = None
     require_approval: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedResearchPlan:
+    """A ``ResearchPlan`` already produced upstream (by ``PlannerPort``), paired with the
+    ``ResearchRequest`` that produced it.
+
+    Passing one of these into ``CreateResearchWorkflow.execute`` makes the workflow use
+    this exact plan instead of having ``CreateResearchWorkflow`` generate its own via
+    ``CreateResearchPlan``/``DeterministicPlanner``. This is the seam that lets
+    ``ResearchOrchestrator`` hand off the planner's actual output rather than have it
+    discarded and silently re-planned.
+    """
+
+    plan: ResearchPlan
+    request: ResearchRequest
 
 
 @dataclass(frozen=True, slots=True)
