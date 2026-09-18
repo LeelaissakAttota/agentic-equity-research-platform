@@ -32,3 +32,26 @@ class ModelCallId:
 
     def as_text(self) -> str:
         return str(self.value)
+
+
+@dataclass(frozen=True, slots=True)
+class ToolCallId:
+    """Opaque identity for a single LLM-requested tool-call attempt (Phase 4)."""
+
+    value: UUID
+
+    def __post_init__(self) -> None:
+        if self.value.version != 4:
+            msg = "tool_call_id must be a UUIDv4"
+            raise ValueError(msg)
+
+    @classmethod
+    def new(cls) -> ToolCallId:
+        return cls(value=uuid4())
+
+    @classmethod
+    def from_string(cls, raw: str) -> ToolCallId:
+        return cls(value=UUID(raw))
+
+    def as_text(self) -> str:
+        return str(self.value)

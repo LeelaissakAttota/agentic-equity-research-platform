@@ -1,7 +1,7 @@
-"""LLM Foundation Phase 1 — provider-agnostic domain package for model calls."""
+"""LLM Foundation domain package for model calls and structured output."""
 
 from financial_intelligence.domain.llm.errors import ModelFailureKind
-from financial_intelligence.domain.llm.ids import ModelCallId
+from financial_intelligence.domain.llm.ids import ModelCallId, ToolCallId
 from financial_intelligence.domain.llm.model import (
     ModelCallStatus,
     ModelMessage,
@@ -9,6 +9,11 @@ from financial_intelligence.domain.llm.model import (
     ModelRequest,
     ModelResponse,
     ModelUsage,
+)
+from financial_intelligence.domain.llm.structured_output import (
+    StructuredModelOutput,
+    StructuredOutputKind,
+    ToolCallPayload,
 )
 
 __all__ = [
@@ -20,4 +25,8 @@ __all__ = [
     "ModelRequest",
     "ModelResponse",
     "ModelUsage",
+    "StructuredModelOutput",
+    "StructuredOutputKind",
+    "ToolCallId",
+    "ToolCallPayload",
 ]
