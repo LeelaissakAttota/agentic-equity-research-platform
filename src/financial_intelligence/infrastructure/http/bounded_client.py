@@ -50,12 +50,26 @@ class HttpTransportError(Exception):
 
 
 class HttpTransport(Protocol):
-    """Injectable transport for tests (no live network in CI)."""
+    """Injectable transport for tests (no live network in CI).
+
+    ``body`` is optional and defaults to ``None`` so existing GET-only
+    transports remain valid implementations; a caller that needs to send a
+    body (POST) must pass ``body`` explicitly.
+    """
 
     def request(
-        self, method: str, url: str, *, headers: dict[str, str], timeout: float
+        self,
+        method: str,
+        url: str,
+        *,
+        headers: dict[str, str],
+        timeout: float,
+        body: bytes | None = None,
     ) -> HttpResponse:
         """Perform one HTTP request and return a bounded response."""
+
+
+_SUPPORTED_METHODS = frozenset({"GET", "POST"})
 
 
 class UrlLibHttpTransport:
@@ -68,24 +82,37 @@ class UrlLibHttpTransport:
         self._max_response_bytes = max_response_bytes
 
     def request(
-        self, method: str, url: str, *, headers: dict[str, str], timeout: float
+        self,
+        method: str,
+        url: str,
+        *,
+        headers: dict[str, str],
+        timeout: float,
+        body: bytes | None = None,
     ) -> HttpResponse:
-        if method.upper() != "GET":
-            msg = "only GET is supported"
+        normalized_method = method.upper()
+        if normalized_method not in _SUPPORTED_METHODS:
+            msg = "only GET and POST are supported"
             raise ValueError(msg)
-        request = Request(url, headers=headers, method="GET")
+        if normalized_method == "GET" and body is not None:
+            msg = "GET requests must not include a body"
+            raise ValueError(msg)
+        if normalized_method == "POST" and body is None:
+            msg = "POST requests require a body"
+            raise ValueError(msg)
+        request = Request(url, data=body, headers=headers, method=normalized_method)
         try:
             with urlopen(request, timeout=timeout) as response:
                 status = int(getattr(response, "status", 200))
                 content_type = response.headers.get("Content-Type")
-                body = self._read_bounded(response)
+                response_body = self._read_bounded(response)
                 header_map = {k.lower(): v for k, v in response.headers.items()}
         except HTTPError as exc:
-            body = self._read_bounded(exc)
+            response_body = self._read_bounded(exc)
             header_map = {k.lower(): v for k, v in exc.headers.items()} if exc.headers else {}
             return HttpResponse(
                 status_code=int(exc.code),
-                body=body,
+                body=response_body,
                 content_type=header_map.get("content-type"),
                 headers=header_map,
             )
@@ -100,7 +127,7 @@ class UrlLibHttpTransport:
             ) from exc
         return HttpResponse(
             status_code=status,
-            body=body,
+            body=response_body,
             content_type=content_type,
             headers=header_map,
         )
@@ -156,16 +183,73 @@ class BoundedHttpClient:
             "User-Agent": self._user_agent,
             "Accept": "application/json",
         }
+        response = self._request_with_retries("GET", url, headers)
+        return self._parse_json(response)
+
+    def post_json(
+        self,
+        url: str,
+        payload: dict[str, object],
+        *,
+        extra_headers: dict[str, str] | None = None,
+    ) -> dict[str, object]:
+        """POST a JSON body with bounded retries. Raises HttpTransportError on failure.
+
+        Uses the identical bounded-retry, capped-backoff, and Retry-After
+        policy as ``get_json``: the same retryable status codes and
+        transport-failure categories apply regardless of HTTP method. This
+        client does not special-case POST idempotency, so callers must only
+        rely on automatic retries when the target endpoint is safe to retry
+        (for example, a stateless completion endpoint).
+
+        ``payload`` must be JSON-serializable; a ``TypeError``/``ValueError``
+        raised while encoding it is a caller error and is not converted to
+        ``HttpTransportError``. ``extra_headers`` may add caller-supplied
+        headers (for example, an ``Authorization`` header); it cannot
+        override ``User-Agent``, ``Accept``, or ``Content-Type``.
+        """
+
+        body = json.dumps(payload).encode("utf-8")
+        headers = {
+            "User-Agent": self._user_agent,
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        if extra_headers:
+            reserved = {"user-agent", "accept", "content-type"}
+            for key, value in extra_headers.items():
+                if key.lower() not in reserved:
+                    headers[key] = value
+        response = self._request_with_retries("POST", url, headers, body=body)
+        return self._parse_json(response)
+
+    def _request_with_retries(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, str],
+        *,
+        body: bytes | None = None,
+    ) -> HttpResponse:
         attempts = self._max_retries + 1
         last_error: HttpTransportError | None = None
         for attempt in range(attempts):
             try:
-                response = self._transport.request(
-                    "GET",
-                    url,
-                    headers=headers,
-                    timeout=self._timeout_seconds,
-                )
+                if body is None:
+                    response = self._transport.request(
+                        method,
+                        url,
+                        headers=headers,
+                        timeout=self._timeout_seconds,
+                    )
+                else:
+                    response = self._transport.request(
+                        method,
+                        url,
+                        headers=headers,
+                        timeout=self._timeout_seconds,
+                        body=body,
+                    )
             except HttpTransportError as exc:
                 last_error = exc
                 if (
@@ -176,7 +260,7 @@ class BoundedHttpClient:
                     continue
                 raise
             if response.status_code == 200:
-                return self._parse_json(response)
+                return response
             kind = self._classify_status(response.status_code)
             last_error = HttpTransportError(
                 kind,

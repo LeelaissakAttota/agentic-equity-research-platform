@@ -18,6 +18,7 @@ from financial_intelligence.domain.identity import (
     TickerSymbol,
 )
 from financial_intelligence.domain.industry import CompanyIndustryPackage
+from financial_intelligence.domain.llm import ModelRequest, ModelResponse
 from financial_intelligence.domain.market import MarketObservationSeries
 from financial_intelligence.domain.memory import MemoryRecordId, ResearchMemoryRecord
 from financial_intelligence.domain.news import CompanyEventPackage
@@ -267,6 +268,23 @@ class RegulatoryEventPort(Protocol):
         company_id: CompanyId,
     ) -> CompanyRegulatoryPackage | None:
         """Return regulatory package, or None when unavailable."""
+
+
+@runtime_checkable
+class LlmRouterPort(Protocol):
+    """Application-owned boundary for a single provider-agnostic LLM model call.
+
+    Concrete adapters (OpenRouter, or a fail-closed disabled stand-in) are
+    selected in composition; no provider-specific type ever crosses this
+    boundary. Implementations must never raise on an ordinary provider or
+    transport failure — they return a typed ``ModelResponse`` with
+    ``ModelCallStatus.FAILED`` and a ``ModelFailureKind`` describing why,
+    matching the "never fabricate a successful result" convention used by
+    every other intelligence port in this file.
+    """
+
+    def complete(self, request: ModelRequest) -> ModelResponse:
+        """Perform one model-call attempt and return its typed outcome."""
 
 
 @runtime_checkable

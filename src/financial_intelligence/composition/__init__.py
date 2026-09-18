@@ -30,6 +30,7 @@ from financial_intelligence.application.ports import (
     CompanyCatalogPort,
     FinancialDataPort,
     IndustryContextPort,
+    LlmRouterPort,
     MarketDataPort,
     NewsEventPort,
     NotificationPort,
@@ -61,6 +62,7 @@ from financial_intelligence.infrastructure.industry import (
     CachingIndustryAdapter,
     InMemoryIndustryAdapter,
 )
+from financial_intelligence.infrastructure.llm import DisabledLlmRouterAdapter, OpenRouterAdapter
 from financial_intelligence.infrastructure.market import (
     CachingMarketDataAdapter,
     FallbackMarketDataAdapter,
@@ -90,6 +92,11 @@ from financial_intelligence.infrastructure.workflow import InMemoryResearchWorkf
 # module's `_ENFORCED_ENVIRONMENTS` and `Settings`'s own validator condition
 # (config/settings.py) exactly; keep all three in sync if this ever changes.
 _AUTH_ENFORCED_ENVIRONMENTS = frozenset({"production", "staging"})
+
+# Phase 3: response-size bound for OpenRouter chat-completions calls. Not
+# separately configurable (no OPENROUTER_MAX_RESPONSE_BYTES setting exists);
+# matches the default already used for market/financial live adapters.
+_OPENROUTER_MAX_RESPONSE_BYTES = 1_048_576
 
 
 @dataclass(slots=True)
@@ -129,6 +136,7 @@ class AppContainer:
     research_report_generator: ResearchReportGeneratorPort
     selected_mcp: SelectedMcpFacade
     api_key_store: ApiKeyStorePort
+    llm_router: LlmRouterPort
 
 
 def _sec_user_agent() -> str:
@@ -148,6 +156,7 @@ def build_container(
     news_events: NewsEventPort | None = None,
     industry: IndustryContextPort | None = None,
     regulatory: RegulatoryEventPort | None = None,
+    llm_router: LlmRouterPort | None = None,
 ) -> AppContainer:
     """Wire settings, readiness, Phase 2-6 intelligence, and Phase 7 workflow foundation.
 
@@ -162,6 +171,10 @@ def build_container(
     coordination on top of Phase 6 (not durable DB; not RAG or vector memory).
     Phase 8 Prompt 1 adds deterministic verification engine (no LLM, no RAG).
     Phase 9 Prompt 1 adds deterministic verified synthesis (no LLM or renderer).
+    LLM Foundation Phase 3 adds a single-call OpenRouter LlmRouterPort adapter,
+    wired live only when ``openrouter_live_enabled`` and a primary free model
+    are both configured; otherwise a fail-closed disabled adapter is used.
+    No fallback routing, caching, or agent orchestration exists yet.
     """
 
     resolved = settings if settings is not None else Settings()
@@ -261,6 +274,23 @@ def build_container(
             ttl=timedelta(seconds=resolved.regulatory_cache_ttl_seconds),
             clock=clock,
         )
+
+    if llm_router is None:
+        if resolved.openrouter_live_enabled and resolved.primary_free_model:
+            llm_http = BoundedHttpClient(
+                UrlLibHttpTransport(max_response_bytes=_OPENROUTER_MAX_RESPONSE_BYTES),
+                timeout_seconds=float(resolved.openrouter_timeout_seconds),
+                max_retries=resolved.openrouter_max_retries,
+                user_agent=_sec_user_agent(),
+            )
+            llm_router = OpenRouterAdapter(
+                llm_http,
+                api_key=resolved.openrouter_api_key,
+                model=resolved.primary_free_model,
+                max_output_tokens_ceiling=resolved.openrouter_max_output_tokens,
+            )
+        else:
+            llm_router = DisabledLlmRouterAdapter()
 
     freshness = MarketFreshnessPolicy(
         stale_after=timedelta(hours=resolved.market_stale_after_hours),
@@ -441,4 +471,5 @@ def build_container(
         research_report_generator=research_report_generator,
         selected_mcp=selected_mcp,
         api_key_store=api_key_store,
+        llm_router=llm_router,
     )

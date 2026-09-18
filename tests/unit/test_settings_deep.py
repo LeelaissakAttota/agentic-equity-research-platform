@@ -59,6 +59,59 @@ class SettingsDeepValidationTests(TestCase):
         ):
             Settings(_env_file=None)
 
+    def test_openrouter_timeout_seconds_out_of_bounds_rejected(self) -> None:
+        for raw in ("0", "121"):
+            with (
+                self.subTest(raw=raw),
+                mock.patch.dict(
+                    os.environ, {**_BASE_ENV, "OPENROUTER_TIMEOUT_SECONDS": raw}, clear=True
+                ),
+                self.assertRaises(ValidationError),
+            ):
+                Settings(_env_file=None)
+
+    def test_openrouter_max_retries_out_of_bounds_rejected(self) -> None:
+        for raw in ("-1", "6"):
+            with (
+                self.subTest(raw=raw),
+                mock.patch.dict(
+                    os.environ, {**_BASE_ENV, "OPENROUTER_MAX_RETRIES": raw}, clear=True
+                ),
+                self.assertRaises(ValidationError),
+            ):
+                Settings(_env_file=None)
+
+    def test_openrouter_max_output_tokens_out_of_bounds_rejected(self) -> None:
+        for raw in ("0", "32769"):
+            with (
+                self.subTest(raw=raw),
+                mock.patch.dict(
+                    os.environ, {**_BASE_ENV, "OPENROUTER_MAX_OUTPUT_TOKENS": raw}, clear=True
+                ),
+                self.assertRaises(ValidationError),
+            ):
+                Settings(_env_file=None)
+
+    def test_openrouter_live_enabled_without_primary_free_model_rejected(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ,
+                {**_BASE_ENV, "OPENROUTER_LIVE_ENABLED": "true", "PRIMARY_FREE_MODEL": ""},
+                clear=True,
+            ),
+            self.assertRaises(ValidationError),
+        ):
+            Settings(_env_file=None)
+
+    def test_openrouter_live_enabled_with_primary_free_model_accepted(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {**_BASE_ENV, "OPENROUTER_LIVE_ENABLED": "true", "PRIMARY_FREE_MODEL": "free/model-a"},
+            clear=True,
+        ):
+            settings = Settings(_env_file=None)
+        self.assertTrue(settings.openrouter_live_enabled)
+
     def test_unknown_environment_keys_are_ignored(self) -> None:
         with mock.patch.dict(
             os.environ,

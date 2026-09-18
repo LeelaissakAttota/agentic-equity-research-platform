@@ -64,6 +64,27 @@ class Settings(BaseSettings):
     fallback_free_model_1: str = Field(default="", alias="FALLBACK_FREE_MODEL_1")
     fallback_free_model_2: str = Field(default="", alias="FALLBACK_FREE_MODEL_2")
 
+    # LLM Foundation Phase 1 — configuration only; no live OpenRouter calls exist yet.
+    openrouter_live_enabled: bool = Field(default=False, alias="OPENROUTER_LIVE_ENABLED")
+    openrouter_timeout_seconds: int = Field(
+        default=30,
+        alias="OPENROUTER_TIMEOUT_SECONDS",
+        ge=1,
+        le=120,
+    )
+    openrouter_max_retries: int = Field(
+        default=2,
+        alias="OPENROUTER_MAX_RETRIES",
+        ge=0,
+        le=5,
+    )
+    openrouter_max_output_tokens: int = Field(
+        default=1024,
+        alias="OPENROUTER_MAX_OUTPUT_TOKENS",
+        ge=1,
+        le=32_768,
+    )
+
     # Phase 11.2 — API-key authentication.
     # AUTH_ENABLED controls whether inbound requests must supply a valid Bearer key.
     # In production and staging, AUTH_ENABLED=false is rejected at startup (fail-closed).
@@ -229,6 +250,9 @@ class Settings(BaseSettings):
         if self.financial_data_live_enabled and self.financial_data_primary_provider == "none":
             msg = "live financial data requires an enabled primary provider"
             raise ValueError(msg)
+        if self.openrouter_live_enabled and not self.primary_free_model:
+            msg = "live OpenRouter routing requires a configured primary free model"
+            raise ValueError(msg)
         return self
 
     def allowed_host_values(self) -> tuple[str, ...]:
@@ -277,6 +301,10 @@ class Settings(BaseSettings):
             "primary_free_model": self.primary_free_model or None,
             "fallback_free_model_1": self.fallback_free_model_1 or None,
             "fallback_free_model_2": self.fallback_free_model_2 or None,
+            "openrouter_live_enabled": self.openrouter_live_enabled,
+            "openrouter_timeout_seconds": self.openrouter_timeout_seconds,
+            "openrouter_max_retries": self.openrouter_max_retries,
+            "openrouter_max_output_tokens": self.openrouter_max_output_tokens,
             "http_timeout_seconds": self.http_timeout_seconds,
             "max_http_retries": self.max_http_retries,
             "market_stale_after_hours": self.market_stale_after_hours,

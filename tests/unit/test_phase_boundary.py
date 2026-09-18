@@ -12,7 +12,6 @@ PACKAGE = ROOT / "src" / "financial_intelligence"
 FORBIDDEN_CONTENT_MARKERS = (
     "langgraph",
     "ChatOpenAI",
-    "openrouter.ai",
     "streamlit",
     "MetaTrader",
     "pgvector",
@@ -85,3 +84,23 @@ class PhaseBoundaryTests(TestCase):
         self.assertNotIn("python-docx", renderer_source)
         self.assertNotIn("docx.document", renderer_source)
         self.assertNotIn("open(", renderer_source)
+
+    def test_llm_foundation_phase3_openrouter_adapter_is_present(self) -> None:
+        """LLM Foundation Phase 3 authorizes a single-call OpenRouter adapter only.
+
+        The endpoint is now confined to ``infrastructure/llm/openrouter_adapter.py``
+        and reached exclusively through ``BoundedHttpClient.post_json`` (Phase 2);
+        it must never appear in domain or application modules.
+        """
+        adapter_module = PACKAGE / "infrastructure" / "llm" / "openrouter_adapter.py"
+        composition = (PACKAGE / "composition" / "__init__.py").read_text(encoding="utf-8")
+
+        self.assertTrue(adapter_module.is_file())
+        self.assertIn("openrouter.ai", adapter_module.read_text(encoding="utf-8"))
+        self.assertIn("OpenRouterAdapter", composition)
+        self.assertIn("DisabledLlmRouterAdapter", composition)
+
+        for path in (PACKAGE / "domain").rglob("*.py"):
+            self.assertNotIn("openrouter.ai", path.read_text(encoding="utf-8").lower())
+        for path in (PACKAGE / "application").rglob("*.py"):
+            self.assertNotIn("openrouter.ai", path.read_text(encoding="utf-8").lower())

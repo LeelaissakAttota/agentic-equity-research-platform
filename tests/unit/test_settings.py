@@ -35,6 +35,10 @@ class SettingsTests(TestCase):
         self.assertFalse(settings.allow_paid_models)
         self.assertEqual(settings.primary_free_model, "")
         self.assertEqual(settings.openrouter_api_key.get_secret_value(), "")
+        self.assertFalse(settings.openrouter_live_enabled)
+        self.assertEqual(settings.openrouter_timeout_seconds, 30)
+        self.assertEqual(settings.openrouter_max_retries, 2)
+        self.assertEqual(settings.openrouter_max_output_tokens, 1024)
 
     def test_environment_overrides(self) -> None:
         with mock.patch.dict(
@@ -53,6 +57,36 @@ class SettingsTests(TestCase):
         self.assertEqual(settings.log_level, "WARNING")
         self.assertEqual(settings.primary_free_model, "free/model-a")
         self.assertEqual(settings.http_timeout_seconds, 15)
+
+    def test_llm_environment_overrides(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                **_ISOLATED_ENV,
+                "PRIMARY_FREE_MODEL": "free/model-a",
+                "OPENROUTER_LIVE_ENABLED": "true",
+                "OPENROUTER_TIMEOUT_SECONDS": "45",
+                "OPENROUTER_MAX_RETRIES": "3",
+                "OPENROUTER_MAX_OUTPUT_TOKENS": "2048",
+            },
+            clear=True,
+        ):
+            settings = Settings(_env_file=None)
+        self.assertTrue(settings.openrouter_live_enabled)
+        self.assertEqual(settings.openrouter_timeout_seconds, 45)
+        self.assertEqual(settings.openrouter_max_retries, 3)
+        self.assertEqual(settings.openrouter_max_output_tokens, 2048)
+
+    def test_openrouter_live_enabled_requires_primary_free_model(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ,
+                {**_ISOLATED_ENV, "OPENROUTER_LIVE_ENABLED": "true", "PRIMARY_FREE_MODEL": ""},
+                clear=True,
+            ),
+            self.assertRaises(ValidationError),
+        ):
+            Settings(_env_file=None)
 
     def test_paid_models_fail_closed(self) -> None:
         with (
@@ -96,3 +130,7 @@ class SettingsTests(TestCase):
         self.assertTrue(context["openrouter_key_configured"])
         self.assertTrue(context["database_configured"])
         self.assertFalse(context["allow_paid_models"])
+        self.assertIn("openrouter_live_enabled", context)
+        self.assertIn("openrouter_timeout_seconds", context)
+        self.assertIn("openrouter_max_retries", context)
+        self.assertIn("openrouter_max_output_tokens", context)
