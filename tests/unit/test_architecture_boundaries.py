@@ -197,3 +197,38 @@ class ArchitectureBoundaryTests(TestCase):
         self.assertIn("DeterministicSynthesisAssembler", source)
         self.assertFalse(any("infrastructure" in name for name in imports))
         self.assertNotIn("FastAPI", source)
+
+    def test_research_orchestrator_depends_on_planner_port_not_adapter(self) -> None:
+        path = APPLICATION_ROOT / "research_orchestrator.py"
+        source = path.read_text(encoding="utf-8")
+        imports = _imported_modules(path)
+        self.assertIn("PlannerPort", source)
+        self.assertIn("CreateResearchWorkflow", source)
+        self.assertFalse(any("infrastructure" in name for name in imports))
+        # A concrete adapter (stub or future LLM-backed) may be *mentioned* in
+        # prose/docstrings, but must never be imported or instantiated here.
+        self.assertNotIn("import UnavailablePlannerAdapter", source)
+        self.assertNotIn("UnavailablePlannerAdapter()", source)
+        self.assertNotIn("OpenRouterAdapter", source)
+
+    def test_planner_port_carries_no_provider_specific_types(self) -> None:
+        path = APPLICATION_ROOT / "ports.py"
+        source = path.read_text(encoding="utf-8")
+        imports = _imported_modules(path)
+        self.assertIn("class PlannerPort", source)
+        # No provider-specific module may ever be imported into ports.py —
+        # "OpenRouter" appearing in a docstring's flow diagram is fine.
+        self.assertFalse(any("openrouter" in name.lower() for name in imports))
+        self.assertFalse(any("openai" in name.lower() for name in imports))
+        self.assertFalse(
+            any(name.startswith("financial_intelligence.infrastructure") for name in imports)
+        )
+
+    def test_meta_step_type_is_not_registered_in_capability_registry(self) -> None:
+        registry_path = APPLICATION_ROOT / "capability_registry.py"
+        source = registry_path.read_text(encoding="utf-8")
+        self.assertNotIn("MetaStepType", source)
+        self.assertNotIn("PLAN = ", source)
+        self.assertNotIn("EVIDENCE_COLLECTION", source)
+        self.assertNotIn("CRITIQUE", source)
+        self.assertNotIn("SYNTHESIS", source)

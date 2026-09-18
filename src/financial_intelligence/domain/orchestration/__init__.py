@@ -16,12 +16,22 @@ from financial_intelligence.domain.orchestration.graph import (
     topological_order,
     validate_task_graph,
 )
+from financial_intelligence.domain.orchestration.meta_steps import (
+    MetaStep,
+    MetaStepId,
+    MetaStepStatus,
+    MetaStepType,
+)
 from financial_intelligence.domain.orchestration.objectives import ResearchObjective
 from financial_intelligence.domain.orchestration.plan import (
     PLANNER_VERSION,
     PlanId,
     PlanStatus,
     ResearchPlan,
+)
+from financial_intelligence.domain.orchestration.planning import (
+    PlannerOutcome,
+    PlannerOutcomeStatus,
 )
 from financial_intelligence.domain.orchestration.request import RequestId, ResearchRequest
 from financial_intelligence.domain.orchestration.results import (
@@ -46,10 +56,16 @@ __all__ = [
     "PLANNER_VERSION",
     "BudgetExceededError",
     "ExecutionControl",
+    "MetaStep",
+    "MetaStepId",
+    "MetaStepStatus",
+    "MetaStepType",
     "OrchestrationState",
     "OrchestrationStatus",
     "PlanId",
     "PlanStatus",
+    "PlannerOutcome",
+    "PlannerOutcomeStatus",
     "RequestId",
     "ResearchExecutionBudget",
     "ResearchObjective",

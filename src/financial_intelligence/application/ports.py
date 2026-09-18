@@ -23,7 +23,12 @@ from financial_intelligence.domain.market import MarketObservationSeries
 from financial_intelligence.domain.memory import MemoryRecordId, ResearchMemoryRecord
 from financial_intelligence.domain.news import CompanyEventPackage
 from financial_intelligence.domain.notification import NotificationEvent
-from financial_intelligence.domain.orchestration import ResearchTask, TaskExecutionResult
+from financial_intelligence.domain.orchestration import (
+    PlannerOutcome,
+    ResearchRequest,
+    ResearchTask,
+    TaskExecutionResult,
+)
 from financial_intelligence.domain.regulatory import CompanyRegulatoryPackage
 from financial_intelligence.domain.watchlist import Watchlist, WatchlistId
 from financial_intelligence.domain.workflow import (
@@ -285,6 +290,29 @@ class LlmRouterPort(Protocol):
 
     def complete(self, request: ModelRequest) -> ModelResponse:
         """Perform one model-call attempt and return its typed outcome."""
+
+
+@runtime_checkable
+class PlannerPort(Protocol):
+    """Application-owned boundary for turning a request into a research plan.
+
+    Sits between a future Manager/Orchestrator and ``LlmRouterPort``::
+
+        Manager/Orchestrator -> PlannerPort -> LlmRouterPort -> OpenRouterAdapter
+
+    No provider-specific type crosses this boundary — a concrete adapter may
+    be deterministic (as it is today, wherever this port is exercised) or may
+    later call an LLM through ``LlmRouterPort``; either way it speaks only in
+    ``ResearchRequest``/``PlannerOutcome``. Implementations must never raise
+    on an ordinary planning failure and must never fabricate a
+    ``ResearchPlan`` — an implementation with no working planner must return
+    ``PlannerOutcomeStatus.UNAVAILABLE`` with no plan attached, matching the
+    "never fabricate a successful result" convention used by every other
+    port in this file.
+    """
+
+    def create_plan(self, request: ResearchRequest) -> PlannerOutcome:
+        """Attempt to turn a research request into a plan; never fabricate one."""
 
 
 @runtime_checkable
