@@ -220,9 +220,7 @@ class SecCompanyFactsFinancialDataAdapter:
         # accession_or_reference never falls back to the company CIK (see F12).
         period_facts = [f for f in duration_facts if f.period == reporting_period]
         dated_period_facts: list[tuple[date, FinancialFact]] = [
-            (dated, f)
-            for f in period_facts
-            if (dated := filed_dates.get(id(f))) is not None
+            (dated, f) for f in period_facts if (dated := filed_dates.get(id(f))) is not None
         ]
         filing_filed_at: date | None = None
         filing_accession_number: str | None = None

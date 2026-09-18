@@ -46,9 +46,7 @@ def _client(transport: HttpTransport, *, max_retries: int = 0) -> BoundedHttpCli
 class PostJsonSuccessTests(TestCase):
     def test_successful_post_returns_parsed_json(self) -> None:
         def handler(method, url, headers, timeout, body):
-            return HttpResponse(
-                200, json.dumps({"ok": True}).encode(), "application/json", {}
-            )
+            return HttpResponse(200, json.dumps({"ok": True}).encode(), "application/json", {})
 
         transport = FakeTransport(handler)
         client = _client(transport)
