@@ -52,11 +52,19 @@ class ModelMessage:
 
 @dataclass(frozen=True, slots=True)
 class ModelUsage:
-    """Token and cost accounting for one model-call attempt."""
+    """Token and cost accounting for one model-call attempt.
+
+    The $0 cost policy requires that a successful model call must have an
+    explicitly established finite zero cost. Unknown, missing, malformed,
+    or non-finite costs are a policy violation and must not be silently
+    treated as zero. The ``cost_known`` flag tracks whether the provider
+    returned a parseable, finite cost value.
+    """
 
     input_tokens: int | None = None
     output_tokens: int | None = None
     estimated_cost: Decimal = Decimal("0")
+    cost_known: bool = False
 
     def __post_init__(self) -> None:
         if self.input_tokens is not None and self.input_tokens < 0:
@@ -65,8 +73,14 @@ class ModelUsage:
         if self.output_tokens is not None and self.output_tokens < 0:
             msg = "output_tokens must not be negative"
             raise ValueError(msg)
+        if not self.estimated_cost.is_finite():
+            msg = "estimated_cost must be finite"
+            raise ValueError(msg)
         if self.estimated_cost < 0:
             msg = "estimated_cost must not be negative"
+            raise ValueError(msg)
+        if self.cost_known and not self.estimated_cost.is_finite():
+            msg = "estimated_cost must be finite when cost_known is True"
             raise ValueError(msg)
 
 

@@ -19,6 +19,7 @@ from financial_intelligence.domain.llm import (
     ModelFailureKind,
     ModelMessage,
     ModelRequest,
+    ModelUsage,
 )
 from financial_intelligence.infrastructure.http import (
     BoundedHttpClient,
@@ -204,7 +205,7 @@ class ResponseMappingTests(TestCase):
         self.assertEqual(response.usage.estimated_cost, Decimal("0"))
         self.assertIsInstance(response.usage.estimated_cost, Decimal)
 
-    def test_missing_usage_block_falls_back_to_domain_defaults(self) -> None:
+    def test_missing_usage_block_is_policy_violation(self) -> None:
         body = _success_body()
         del body["usage"]
         transport = FakeTransport(
@@ -215,10 +216,9 @@ class ResponseMappingTests(TestCase):
         adapter = _adapter(transport)
         response = adapter.complete(_request())
 
-        self.assertEqual(response.status, ModelCallStatus.SUCCEEDED)
-        self.assertIsNone(response.usage.input_tokens)
-        self.assertIsNone(response.usage.output_tokens)
-        self.assertEqual(response.usage.estimated_cost, Decimal("0"))
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+        self.assertIsNone(response.content)
 
     def test_nonzero_cost_is_a_fail_closed_policy_violation(self) -> None:
         transport = FakeTransport(
@@ -424,6 +424,238 @@ class CorrelationIdTests(TestCase):
         payload = _loads(transport.calls[0]["body"])
         self.assertNotIn("correlation_id", payload)
         self.assertEqual(request.correlation_id, "corr-123")
+
+
+class CostHardeningTests(TestCase):
+    """Regression tests for Step 4E.1 zero-cost policy hardening.
+
+    Covers all cases from the specification:
+    - explicit cost 0 → success
+    - explicit positive cost → POLICY_VIOLATION
+    - missing cost → POLICY_VIOLATION
+    - malformed cost → POLICY_VIOLATION
+    - NaN cost → POLICY_VIOLATION
+    - +Infinity cost → POLICY_VIOLATION
+    - -Infinity cost → POLICY_VIOLATION
+    - invalid cost does not raise InvalidOperation through the router boundary
+    - invalid cost does not leak provider payload/secrets
+    """
+
+    def test_explicit_cost_zero_is_success(self) -> None:
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body: HttpResponse(
+                200, _dumps(_success_body(cost=0)), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.SUCCEEDED)
+        self.assertEqual(response.usage.estimated_cost, Decimal("0"))
+        self.assertTrue(response.usage.cost_known)
+
+    def test_explicit_cost_zero_float_is_success(self) -> None:
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body: HttpResponse(
+                200, _dumps(_success_body(cost=0.0)), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.SUCCEEDED)
+        self.assertEqual(response.usage.estimated_cost, Decimal("0"))
+        self.assertTrue(response.usage.cost_known)
+
+    def test_explicit_cost_zero_string_is_success(self) -> None:
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body: HttpResponse(
+                200, _dumps(_success_body(cost="0")), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.SUCCEEDED)
+        self.assertEqual(response.usage.estimated_cost, Decimal("0"))
+        self.assertTrue(response.usage.cost_known)
+
+    def test_explicit_positive_cost_is_policy_violation(self) -> None:
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body: HttpResponse(
+                200, _dumps(_success_body(cost="0.002")), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+        self.assertIsNone(response.content)
+
+    def test_missing_cost_is_policy_violation(self) -> None:
+        body = _success_body()
+        del body["usage"]
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_malformed_cost_type_is_policy_violation(self) -> None:
+        body = _success_body()
+        body["usage"]["cost"] = {"nested": "object"}
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_malformed_cost_string_is_policy_violation(self) -> None:
+        body = _success_body()
+        body["usage"]["cost"] = "not-a-number"
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_nan_cost_is_policy_violation(self) -> None:
+        body = _success_body()
+        body["usage"]["cost"] = float("nan")
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_positive_infinity_cost_is_policy_violation(self) -> None:
+        body = _success_body()
+        body["usage"]["cost"] = float("inf")
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_negative_infinity_cost_is_policy_violation(self) -> None:
+        body = _success_body()
+        body["usage"]["cost"] = float("-inf")
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport)
+        response = adapter.complete(_request())
+
+        self.assertEqual(response.status, ModelCallStatus.FAILED)
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_invalid_cost_does_not_raise_invalidoperation_through_router(self) -> None:
+        """Invalid cost values must not leak InvalidOperation through LlmRouterPort.complete()."""
+        for invalid_cost in [float("nan"), float("inf"), float("-inf"), "not-a-number", {"x": 1}]:
+            with self.subTest(cost=invalid_cost):
+                body = _success_body()
+                body["usage"]["cost"] = invalid_cost
+                transport = FakeTransport(
+                    lambda method, url, headers, timeout, body_, b=body: HttpResponse(
+                        200, _dumps(b), "application/json", {}
+                    )
+                )
+                adapter = _adapter(transport)
+                # Should not raise; must return typed failure
+                response = adapter.complete(_request())
+                self.assertEqual(response.status, ModelCallStatus.FAILED)
+                self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+    def test_invalid_cost_does_not_leak_provider_payload(self) -> None:
+        """Failure responses must not echo raw provider payload, secrets, or cost details."""
+        body = _success_body()
+        body["usage"]["cost"] = float("nan")
+        transport = FakeTransport(
+            lambda method, url, headers, timeout, body_: HttpResponse(
+                200, _dumps(body), "application/json", {}
+            )
+        )
+        adapter = _adapter(transport, api_key="sk-secret-key-123")
+        response = adapter.complete(_request())
+
+        response_repr = repr(response)
+        response_str = str(response)
+        self.assertNotIn("sk-secret-key-123", response_repr)
+        self.assertNotIn("sk-secret-key-123", response_str)
+        self.assertNotIn("nan", response_repr.lower())
+        self.assertNotIn("nan", response_str.lower())
+        # Bounded safe message only
+        self.assertEqual(response.failure_kind, ModelFailureKind.POLICY_VIOLATION)
+
+
+class ModelUsageCostInvariantTests(TestCase):
+    """Tests for ModelUsage domain cost invariant (finite, non-negative when known)."""
+
+    def test_model_usage_rejects_nan_cost_when_known(self) -> None:
+        with self.assertRaises(ValueError):
+            ModelUsage(estimated_cost=Decimal("NaN"), cost_known=True)
+
+    def test_model_usage_rejects_positive_infinity_cost_when_known(self) -> None:
+        with self.assertRaises(ValueError):
+            ModelUsage(estimated_cost=Decimal("Infinity"), cost_known=True)
+
+    def test_model_usage_rejects_negative_infinity_cost_when_known(self) -> None:
+        with self.assertRaises(ValueError):
+            ModelUsage(estimated_cost=Decimal("-Infinity"), cost_known=True)
+
+    def test_model_usage_accepts_finite_zero_cost_when_known(self) -> None:
+        usage = ModelUsage(estimated_cost=Decimal("0"), cost_known=True)
+        self.assertEqual(usage.estimated_cost, Decimal("0"))
+        self.assertTrue(usage.cost_known)
+
+    def test_model_usage_accepts_finite_positive_cost_when_known(self) -> None:
+        """ModelUsage domain type permits positive cost (router enforces $0 policy)."""
+        usage = ModelUsage(estimated_cost=Decimal("0.001"), cost_known=True)
+        self.assertEqual(usage.estimated_cost, Decimal("0.001"))
+        self.assertTrue(usage.cost_known)
+
+    def test_model_usage_unknown_cost_has_cost_known_false(self) -> None:
+        usage = ModelUsage()
+        self.assertFalse(usage.cost_known)
+        self.assertEqual(usage.estimated_cost, Decimal("0"))
+
+    def test_model_usage_rejects_negative_cost(self) -> None:
+        with self.assertRaises(ValueError):
+            ModelUsage(estimated_cost=Decimal("-0.01"))
+
+    def test_model_usage_allows_negative_cost_when_not_known(self) -> None:
+        """Default zero cost with cost_known=False is valid (legacy default)."""
+        usage = ModelUsage(estimated_cost=Decimal("0"), cost_known=False)
+        self.assertEqual(usage.estimated_cost, Decimal("0"))
+        self.assertFalse(usage.cost_known)
 
 
 def _dumps(payload: dict[str, object]) -> bytes:

@@ -138,9 +138,9 @@ class OpenRouterAdapter:
         )
 
         usage = self._map_usage(body.get("usage"))
-        if usage.estimated_cost > 0:
-            # MODEL_POLICY.md: under the free-only policy, a non-zero cost
-            # estimate is a fail-closed policy incident, not a usable result.
+        # $0 cost policy: require explicitly known finite zero cost.
+        # Missing, malformed, non-finite, or positive cost → POLICY_VIOLATION.
+        if not usage.cost_known or usage.estimated_cost > 0:
             logger.error(
                 "openrouter_nonzero_cost_policy_violation",
                 extra={"call_id": request.call_id.as_text(), "model": model_used},
@@ -162,13 +162,58 @@ class OpenRouterAdapter:
             return ModelUsage()
         input_tokens = raw.get("prompt_tokens")
         output_tokens = raw.get("completion_tokens")
-        cost = Decimal("0")
         cost_raw = raw.get("cost")
-        if isinstance(cost_raw, (int, float, str)):
-            try:
-                cost = Decimal(str(cost_raw))
-            except InvalidOperation:
-                cost = Decimal("0")
+        if cost_raw is None:
+            # Missing cost — not known, fail closed at policy boundary
+            return ModelUsage(
+                input_tokens=(
+                    input_tokens if isinstance(input_tokens, int) and input_tokens >= 0 else None
+                ),
+                output_tokens=(
+                    output_tokens if isinstance(output_tokens, int) and output_tokens >= 0 else None
+                ),
+                estimated_cost=Decimal("0"),
+                cost_known=False,
+            )
+        if not isinstance(cost_raw, (int, float, str)):
+            # Malformed cost type — not known, fail closed
+            return ModelUsage(
+                input_tokens=(
+                    input_tokens if isinstance(input_tokens, int) and input_tokens >= 0 else None
+                ),
+                output_tokens=(
+                    output_tokens if isinstance(output_tokens, int) and output_tokens >= 0 else None
+                ),
+                estimated_cost=Decimal("0"),
+                cost_known=False,
+            )
+        try:
+            cost = Decimal(str(cost_raw))
+        except InvalidOperation:
+            # Unparseable cost — not known, fail closed
+            return ModelUsage(
+                input_tokens=(
+                    input_tokens if isinstance(input_tokens, int) and input_tokens >= 0 else None
+                ),
+                output_tokens=(
+                    output_tokens if isinstance(output_tokens, int) and output_tokens >= 0 else None
+                ),
+                estimated_cost=Decimal("0"),
+                cost_known=False,
+            )
+        if not cost.is_finite():
+            # NaN or Infinity — not known, fail closed
+            return ModelUsage(
+                input_tokens=(
+                    input_tokens if isinstance(input_tokens, int) and input_tokens >= 0 else None
+                ),
+                output_tokens=(
+                    output_tokens if isinstance(output_tokens, int) and output_tokens >= 0 else None
+                ),
+                estimated_cost=Decimal("0"),
+                cost_known=False,
+            )
+        # Explicit finite cost (zero or positive) — known
         return ModelUsage(
             input_tokens=(
                 input_tokens if isinstance(input_tokens, int) and input_tokens >= 0 else None
@@ -177,6 +222,7 @@ class OpenRouterAdapter:
                 output_tokens if isinstance(output_tokens, int) and output_tokens >= 0 else None
             ),
             estimated_cost=cost,
+            cost_known=True,
         )
 
     @staticmethod
