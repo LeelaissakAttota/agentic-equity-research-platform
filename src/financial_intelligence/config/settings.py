@@ -11,6 +11,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 AppEnvironment = Literal["development", "test", "staging", "production"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+PlannerMode = Literal["deterministic", "llm"]
 
 SERVICE_NAME = "agentic-financial-intelligence"
 _SAFE_HOST_PATTERN = re.compile(
@@ -84,6 +85,9 @@ class Settings(BaseSettings):
         ge=1,
         le=32_768,
     )
+
+    # Planner selection — explicit, not derived from OPENROUTER_LIVE_ENABLED.
+    planner_mode: PlannerMode = Field(default="deterministic", alias="PLANNER_MODE")
 
     # Phase 11.2 — API-key authentication.
     # AUTH_ENABLED controls whether inbound requests must supply a valid Bearer key.
@@ -253,6 +257,16 @@ class Settings(BaseSettings):
         if self.openrouter_live_enabled and not self.primary_free_model:
             msg = "live OpenRouter routing requires a configured primary free model"
             raise ValueError(msg)
+        if self.planner_mode == "llm":
+            if not self.openrouter_live_enabled:
+                msg = "planner_mode=llm requires OPENROUTER_LIVE_ENABLED=true"
+                raise ValueError(msg)
+            if not self.primary_free_model:
+                msg = "planner_mode=llm requires a configured PRIMARY_FREE_MODEL"
+                raise ValueError(msg)
+            if not self.openrouter_api_key.get_secret_value():
+                msg = "planner_mode=llm requires a configured OPENROUTER_API_KEY"
+                raise ValueError(msg)
         return self
 
     def allowed_host_values(self) -> tuple[str, ...]:
@@ -331,6 +345,7 @@ class Settings(BaseSettings):
             "openrouter_key_configured": bool(self.openrouter_api_key.get_secret_value()),
             "alpha_vantage_key_configured": bool(self.alpha_vantage_api_key.get_secret_value()),
             "finnhub_key_configured": bool(self.finnhub_api_key.get_secret_value()),
+            "planner_mode": self.planner_mode,
         }
         for secret_name in _SECRET_FIELD_NAMES:
             assert secret_name not in payload

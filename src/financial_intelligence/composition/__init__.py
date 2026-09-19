@@ -79,6 +79,7 @@ from financial_intelligence.infrastructure.news import (
 from financial_intelligence.infrastructure.notification import InMemoryNotificationAdapter
 from financial_intelligence.infrastructure.orchestration import (
     DeterministicPlannerAdapter,
+    LlmPlannerAdapter,
     Phase6CapabilityExecutor,
 )
 from financial_intelligence.infrastructure.regulatory import (
@@ -101,6 +102,38 @@ _AUTH_ENFORCED_ENVIRONMENTS = frozenset({"production", "staging"})
 # separately configurable (no OPENROUTER_MAX_RESPONSE_BYTES setting exists);
 # matches the default already used for market/financial live adapters.
 _OPENROUTER_MAX_RESPONSE_BYTES = 1_048_576
+
+
+def _build_planner(
+    settings: Settings,
+    resolve_company: ResolveCompany,
+    capability_registry: CapabilityRegistry,
+    budget: ResearchExecutionBudget,
+    llm_router: LlmRouterPort,
+) -> PlannerPort:
+    """Select and construct the planner based on explicit PLANNER_MODE setting.
+
+    No automatic fallback: if planner_mode=llm but prerequisites are missing,
+    Settings validation fails at startup. The deterministic planner is the
+    default and only constructed when planner_mode=deterministic.
+    """
+    mode = settings.planner_mode
+    if mode == "deterministic":
+        return DeterministicPlannerAdapter(
+            DeterministicPlanner(capability_registry, budget=budget),
+            resolve_company,
+        )
+    if mode == "llm":
+        return LlmPlannerAdapter(
+            router=llm_router,
+            resolve_company=resolve_company,
+            registry=capability_registry,
+            budget=budget,
+            max_output_tokens=settings.openrouter_max_output_tokens,
+        )
+    # This should never be reached because Settings validation rejects invalid modes,
+    # but we keep it as a safety net for defense in depth.
+    raise ValueError(f"invalid planner_mode: {mode!r}")
 
 
 @dataclass(slots=True)
@@ -327,9 +360,12 @@ def build_container(
     )
     capability_registry = CapabilityRegistry()
     budget = ResearchExecutionBudget()
-    planner: PlannerPort = DeterministicPlannerAdapter(
-        DeterministicPlanner(capability_registry, budget=budget),
+    planner = _build_planner(
+        resolved,
         resolve_company,
+        capability_registry,
+        budget,
+        llm_router,
     )
     create_research_plan = CreateResearchPlan(
         resolve_company=resolve_company,

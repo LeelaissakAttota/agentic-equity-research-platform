@@ -116,7 +116,7 @@ class SettingsTests(TestCase):
             {
                 **_ISOLATED_ENV,
                 "OPENROUTER_API_KEY": "super-secret-key",
-                "DATABASE_URL": "postgresql://user:pass@localhost/db",
+                "DATABASE_URL": "postgresql://user:***@localhost/db",
                 "REDIS_URL": "redis://:pass@localhost:6379/0",
             },
             clear=True,
@@ -134,3 +134,156 @@ class SettingsTests(TestCase):
         self.assertIn("openrouter_timeout_seconds", context)
         self.assertIn("openrouter_max_retries", context)
         self.assertIn("openrouter_max_output_tokens", context)
+        self.assertEqual(context["planner_mode"], "deterministic")
+
+
+class PlannerModeSettingsTests(TestCase):
+    """Tests for PLANNER_MODE setting validation."""
+
+    def test_default_planner_mode_is_deterministic(self) -> None:
+        with mock.patch.dict(os.environ, _ISOLATED_ENV, clear=True):
+            settings = Settings(_env_file=None)
+        self.assertEqual(settings.planner_mode, "deterministic")
+
+    def test_explicit_deterministic_mode(self) -> None:
+        with mock.patch.dict(
+            os.environ, {**_ISOLATED_ENV, "PLANNER_MODE": "deterministic"}, clear=True
+        ):
+            settings = Settings(_env_file=None)
+        self.assertEqual(settings.planner_mode, "deterministic")
+
+    def test_explicit_llm_mode_accepted_when_valid(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                **_ISOLATED_ENV,
+                "PLANNER_MODE": "llm",
+                "OPENROUTER_LIVE_ENABLED": "true",
+                "PRIMARY_FREE_MODEL": "free/model-a",
+                "OPENROUTER_API_KEY": "sk-test-key",
+            },
+            clear=True,
+        ):
+            settings = Settings(_env_file=None)
+        self.assertEqual(settings.planner_mode, "llm")
+
+    def test_uppercase_llm_rejected(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ,
+                {
+                    **_ISOLATED_ENV,
+                    "PLANNER_MODE": "LLM",
+                    "OPENROUTER_LIVE_ENABLED": "true",
+                    "PRIMARY_FREE_MODEL": "free/model-a",
+                    "OPENROUTER_API_KEY": "sk-test-key",
+                },
+                clear=True,
+            ),
+            self.assertRaises(ValidationError),
+        ):
+            Settings(_env_file=None)
+
+    def test_uppercase_deterministic_rejected(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ, {**_ISOLATED_ENV, "PLANNER_MODE": "DETERMINISTIC"}, clear=True
+            ),
+            self.assertRaises(ValidationError),
+        ):
+            Settings(_env_file=None)
+
+    def test_empty_planner_mode_rejected(self) -> None:
+        with (
+            mock.patch.dict(os.environ, {**_ISOLATED_ENV, "PLANNER_MODE": ""}, clear=True),
+            self.assertRaises(ValidationError),
+        ):
+            Settings(_env_file=None)
+
+    def test_arbitrary_planner_mode_rejected(self) -> None:
+        with (
+            mock.patch.dict(os.environ, {**_ISOLATED_ENV, "PLANNER_MODE": "auto"}, clear=True),
+            self.assertRaises(ValidationError),
+        ):
+            Settings(_env_file=None)
+
+    def test_llm_mode_requires_openrouter_live_enabled(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ,
+                {
+                    **_ISOLATED_ENV,
+                    "PLANNER_MODE": "llm",
+                    "PRIMARY_FREE_MODEL": "free/model-a",
+                    "OPENROUTER_API_KEY": "sk-test-key",
+                },
+                clear=True,
+            ),
+            self.assertRaises(ValidationError) as cm,
+        ):
+            Settings(_env_file=None)
+        self.assertIn("OPENROUTER_LIVE_ENABLED", str(cm.exception))
+
+    def test_llm_mode_requires_primary_free_model(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ,
+                {
+                    **_ISOLATED_ENV,
+                    "PLANNER_MODE": "llm",
+                    "OPENROUTER_LIVE_ENABLED": "true",
+                    "OPENROUTER_API_KEY": "sk-test-key",
+                },
+                clear=True,
+            ),
+            self.assertRaises(ValidationError) as cm,
+        ):
+            Settings(_env_file=None)
+        self.assertIn("primary free model", str(cm.exception).lower())
+
+    def test_llm_mode_requires_openrouter_api_key(self) -> None:
+        with (
+            mock.patch.dict(
+                os.environ,
+                {
+                    **_ISOLATED_ENV,
+                    "PLANNER_MODE": "llm",
+                    "OPENROUTER_LIVE_ENABLED": "true",
+                    "PRIMARY_FREE_MODEL": "free/model-a",
+                },
+                clear=True,
+            ),
+            self.assertRaises(ValidationError) as cm,
+        ):
+            Settings(_env_file=None)
+        self.assertIn("OPENROUTER_API_KEY", str(cm.exception))
+
+    def test_deterministic_mode_does_not_require_openrouter_live_enabled(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                **_ISOLATED_ENV,
+                "PLANNER_MODE": "deterministic",
+                "OPENROUTER_LIVE_ENABLED": "false",
+                "PRIMARY_FREE_MODEL": "",
+                "OPENROUTER_API_KEY": "",
+            },
+            clear=True,
+        ):
+            settings = Settings(_env_file=None)
+        self.assertEqual(settings.planner_mode, "deterministic")
+        self.assertFalse(settings.openrouter_live_enabled)
+
+    def test_deterministic_mode_does_not_require_openrouter_api_key(self) -> None:
+        with mock.patch.dict(
+            os.environ,
+            {
+                **_ISOLATED_ENV,
+                "PLANNER_MODE": "deterministic",
+                "OPENROUTER_API_KEY": "",
+            },
+            clear=True,
+        ):
+            settings = Settings(_env_file=None)
+        self.assertEqual(settings.planner_mode, "deterministic")
+        self.assertEqual(settings.openrouter_api_key.get_secret_value(), "")
