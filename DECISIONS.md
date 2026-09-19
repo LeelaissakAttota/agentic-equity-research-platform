@@ -514,3 +514,80 @@ keys are revocable, rotatable by environment restart, and fully testable with th
 - `api_keys` added to `_SECRET_FIELD_NAMES`; never appears in `safe_log_context()` or logs.
 - No new external dependency required; uses Python stdlib `secrets` and existing FastAPI/Pydantic.
 - In-memory key storage limitation is documented explicitly; hashing is not applied in the in-memory store (process-local; appropriate for Phase 11.2; hash-before-store belongs to the PostgreSQL adapter phase).
+
+## ADR-058 — LLM Planner as a Structured, Server-Constrained Planning Boundary
+
+**Decision:** The LLM planner produces planning intent only through the existing
+provider-neutral `LlmRouterPort`. `PlannerOutput` is the structural parsing and
+validation boundary; `CapabilityRegistry` remains the semantic authority, with
+`TaskType` derived by the server. Company resolution occurs before planning and
+is not planner-eligible. The server generates `TaskId` values, translates
+planner-local dependency indexes after those IDs exist, and leaves
+`ResearchPlan`, graph validation, and `ResearchExecutionBudget` authoritative.
+LLM output is never directly executed and cannot select arbitrary tools or
+providers.
+
+The planner receives the research request as untrusted data. It cannot create
+evidence, URLs, execution status, timestamps, model metadata, or other
+server-controlled state. The prompt is versioned by `prompt_version`, currently
+`llm-planner-v1`; initial output uses provider-neutral JSON structured data
+rather than native provider-specific tool calls. The planner must not call
+OpenRouter or HTTP directly. No paid fallback or hidden model substitution is
+permitted. Correlation-ID behavior remains unchanged; `PlannerPort` does not
+gain a new correlation parameter. Live composition and runtime wiring are
+deferred to a separate authorized step.
+
+**Rationale:** A narrow structured boundary limits prompt-injection impact and
+keeps identity, task typing, dependency integrity, budgets, execution state,
+and evidence under deterministic server control. Provider-neutral routing
+preserves replaceability and the existing fail-closed model policy while
+allowing prompt evolution to be audited independently from domain contracts.
+
+**Consequences:** Planner responses must remain within the strict JSON schema
+and eligible capability set. The server performs all identity and graph
+construction, so model output cannot express arbitrary execution behavior;
+however, planning quality remains dependent on bounded model output and may
+degrade to a typed failure. Native tool calls, live wiring, evidence collection,
+and multi-agent behavior remain outside this decision.
+
+The planner prompt separates trusted planner instructions (system message,
+including registry-derived planner-eligible capabilities) from the untrusted
+research request (a delimited, escaped JSON data block in the user message), and
+states the role, JSON-only output, exact task fields, server-controlled fields,
+dependency-index and priority rules. This wording is defence in depth only: a
+model may still ignore it, so enforcement rests on `PlannerOutput`,
+`CapabilityRegistry`, graph validation, and the budget, never on prompt
+compliance. The wording hardening keeps `prompt_version` at `llm-planner-v1`
+because the output contract and its semantics are unchanged.
+
+**Contract hardening (Step 4E.0):** Two acceptance rules were recorded before any
+production wiring.
+
+- *Semantic validation lives in the adapter.* `PlannerOutput` remains the
+  structural parser only and still parses a plan that repeats a `capability_id`.
+  `LlmPlannerAdapter` performs semantic validation against the
+  `CapabilityRegistry`. A planner-eligible capability may appear at most once in
+  an LLM-generated plan; a repeat (compared on the exact `capability_id`, after
+  eligibility, so `company_resolution` stays excluded) fails the whole plan with a
+  fixed message that carries no model text. Duplicates are rejected because
+  capability execution currently takes no per-task parameters (a task's
+  description, dependencies, and priority do not change what it runs), so a
+  repeated capability would only re-run the identical call, and evidence is
+  already deduplicated. No heuristic for a "meaningful" repeat is introduced. The
+  prompt states the rule and that the server validates it; this remains defence
+  in depth only.
+- *Budget overflow uses the existing shared message.* `ResearchExecutionBudget`
+  remains the aggregate safety bound. When an LLM plan exceeds it, the adapter
+  returns `PlannerOutcomeStatus.FAILED` with the existing
+  `PLANNER_BUDGET_EXCEEDED_MESSAGE` (no new message, enum member, or status), so
+  `CreateResearchPlan` maps it to `BUDGET_EXCEEDED` with the budget attached,
+  exactly as for the deterministic planner. The broader status-by-message
+  mapping is unchanged and is not redesigned here.
+
+`prompt_version` remains `llm-planner-v1`: the wire schema and prompt contract
+are unchanged and the adapter has not been wired into any production path, so
+this is an acceptance hardening rather than a new prompt contract. Explicit
+production LLM planner selection and composition remain deferred to Steps 4E.1
+and 4E.2. Model-cost hardening (treating unknown or missing cost as a policy
+failure, and validating that a configured model is free) is a separate bounded
+change and is not implemented by this decision.
