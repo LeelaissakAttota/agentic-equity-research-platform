@@ -38,6 +38,7 @@ from financial_intelligence.domain.orchestration import (
     validate_task_graph,
 )
 from financial_intelligence.infrastructure.company import InMemoryCompanyCatalog
+from financial_intelligence.infrastructure.orchestration import DeterministicPlannerAdapter
 
 
 def _settings() -> Settings:
@@ -183,9 +184,13 @@ class PlannerAndUseCaseTests(TestCase):
     def _use_case(self) -> CreateResearchPlan:
         registry = CapabilityRegistry()
         budget = ResearchExecutionBudget()
+        resolve_company = ResolveCompany(InMemoryCompanyCatalog())
         return CreateResearchPlan(
-            ResolveCompany(InMemoryCompanyCatalog()),
-            DeterministicPlanner(registry, budget=budget),
+            resolve_company,
+            DeterministicPlannerAdapter(
+                DeterministicPlanner(registry, budget=budget),
+                resolve_company,
+            ),
             budget=budget,
             clock=_clock,
         )

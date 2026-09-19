@@ -162,14 +162,41 @@ class ArchitectureBoundaryTests(TestCase):
             self.assertFalse(any("infrastructure" in name for name in imports))
             self.assertNotIn(forbidden_adapter, source)
 
-    def test_create_research_plan_depends_on_resolve_and_planner(self) -> None:
+    def test_create_research_plan_depends_on_resolve_and_planner_port(self) -> None:
         path = APPLICATION_ROOT / "create_research_plan.py"
         source = path.read_text(encoding="utf-8")
         imports = _imported_modules(path)
         self.assertIn("ResolveCompany", source)
-        self.assertIn("DeterministicPlanner", source)
+        self.assertIn("PlannerPort", source)
+        self.assertNotIn("DeterministicPlanner", source)
+        self.assertNotIn("DeterministicPlannerAdapter", source)
         self.assertFalse(any("infrastructure" in name for name in imports))
         self.assertNotIn("InMemoryCompanyCatalog", source)
+
+    def test_deterministic_planner_adapter_lives_in_infrastructure_and_is_provider_free(
+        self,
+    ) -> None:
+        path = (
+            PACKAGE_ROOT / "infrastructure" / "orchestration" / "deterministic_planner_adapter.py"
+        )
+        self.assertTrue(path.is_file())
+        imports = _imported_modules(path)
+        self.assertFalse(
+            any(
+                any(token in name.lower() for token in ("openrouter", "openai", "llm", "http"))
+                for name in imports
+            ),
+            msg="DeterministicPlannerAdapter must not import LLM/provider/HTTP modules",
+        )
+        # The adapter may depend inward (application/domain) but never on composition/api.
+        self.assertFalse(
+            any(
+                name.startswith(
+                    ("financial_intelligence.composition", "financial_intelligence.api")
+                )
+                for name in imports
+            )
+        )
 
     def test_execute_research_plan_depends_on_ports_not_adapters(self) -> None:
         path = APPLICATION_ROOT / "execute_research_plan.py"

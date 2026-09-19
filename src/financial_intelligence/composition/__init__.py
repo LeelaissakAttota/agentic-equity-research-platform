@@ -34,6 +34,7 @@ from financial_intelligence.application.ports import (
     MarketDataPort,
     NewsEventPort,
     NotificationPort,
+    PlannerPort,
     RegulatoryEventPort,
     ResearchMemoryPort,
     ResearchWorkflowStorePort,
@@ -76,7 +77,10 @@ from financial_intelligence.infrastructure.news import (
     InMemoryNewsEventAdapter,
 )
 from financial_intelligence.infrastructure.notification import InMemoryNotificationAdapter
-from financial_intelligence.infrastructure.orchestration import Phase6CapabilityExecutor
+from financial_intelligence.infrastructure.orchestration import (
+    DeterministicPlannerAdapter,
+    Phase6CapabilityExecutor,
+)
 from financial_intelligence.infrastructure.regulatory import (
     CachingRegulatoryAdapter,
     InMemoryRegulatoryAdapter,
@@ -323,7 +327,10 @@ def build_container(
     )
     capability_registry = CapabilityRegistry()
     budget = ResearchExecutionBudget()
-    planner = DeterministicPlanner(capability_registry, budget=budget)
+    planner: PlannerPort = DeterministicPlannerAdapter(
+        DeterministicPlanner(capability_registry, budget=budget),
+        resolve_company,
+    )
     create_research_plan = CreateResearchPlan(
         resolve_company=resolve_company,
         planner=planner,

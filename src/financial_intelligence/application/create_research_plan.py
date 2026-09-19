@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from financial_intelligence.application.company_resolution import (
     ResolutionStatus,
 )
-from financial_intelligence.application.deterministic_planner import DeterministicPlanner
+from financial_intelligence.application.ports import PlannerPort
 from financial_intelligence.application.research_plan_contracts import (
     CreateResearchPlanQuery,
     CreateResearchPlanResult,
@@ -16,21 +16,29 @@ from financial_intelligence.application.research_plan_contracts import (
 )
 from financial_intelligence.application.resolve_company import ResolveCompany
 from financial_intelligence.domain.orchestration import (
-    BudgetExceededError,
+    PlannerOutcomeStatus,
     RequestId,
     ResearchExecutionBudget,
     ResearchRequest,
 )
 from financial_intelligence.domain.research_run import ResearchRunId
 
+# Fixed message a ``PlannerPort`` uses to report that a plan exceeded the research
+# execution budget. ``PlannerOutcomeStatus`` has no dedicated budget member, so this
+# shared constant is how ``CreateResearchPlan`` keeps ``BUDGET_EXCEEDED`` distinct
+# from other planner failures.
+PLANNER_BUDGET_EXCEEDED_MESSAGE = "plan exceeds the research execution budget"
+
+_PLAN_MISMATCH_MESSAGE = "planner returned a plan that does not match the request"
+
 
 class CreateResearchPlan:
-    """Validate request, resolve company, build deterministic plan — do not execute."""
+    """Validate request, resolve company, obtain a plan from the planner — do not execute."""
 
     def __init__(
         self,
         resolve_company: ResolveCompany,
-        planner: DeterministicPlanner,
+        planner: PlannerPort,
         *,
         budget: ResearchExecutionBudget | None = None,
         clock: Callable[[], datetime] | None = None,
@@ -90,28 +98,48 @@ class CreateResearchPlan:
             )
 
         assert resolution.company is not None
-        try:
-            plan = self._planner.build_plan(
-                research_run_id=research_run_id,
-                objective=query.objective,
-                company_id=resolution.company.company_id,
-                created_at=evaluated_at,
+        outcome = self._planner.create_plan(request)
+        if outcome.status is PlannerOutcomeStatus.INVALID:
+            return CreateResearchPlanResult(
+                query=query,
+                status=ResearchPlanStatus.INVALID,
+                message=outcome.message,
+                request=request,
+                resolution=resolution,
+                evaluated_at=evaluated_at,
             )
-        except BudgetExceededError as exc:
+        if outcome.status is PlannerOutcomeStatus.FAILED and (
+            outcome.message == PLANNER_BUDGET_EXCEEDED_MESSAGE
+        ):
             return CreateResearchPlanResult(
                 query=query,
                 status=ResearchPlanStatus.BUDGET_EXCEEDED,
-                message=str(exc),
+                message=outcome.message,
                 request=request,
                 resolution=resolution,
                 budget=self._budget,
                 evaluated_at=evaluated_at,
             )
-        except KeyError as exc:
+        plan = outcome.plan
+        if outcome.status is not PlannerOutcomeStatus.OK or plan is None:
             return CreateResearchPlanResult(
                 query=query,
                 status=ResearchPlanStatus.UNAVAILABLE,
-                message=f"required capability unavailable: {exc}",
+                message=outcome.message,
+                request=request,
+                resolution=resolution,
+                evaluated_at=evaluated_at,
+            )
+        # Fail closed: whatever planner produced it, the plan must belong to the company
+        # this use case resolved and to the research run it prepared.
+        if (
+            plan.company_id != resolution.company.company_id
+            or plan.research_run_id != research_run_id
+        ):
+            return CreateResearchPlanResult(
+                query=query,
+                status=ResearchPlanStatus.UNAVAILABLE,
+                message=_PLAN_MISMATCH_MESSAGE,
                 request=request,
                 resolution=resolution,
                 evaluated_at=evaluated_at,
