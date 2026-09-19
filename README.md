@@ -52,6 +52,32 @@ The platform is designed around these constraints:
 
 OpenRouter is the planned model gateway, with `ALLOW_PAID_MODELS=false`, configuration-driven free model IDs, bounded retry/free fallback and no paid escalation. Large documents will be validated, parsed, normalized, deduplicated and retrieved before only relevant context is sent for reasoning. Even free-model token/latency/cache/cost telemetry remains observable.
 
+## Planner mode configuration
+
+The research planner operates in two modes, selected at application startup via the `PLANNER_MODE` environment variable:
+
+| Mode | Value | Description |
+|------|-------|-------------|
+| Deterministic | `deterministic` | Uses `DeterministicPlannerAdapter` (default) |
+| LLM | `llm` | Uses `LlmPlannerAdapter` (opt-in) |
+
+Default: `PLANNER_MODE=deterministic`
+
+LLM mode is fail-closed and requires **all** of the following:
+
+1. `OPENROUTER_LIVE_ENABLED=true`
+2. `PRIMARY_FREE_MODEL` is non-empty
+3. `OPENROUTER_API_KEY` is configured
+4. `ALLOW_PAID_MODELS=false`
+
+Key behaviors:
+
+- There is **no silent fallback** from LLM mode to deterministic mode.
+- Planner mode is selected at application composition/startup.
+- Planner mode is **NOT** a per-request API parameter.
+- The production workflow has exactly one planning boundary through `PlannerPort`.
+- Only zero-cost/free-model policy is supported.
+
 ## Planned delivery and interoperability
 
 REST is the primary programmatic interface. The selected MCP facade exposes exactly two in-process read-only/offline capabilities. Streamlit and optional JARVIS interoperability remain future work. Deterministic JSON, Markdown, and minimal in-memory/base64 `.docx` artifacts are implemented; advanced templates, charts, artifact persistence, and evaluated narrative translation remain deferred. Language preferences are separated from canonical facts so later presentation work cannot change numbers, currencies, dates, company identity, or citations.

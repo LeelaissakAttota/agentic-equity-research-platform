@@ -44,6 +44,12 @@ External sources, downloaded documents, web content, model output, and integrati
 
 Future FastAPI, Streamlit, and MCP adapters translate external requests into application commands and responses. They handle authentication/authorization when introduced, transport validation, and presentation concerns. They do not contain research policy.
 
+## Layered responsibilities
+
+### Interface layer
+
+Future FastAPI, Streamlit, and MCP adapters translate external requests into application commands and responses. They handle authentication/authorization when introduced, transport validation, and presentation concerns. They do not contain research policy.
+
 ### Application layer
 
 Coordinates use cases, transactions, research-run lifecycle, idempotency, and calls to domain ports. It owns workflows but delegates factual rules and calculations to domain services.
@@ -52,17 +58,37 @@ Coordinates use cases, transactions, research-run lifecycle, idempotency, and ca
 
 Defines provider-neutral concepts such as company identity, market/exchange, research request, plan, task, claim, evidence, source, contradiction, verification, confidence, and research-run state. It must remain importable without framework or infrastructure packages.
 
-### Orchestration and agent capabilities
+### Planner architecture
 
-The target LangGraph-based orchestration layer contains:
+The research planner is an application-layer capability with two implementations selected at the composition root:
 
-1. Intent Engine
-2. Company Resolver
-3. Research Planner
-4. Task Orchestrator
-5. Execution Monitor
+```
+API
+  ↓
+CreateResearchWorkflow
+  ↓
+CreateResearchPlan
+  ↓
+PlannerPort
+  ↓
+Composition selects:
+  ├── DeterministicPlannerAdapter
+  └── LlmPlannerAdapter
+  ↓
+ResearchPlan
+  ↓
+ExecuteResearchPlan
+```
 
-Planned specialist capabilities cover market, financial, filing, news/events, industry/competitor, regulatory, risk, and sentiment research. They operate through typed tools and provider ports, may run concurrently where dependencies allow, and return structured results and evidence references. None are implemented in Phase 0.
+Key properties:
+
+- `PlannerPort` is the application boundary. The planner is an implementation detail behind this port.
+- Concrete planner selection happens **only** in the composition root (`_build_planner` in `src/financial_intelligence/composition/__init__.py`).
+- `LlmPlannerAdapter` depends on `LlmRouterPort`, not directly on OpenRouter/HTTP.
+- LLM planner output is validated by `PlannerOutput.parse()` before `ResearchPlan` construction.
+- Workflow execution uses the persisted `ResearchPlan` and does **not** re-plan.
+- `ResearchOrchestrator` is **not** a second production planning path (it remains a test-only façade).
+- LLM planner does not execute tools, browse the web, or fetch evidence; it produces structured planning intent only.
 
 ### Infrastructure and provider adapters
 

@@ -40,6 +40,29 @@ Retries must not amplify invalid requests, authentication failures, or policy vi
 - Startup and runtime checks must never print keys.
 - A later operational process must revalidate the provider's current free designation; a model name suffix alone is insufficient proof.
 
+## Planner mode and zero-cost policy
+
+The planner operates in two modes via `PLANNER_MODE`:
+
+- `deterministic` (default): Uses `DeterministicPlannerAdapter` — no model calls.
+- `llm` (opt-in): Uses `LlmPlannerAdapter` — requires all OpenRouter/free-model prerequisites.
+
+LLM mode requirements:
+
+1. `OPENROUTER_LIVE_ENABLED=true`
+2. `PRIMARY_FREE_MODEL` non-empty
+3. `OPENROUTER_API_KEY` configured
+4. `ALLOW_PAID_MODELS=false` (must remain false)
+
+Zero-cost policy enforcement:
+
+- LLM planner calls go through the same `LlmRouterPort` and OpenRouter adapter.
+- Router enforces zero-cost policy: missing, malformed, positive, or non-finite reported cost → `POLICY_VIOLATION`.
+- A `:free` model suffix alone is **not** treated as proof of zero cost.
+- Unknown/missing cost fails closed — not silently treated as zero.
+
+No silent fallback from LLM mode to deterministic; configuration failures fail closed at startup.
+
 ## Evidence and output constraints
 
 - Model output is untrusted and schema-validated.
